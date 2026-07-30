@@ -1,0 +1,5 @@
+{
+  "componentsDir": "src/components/reflex",
+  "hooksDir": "src/hooks/reflex",
+  "libDir": "src/lib/reflex"
+}

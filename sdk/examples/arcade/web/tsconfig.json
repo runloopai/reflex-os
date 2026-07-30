@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "node"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@runloop/reflex-client": ["../../../../sdk/client/src/index.ts"],
+      "@/*": ["./src/*"],
+      // The SDK UI sources live outside this package, so their bare imports
+      // would otherwise miss our node_modules. Runtime resolution is handled
+      // by Vite's `dedupe`; these mappings do the same for the typechecker.
+      "react": ["../node_modules/@types/react"],
+      "react/jsx-runtime": ["../node_modules/@types/react/jsx-runtime"],
+      "@tanstack/react-query": ["../node_modules/@tanstack/react-query"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

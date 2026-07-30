@@ -1,0 +1,6 @@
+node_modules
+dist
+storybook-static
+shots
+.data
+package-lock.json

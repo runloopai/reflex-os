@@ -1,0 +1,29 @@
+{
+  "name": "@reflex-examples/chat-kit-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4002",
+    "build": "npm run typecheck && vite build",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
+    "format": "prettier --write --log-level warn --ignore-unknown 'src/**' '*.md' 'index.html'",
+    "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**' '*.md' 'index.html'"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.4",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tailwindcss": "^4.2.4",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  }
+}

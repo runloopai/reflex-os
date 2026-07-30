@@ -1,0 +1,136 @@
+{
+  "items": [
+    {
+      "name": "event-utils",
+      "type": "lib",
+      "description": "Event dedupe, payload parsing, the chat-message reducer, and the agent-activity timeline (ACP + flat event dialects).",
+      "files": ["lib/event-utils.ts"],
+      "dependencies": ["@runloop/reflex-client"],
+      "registryDependencies": []
+    },
+    {
+      "name": "reflex-provider",
+      "type": "lib",
+      "description": "React context provider: configures the SDK, owns the socket and a QueryClient.",
+      "files": ["lib/reflex-provider.tsx"],
+      "dependencies": ["react", "@tanstack/react-query", "@runloop/reflex-client"],
+      "registryDependencies": []
+    },
+    {
+      "name": "use-agent-stream",
+      "type": "hook",
+      "description": "React Query hook for an agent's event stream with live WebSocket cache updates.",
+      "files": ["hooks/use-agent-stream.ts"],
+      "dependencies": ["react", "@tanstack/react-query", "@runloop/reflex-client"],
+      "registryDependencies": ["reflex-provider", "event-utils"]
+    },
+    {
+      "name": "use-send-message",
+      "type": "hook",
+      "description": "Send-message mutation with an optimistic pending bubble; sends attachments as image/file content blocks.",
+      "files": ["hooks/use-send-message.ts"],
+      "dependencies": ["react", "@tanstack/react-query", "@runloop/reflex-client"],
+      "registryDependencies": ["use-agent-stream", "event-utils"]
+    },
+    {
+      "name": "use-interrupt-agent",
+      "type": "hook",
+      "description": "Interrupt mutation: stop the agent's current turn.",
+      "files": ["hooks/use-interrupt-agent.ts"],
+      "dependencies": ["react", "@tanstack/react-query", "@runloop/reflex-client"],
+      "registryDependencies": []
+    },
+    {
+      "name": "markdown-content",
+      "type": "component",
+      "description": "Standalone GFM markdown renderer with chat styling: inline-code chips, fenced blocks, lists, tables.",
+      "files": ["components/markdown-content.tsx"],
+      "dependencies": ["react", "react-markdown", "remark-gfm"],
+      "registryDependencies": []
+    },
+    {
+      "name": "tool-call-line",
+      "type": "component",
+      "description": "Tool invocations as compact mono lines, plus ToolCallGroup: a run of calls collapsed behind an 'N more' expander.",
+      "files": ["components/tool-call-line.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": ["event-utils"]
+    },
+    {
+      "name": "thought-block",
+      "type": "component",
+      "description": "A thinking section collapsed behind a disclosure.",
+      "files": ["components/thought-block.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": []
+    },
+    {
+      "name": "system-note",
+      "type": "component",
+      "description": "A centered, muted lifecycle note between messages.",
+      "files": ["components/system-note.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": []
+    },
+    {
+      "name": "message-bubble",
+      "type": "component",
+      "description": "One chat message: markdown agent blocks (via markdown-content) and accent user bubbles, themeable via --reflex-chat-* CSS variables.",
+      "files": ["components/message-bubble.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": ["event-utils", "markdown-content"]
+    },
+    {
+      "name": "message-list",
+      "type": "component",
+      "description": "Scrolling transcript composing the primitives over the agent-activity timeline: bubbles, collapsed thoughts, grouped tool runs, lifecycle notes, pin-aware autoscroll, renderItem overrides.",
+      "files": ["components/message-list.tsx"],
+      "dependencies": ["react", "@runloop/reflex-client"],
+      "registryDependencies": [
+        "message-bubble",
+        "event-utils",
+        "tool-call-line",
+        "thought-block",
+        "system-note"
+      ]
+    },
+    {
+      "name": "chat-composer",
+      "type": "component",
+      "description": "Composer bar: auto-growing textarea, attachments (picker, drag & drop, paste), voice dictation, interrupt and send buttons.",
+      "files": ["components/chat-composer.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": []
+    },
+    {
+      "name": "chat-pane",
+      "type": "component",
+      "description": "Complete agent chat pane: header with live status, activity transcript, composer (or read-only footer).",
+      "files": ["components/chat-pane.tsx"],
+      "dependencies": ["react", "@tanstack/react-query", "@runloop/reflex-client"],
+      "registryDependencies": [
+        "message-list",
+        "chat-composer",
+        "use-agent-stream",
+        "use-send-message",
+        "use-interrupt-agent"
+      ]
+    },
+    {
+      "name": "agent-chat",
+      "type": "component",
+      "description": "The drop-in: provider + full chat pane as one component (baseUrl, apiKey, agentId).",
+      "files": ["components/agent-chat.tsx"],
+      "dependencies": ["react"],
+      "registryDependencies": ["reflex-provider", "chat-pane"]
+    },
+    {
+      "name": "chat",
+      "type": "component",
+      "description": "Everything: provider, hooks, and the full chat pane.",
+      "files": [],
+      "dependencies": [],
+      "registryDependencies": ["agent-chat"]
+    }
+  ]
+}

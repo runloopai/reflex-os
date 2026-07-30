@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+/* One extra breakpoint below Tailwind's `sm`: the narrowest phones (320-360px)
+   need a step where even short labels come off before the row wraps. */
+@theme {
+  --breakpoint-xs: 23rem;
+}
+
+/* A landscape phone is 342px tall: every row of chrome is a percent of the
+   game gone. `short:` is the height axis width breakpoints cannot see —
+   the stream view spends it on shallower headers and a one-line dock. */
+@custom-variant short (@media (max-height: 26rem));
+
+:root {
+  color-scheme: dark;
+
+  /* Dark theme for the Reflex chat pane (--reflex-chat-* variables are the
+     styling contract of the chat-kit-scaffolded components under
+     src/components/reflex). */
+  --reflex-chat-bg: #131318;
+  --reflex-chat-fg: #ececf1;
+  --reflex-chat-border: #26262e;
+  --reflex-chat-accent: #8b5cf6;
+  --reflex-chat-accent-fg: #ffffff;
+  --reflex-chat-user-bubble: #6d28d9;
+  --reflex-chat-user-fg: #f5f3ff;
+  --reflex-chat-agent-bubble: rgba(26, 26, 34, 0.8);
+  --reflex-chat-agent-fg: #e4e4e7;
+  --reflex-chat-muted-fg: #8b8b98;
+  --reflex-chat-input-bg: rgba(27, 27, 34, 0.85);
+  --reflex-chat-input-fg: #ececf1;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+}
+
+/* Rows that touch the screen edge on a phone. The stream view runs edge to
+   edge under the notch and the home bar (`viewport-fit=cover`), so anything
+   tappable out there pads itself back in with the device's own insets — and
+   never less than the layout's own gutter. An `@utility`, not plain CSS, so
+   it still takes variants (`max-lg:safe-x`) and loses to later utilities. */
+@utility safe-x {
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+}
+
+/* Tapping a game must never bounce the page or fire a double-tap zoom: the
+   iframe owns its gestures, the app around it stays put. */
+.touch-stage {
+  touch-action: manipulation;
+  overscroll-behavior: contain;
+}

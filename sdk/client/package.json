@@ -1,0 +1,59 @@
+{
+  "name": "@runloop/reflex-client",
+  "version": "0.1.0",
+  "description": "Typed API client and live event stream for Reflex, authenticated with a personal API key.",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@reflex/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./react/*": {
+      "@reflex/source": "./src/react/*.ts",
+      "types": "./dist/react/*.d.ts",
+      "default": "./dist/react/*.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write --log-level warn --ignore-unknown 'src/**' '*.md'",
+    "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**' '*.md'"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "react": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}

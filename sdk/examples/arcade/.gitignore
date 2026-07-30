@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.data/
+.data.backups/
+.data.corrupt-*/
+.env
+# Screenshot-judging output (`npm run shots`) and storybook builds.
+shots/
+storybook-static/
+# Throwaway Storybook config generated when serving through the devbox
+# tunnel (widens Vite's allowedHosts); never edited by hand.
+.storybook-tunnel/

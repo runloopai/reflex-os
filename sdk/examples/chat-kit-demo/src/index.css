@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+/*
+ * Two chat themes, implemented purely with the --reflex-chat-* CSS
+ * variables the scaffolded components read. Switching themes toggles a
+ * class on the chat container; no component markup changes.
+ */
+.theme-day {
+  --reflex-chat-bg: #ffffff;
+  --reflex-chat-fg: #111827;
+  --reflex-chat-border: #e5e7eb;
+  --reflex-chat-accent: #4f46e5;
+  --reflex-chat-accent-fg: #ffffff;
+  --reflex-chat-user-bubble: #4f46e5;
+  --reflex-chat-user-fg: #ffffff;
+  --reflex-chat-agent-bubble: #f3f4f6;
+  --reflex-chat-agent-fg: #111827;
+  --reflex-chat-muted-fg: #6b7280;
+  --reflex-chat-input-bg: #ffffff;
+  --reflex-chat-input-fg: #111827;
+}
+
+.theme-night {
+  --reflex-chat-bg: #18181b;
+  --reflex-chat-fg: #fafafa;
+  --reflex-chat-border: #3f3f46;
+  --reflex-chat-accent: #2dd4bf;
+  --reflex-chat-accent-fg: #042f2e;
+  --reflex-chat-user-bubble: #0f766e;
+  --reflex-chat-user-fg: #f0fdfa;
+  --reflex-chat-agent-bubble: #27272a;
+  --reflex-chat-agent-fg: #e4e4e7;
+  --reflex-chat-muted-fg: #a1a1aa;
+  --reflex-chat-input-bg: #27272a;
+  --reflex-chat-input-fg: #fafafa;
+}

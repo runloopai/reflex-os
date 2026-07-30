@@ -1,0 +1,103 @@
+// AUTO-SYNCED from sdk/chat-kit/registry/components/system-note.tsx — edit there, then run `pnpm --filter @runloop/reflex-ui sync`.
+/**
+ * One lifecycle divider (`Devbox running`, `Turn complete`, errors in red):
+ * hairline rules around a small icon, sentence-cased label, and the event
+ * time — the same shape Reflex's own transcript uses.
+ *
+ * `message-list` composes this; import it directly to annotate your own
+ * layouts. Colors come from `--reflex-chat-*` CSS variables. You own this
+ * file.
+ */
+import type { SystemNoteKind } from '../lib/event-utils';
+
+export interface SystemNoteProps {
+  children: string;
+  tone?: 'info' | 'error';
+  /** What the note is about; picks the icon. */
+  kind?: SystemNoteKind;
+  /** Event time (epoch ms); renders as a local wall-clock time. */
+  at?: number;
+}
+
+/** 16-box inline icons, `currentColor`, no icon library required. */
+const ICONS: Record<SystemNoteKind, React.ReactNode> = {
+  devbox: (
+    <>
+      <rect x="2" y="3" width="12" height="4.5" rx="1.2" stroke="none" />
+      <rect x="2" y="8.5" width="12" height="4.5" rx="1.2" stroke="none" />
+      <circle cx="4.6" cy="5.2" r="0.9" fill="var(--reflex-chat-bg,#09090b)" stroke="none" />
+      <circle cx="4.6" cy="10.7" r="0.9" fill="var(--reflex-chat-bg,#09090b)" stroke="none" />
+    </>
+  ),
+  turn: <path d="M3 8a5 5 0 1 1 1.5 3.5M3 8V4.5M3 8h3.5" fill="none" strokeWidth="1.6" />,
+  daemon: (
+    <>
+      <circle cx="8" cy="8" r="5.5" fill="none" strokeWidth="1.4" />
+      <path
+        d="M2.5 8h11M8 2.5c-3.5 3.5-3.5 7.5 0 11 3.5-3.5 3.5-7.5 0-11z"
+        fill="none"
+        strokeWidth="1.2"
+      />
+    </>
+  ),
+  agent: (
+    <>
+      <rect x="3" y="5" width="10" height="8" rx="2" fill="none" strokeWidth="1.5" />
+      <path d="M8 5V2.5M5.5 2.5h5" fill="none" strokeWidth="1.5" />
+      <circle cx="6" cy="9" r="1" stroke="none" />
+      <circle cx="10" cy="9" r="1" stroke="none" />
+    </>
+  ),
+  setup: (
+    <path
+      d="M8 5.5A2.5 2.5 0 1 0 8 10.5 2.5 2.5 0 0 0 8 5.5zM8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"
+      fill="none"
+      strokeWidth="1.4"
+    />
+  ),
+  plan: <path d="M4 3.5h8M4 8h8M4 12.5h5" fill="none" strokeWidth="1.6" strokeLinecap="round" />,
+};
+
+/** States that read as "alive" get the accent color; the rest stay muted. */
+const ACTIVE = /\b(running|started|complete|registered|ready)\b/;
+
+export function SystemNote({ children, tone = 'info', kind, at }: SystemNoteProps) {
+  const iconColor =
+    tone === 'error'
+      ? 'text-rose-400'
+      : ACTIVE.test(children)
+        ? 'text-[var(--reflex-chat-accent,#34d399)]'
+        : 'text-[var(--reflex-chat-muted-fg,#6b7280)]';
+  return (
+    <div className="flex items-center gap-2 px-2 py-1">
+      <span aria-hidden className="h-px flex-1 bg-[var(--reflex-chat-border,#27272a)]" />
+      <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-[var(--reflex-chat-muted-fg,#6b7280)]">
+        {kind ? (
+          <svg
+            aria-hidden
+            viewBox="0 0 16 16"
+            className={`h-3 w-3 shrink-0 ${iconColor}`}
+            fill="currentColor"
+            stroke="currentColor"
+          >
+            {ICONS[kind]}
+          </svg>
+        ) : null}
+        <span
+          className={`truncate first-letter:uppercase ${tone === 'error' ? 'text-rose-400' : ''}`}
+        >
+          {children}
+        </span>
+        {at ? (
+          <time
+            dateTime={new Date(at).toISOString()}
+            className="shrink-0 text-[10px] tabular-nums opacity-70"
+          >
+            {new Date(at).toLocaleTimeString()}
+          </time>
+        ) : null}
+      </span>
+      <span aria-hidden className="h-px flex-1 bg-[var(--reflex-chat-border,#27272a)]" />
+    </div>
+  );
+}

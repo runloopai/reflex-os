@@ -1,0 +1,47 @@
+{
+  "name": "reflex-cli",
+  "version": "0.1.0",
+  "description": "Terminal client for Reflex: browse and chat with agents, launch new ones, and connect this machine as a workstation agents can work on.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "reflex-cli": "./bin/reflex-cli.js",
+    "reflex": "./bin/reflex-cli.js"
+  },
+  "main": "./dist/main.js",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "build:watch": "node build.mjs --watch",
+    "dev": "NODE_OPTIONS=--conditions=@reflex/source tsx watch src/main.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write --log-level warn --ignore-unknown 'src/**' '*.md'",
+    "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**' '*.md'",
+    "generate:api-ops": "node scripts/generate-api-ops.mjs",
+    "docs:generate": "NODE_OPTIONS=--conditions=@reflex/source tsx scripts/generate-cli-docs.ts",
+    "docs:check": "NODE_OPTIONS=--conditions=@reflex/source tsx scripts/generate-cli-docs.ts --check"
+  },
+  "dependencies": {
+    "@reflex/plugin-workstation": "workspace:*",
+    "@reflex/shared": "workspace:*",
+    "@runloop/reflex-client": "workspace:*",
+    "commander": "^15.0.0",
+    "ink": "^6.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "esbuild": "^0.28.1",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover lets the layout reach under the notch/home bar;
+         the safe-area insets below put content back where it is tappable. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Reflex Arcade</title>
+    <!-- The arcade's own card. Every `/g/:gameId` request has the GAME's
+         card written over these before the HTML leaves the server (dev:
+         `og-dev-plugin.ts`, prod: `server/index.ts`) — crawlers never run
+         the app, so a card that the client sets would never be seen. -->
+    <meta
+      name="description"
+      content="Every game here is being written by a Reflex agent while you watch. Play the latest build, chat with the room, and heart the next thing it should build."
+    />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta property="og:site_name" content="Reflex Arcade" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Reflex Arcade — games built live by agents" />
+    <meta
+      property="og:description"
+      content="Every game here is being written by a Reflex agent while you watch. Play the latest build, chat with the room, and heart the next thing it should build."
+    />
+    <meta property="og:image" content="/api/share-image" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="675" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Reflex Arcade — games built live by agents" />
+    <meta
+      name="twitter:description"
+      content="Every game here is being written by a Reflex agent while you watch."
+    />
+    <meta name="twitter:image" content="/api/share-image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
