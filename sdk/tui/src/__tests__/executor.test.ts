@@ -8,7 +8,7 @@ import type {
   ReadFileResult,
   RunCommandResult,
   WriteFileResult,
-} from '@reflex/plugin-workstation/shared/types';
+} from '@runloop/reflex-workstation';
 
 let root: string;
 let outside: string;

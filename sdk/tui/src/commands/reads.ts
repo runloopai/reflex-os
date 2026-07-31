@@ -15,7 +15,7 @@ import {
   type ListAgentsParams,
   type Snapshot,
 } from '@runloop/reflex-client';
-import type { Workstation } from '@reflex/plugin-workstation/shared/types';
+import type { Workstation } from '@runloop/reflex-workstation';
 import { colorStatus, formatRelativeTime, renderKv, renderTable } from '../output/table.js';
 import type { CommandGroup } from './define.js';
 

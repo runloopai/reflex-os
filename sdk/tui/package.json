@@ -1,17 +1,42 @@
 {
-  "name": "reflex-cli",
+  "name": "@runloop/reflex-cli",
   "version": "0.1.0",
   "description": "Terminal client for Reflex: browse and chat with agents, launch new ones, and connect this machine as a workstation agents can work on.",
   "license": "MIT",
-  "private": true,
+  "keywords": [
+    "reflex",
+    "runloop",
+    "agents",
+    "cli",
+    "tui",
+    "terminal"
+  ],
+  "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/tui#readme",
+  "bugs": "https://github.com/runloopai/reflex-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runloopai/reflex-os.git",
+    "directory": "sdk/tui"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "bin": {
     "reflex-cli": "./bin/reflex-cli.js",
     "reflex": "./bin/reflex-cli.js"
   },
   "main": "./dist/main.js",
+  "exports": {
+    ".": "./dist/main.js"
+  },
+  "//files": "dist/main.js, not dist: the sourcemap next to it embeds the full text of every inlined workspace source. Keep it out of the tarball.",
   "files": [
-    "dist",
+    "dist/main.js",
     "bin"
   ],
   "scripts": {
@@ -27,9 +52,8 @@
     "docs:check": "NODE_OPTIONS=--conditions=@reflex/source tsx scripts/generate-cli-docs.ts --check"
   },
   "dependencies": {
-    "@reflex/plugin-workstation": "workspace:*",
-    "@reflex/shared": "workspace:*",
-    "@runloop/reflex-client": "workspace:*",
+    "@runloop/reflex-contract": "workspace:*",
+    "@runloop/reflex-workstation": "workspace:*",
     "commander": "^15.0.0",
     "ink": "^6.0.0",
     "ink-text-input": "^6.0.0",
@@ -37,11 +61,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@runloop/reflex-client": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "esbuild": "^0.28.1",
     "tsx": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

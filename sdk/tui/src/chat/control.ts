@@ -1,4 +1,4 @@
-import type { AskUserQuestionItem } from '@reflex/shared';
+import type { AskUserQuestionItem } from '@runloop/reflex-contract';
 
 /**
  * Claude `control_response` payload builders, ported verbatim from the web

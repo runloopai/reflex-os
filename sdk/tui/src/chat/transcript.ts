@@ -4,7 +4,7 @@ import {
   normalizeAgentRunReferences,
   parseFileEnvelopes,
   type AskUserQuestionItem,
-} from '@reflex/shared';
+} from '@runloop/reflex-contract';
 
 /**
  * Live transcript engine for the TUI chat screen.

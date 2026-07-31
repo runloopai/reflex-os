@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Importable Reflex chat components for React, built from the same templates @runloop/reflex-chat-kit copies into your app.",
   "license": "MIT",
+  "keywords": ["reflex", "runloop", "agents", "react", "chat", "components"],
+  "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/ui#readme",
+  "bugs": "https://github.com/runloopai/reflex-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runloopai/reflex-os.git",
+    "directory": "sdk/ui"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"

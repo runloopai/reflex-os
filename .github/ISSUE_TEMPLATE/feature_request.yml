@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a capability or an API change for a published package.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - '@runloop/reflex-client'
+        - '@runloop/reflex-chat-kit'
+        - '@runloop/reflex-ui'
+        - '@runloop/reflex-cli'
+        - '@runloop/reflex-contract'
+        - '@runloop/reflex-workstation'
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: Describe the problem rather than the solution. What are you building, and where does the package get in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What the API or behavior would look like. Sketch the call site if that is clearer.
+    validations:
+      required: false
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: What you are doing today instead, if anything.
+    validations:
+      required: false

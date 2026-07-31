@@ -8,6 +8,7 @@ import type { AgentAssociation } from './agentAssociation.js';
 import type { AgentAttachments } from './agentAttachments.js';
 import type { AgentDaemons } from './agentDaemons.js';
 import type { AgentEnvVars } from './agentEnvVars.js';
+import type { AgentMark } from './agentMark.js';
 import type { AgentSandboxOptions } from './agentSandboxOptions.js';
 import type { AgentStatus } from './agentStatus.js';
 
@@ -39,4 +40,5 @@ export interface Agent {
   credentialSyncPending?: boolean | null;
   originator?: string | null;
   pinned: boolean;
+  mark?: AgentMark;
 }

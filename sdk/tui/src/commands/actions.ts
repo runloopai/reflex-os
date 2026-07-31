@@ -21,7 +21,8 @@ import {
   updateQueuedAgentMessage,
   type Agent,
 } from '@runloop/reflex-client';
-import { buildContentBlocks, type AgentEnvVarInput, type Attachment } from '@reflex/shared';
+import type { CreateAgentBodyEnvVarsItem as AgentEnvVarInput } from '@runloop/reflex-client';
+import { buildContentBlocks, type Attachment } from '@runloop/reflex-contract';
 import { loadAttachment } from '../attachments.js';
 import { buildLaunchPayload, type LaunchSelections } from '../launch/options.js';
 import { UsageError } from '../output/errors.js';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AgentModelSupportResponse, Blueprint } from '@reflex/shared';
+import type { AgentModelSupportResponse, Blueprint } from '@runloop/reflex-client';
 import {
   agentTypeOptions,
   autoBlueprintName,

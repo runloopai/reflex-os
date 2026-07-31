@@ -1,4 +1,4 @@
-import type { WorkstationToolName } from '@reflex/plugin-workstation/shared/types';
+import type { WorkstationToolName } from '@runloop/reflex-workstation';
 
 /**
  * Client-side permission tiers for connect mode. The machine's owner is the

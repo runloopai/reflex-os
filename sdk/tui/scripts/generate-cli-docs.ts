@@ -2,8 +2,8 @@
  * Emit (or check) the markdown CLI reference at `docs/cli.md`, rendered
  * from the live Commander tree — the same walk that powers `completion`.
  *
- *   pnpm --filter reflex-cli docs:generate   # rewrite docs/cli.md
- *   pnpm --filter reflex-cli docs:check      # fail on drift (also a vitest)
+ *   pnpm --filter @runloop/reflex-cli docs:generate   # rewrite docs/cli.md
+ *   pnpm --filter @runloop/reflex-cli docs:check      # fail on drift (also a vitest)
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -24,7 +24,7 @@ if (process.argv.includes('--check')) {
   }
   if (committed !== rendered) {
     console.error(
-      'docs/cli.md is out of date with the command tree. Run `pnpm --filter reflex-cli docs:generate` and commit the result.',
+      'docs/cli.md is out of date with the command tree. Run `pnpm --filter @runloop/reflex-cli docs:generate` and commit the result.',
     );
     process.exit(1);
   }

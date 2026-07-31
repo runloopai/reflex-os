@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildApiRequest, resolveApiOp } from '../commands/api.js';
@@ -69,12 +69,20 @@ describe('buildApiRequest', () => {
 });
 
 describe('generated api-ops module', () => {
-  it('is in sync with the committed public spec (regenerate with generate:api-ops)', () => {
-    const specPath = resolve(__dirname, '../../../..', 'openapi', 'openapi.public.json');
-    const spec = JSON.parse(readFileSync(specPath, 'utf8')) as Parameters<typeof buildApiOps>[0];
-    const committed = readFileSync(resolve(__dirname, '../generated/api-ops.ts'), 'utf8');
-    expect(committed).toBe(renderModule(buildApiOps(spec)));
-  });
+  // The spec lives at the repository root and is not part of the published
+  // `sdk/` tree, so this drift check can only run where the generator's input
+  // exists. That is also the only place it matters: the generated file can
+  // only go stale when someone regenerates the API.
+  const specPath = resolve(__dirname, '../../../..', 'openapi', 'openapi.public.json');
+
+  it.skipIf(!existsSync(specPath))(
+    'is in sync with the committed public spec (regenerate with generate:api-ops)',
+    () => {
+      const spec = JSON.parse(readFileSync(specPath, 'utf8')) as Parameters<typeof buildApiOps>[0];
+      const committed = readFileSync(resolve(__dirname, '../generated/api-ops.ts'), 'utf8');
+      expect(committed).toBe(renderModule(buildApiOps(spec)));
+    },
+  );
 
   it('covers every operation in the spec exactly once', () => {
     const ids = API_OPS.map((op) => op.id);

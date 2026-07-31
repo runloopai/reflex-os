@@ -1,0 +1,52 @@
+name: Bug report
+description: Something in a published package does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For security vulnerabilities, use the [security policy](https://github.com/runloopai/reflex-os/security/advisories/new) instead of this form.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - '@runloop/reflex-client'
+        - '@runloop/reflex-chat-kit'
+        - '@runloop/reflex-ui'
+        - '@runloop/reflex-cli'
+        - '@runloop/reflex-contract'
+        - '@runloop/reflex-workstation'
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: The version you installed, from your lockfile.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead. Include the full error if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: The smallest code sample or set of steps that shows the problem.
+      render: ts
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, package manager, browser, and framework where relevant.
+      placeholder: Node 22.11, pnpm 10, Next.js 15
+    validations:
+      required: true

@@ -8,6 +8,7 @@ import type { AgentAssociation } from './agentAssociation.js';
 import type { CreateAgentResponseAttachments } from './createAgentResponseAttachments.js';
 import type { CreateAgentResponseDaemons } from './createAgentResponseDaemons.js';
 import type { CreateAgentResponseEnvVars } from './createAgentResponseEnvVars.js';
+import type { CreateAgentResponseMark } from './createAgentResponseMark.js';
 import type { CreateAgentResponseSandboxOptions } from './createAgentResponseSandboxOptions.js';
 import type { CreateAgentResponseStatus } from './createAgentResponseStatus.js';
 
@@ -39,5 +40,6 @@ export interface CreateAgentResponse {
   credentialSyncPending?: boolean | null;
   originator?: string | null;
   pinned: boolean;
+  mark?: CreateAgentResponseMark;
   launchWarnings?: string[];
 }

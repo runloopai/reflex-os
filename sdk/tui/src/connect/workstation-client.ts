@@ -9,7 +9,7 @@ import {
   type WorkstationClientMessage,
   type WorkstationToolCall,
   type WorkstationToolName,
-} from '@reflex/plugin-workstation/shared/types';
+} from '@runloop/reflex-workstation';
 import type { ToolExecutor } from './executor.js';
 import type { GateInput, GateResult } from './policy.js';
 

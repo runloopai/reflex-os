@@ -1,0 +1,86 @@
+{
+  "name": "@reflex/plugin-workstation",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@reflex/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schema": {
+      "@reflex/source": "./src/server/schema.ts",
+      "types": "./dist/server/schema.d.ts",
+      "default": "./dist/server/schema.js"
+    },
+    "./web/*": "./src/web/*",
+    "./web/register": "./src/web/register.ts",
+    "./web/WorkstationAttachmentPicker": "./src/web/WorkstationAttachmentPicker.tsx",
+    "./web/WorkstationAttachmentSummary": "./src/web/WorkstationAttachmentSummary.tsx",
+    "./web/WorkstationMentionProvider": "./src/web/WorkstationMentionProvider.tsx",
+    "./web/WorkstationToolCallView": "./src/web/WorkstationToolCallView.tsx",
+    "./web/WorkstationAgentBadge": "./src/web/WorkstationAgentBadge.tsx",
+    "./web/WorkstationAgentSection": "./src/web/WorkstationAgentSection.tsx",
+    "./web/WorkstationsPage": "./src/web/WorkstationsPage.tsx"
+  },
+  "scripts": {
+    "lint": "eslint --cache .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "storybook": "storybook dev -p 6135 --no-open",
+    "build-storybook": "storybook build --output-dir storybook-static",
+    "test:storybook": "vitest run --config vitest.storybook.config.ts",
+    "test:storybook:prepush": "VITEST_MAX_WORKERS=2 vitest run --config vitest.storybook.config.ts --bail=10",
+    "format": "prettier --write --log-level warn --ignore-unknown 'src/**'",
+    "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**'",
+    "build": "node ../../scripts/build-workspace.mjs"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.3.0",
+    "@reflex/plugin-api": "workspace:*",
+    "@reflex/plugin-mcp": "workspace:*",
+    "@reflex/shared": "workspace:*",
+    "@reflex/ui": "workspace:*",
+    "@runloop/reflex-contract": "workspace:*",
+    "@runloop/reflex-workstation": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "fastify": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@storybook/addon-docs": "^10.5.3",
+    "@storybook/addon-vitest": "^10.5.3",
+    "@storybook/react-vite": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/ws": "^8.5.13",
+    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "drizzle-kit": "catalog:",
+    "eslint": "catalog:",
+    "lucide-react": "catalog:",
+    "motion": "catalog:",
+    "msw": "catalog:",
+    "msw-storybook-addon": "^2.0.7",
+    "playwright": "1.59.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "catalog:",
+    "storybook": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  },
+  "buildCopy": [
+    {
+      "from": "src/server/migrations",
+      "to": "dist/server/migrations"
+    }
+  ],
+  "files": [
+    "dist/**"
+  ]
+}

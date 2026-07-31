@@ -10,12 +10,11 @@ import {
   type Snapshot,
 } from '@runloop/reflex-client';
 import type {
-  AgentEnvVarInput,
   AgentModelSupportResponse,
-  Attachment,
   Blueprint,
-  ResourceSize,
-} from '@reflex/shared';
+  CreateAgentBodyEnvVarsItem as AgentEnvVarInput,
+} from '@runloop/reflex-client';
+import type { Attachment, ResourceSize } from '@runloop/reflex-contract';
 import {
   assertAttachmentLimits,
   attachmentFromBytes,
@@ -27,7 +26,7 @@ import {
   WORKSTATION_ATTACHMENT_ID,
   WORKSTATION_PLUGIN_NAME,
   type Workstation,
-} from '@reflex/plugin-workstation/shared/types';
+} from '@runloop/reflex-workstation';
 import { listWorkstations } from '../client.js';
 import {
   agentTypeOptions,

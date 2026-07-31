@@ -18,7 +18,7 @@ import {
   type WorkstationToolName,
   type WriteFileParams,
   type WriteFileResult,
-} from '@reflex/plugin-workstation/shared/types';
+} from '@runloop/reflex-workstation';
 
 /** Directory listings are for orientation, not bulk export. */
 const MAX_DIRECTORY_ENTRIES = 500;

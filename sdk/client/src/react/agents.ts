@@ -99,6 +99,10 @@ import type {
 } from './model/sendAgentMessageBody.js';
 
 import type {
+  SetAgentMarkBody
+} from './model/setAgentMarkBody.js';
+
+import type {
   Snapshot
 } from './model/snapshot.js';
 
@@ -853,6 +857,71 @@ export const useInterruptAgent = <TError = unknown,
         TContext
       > => {
       return useMutation(getInterruptAgentMutationOptions(options));
+    }
+    /**
+ * Marks a run blocked / in review / completed for triage. A null mark clears it. The server also clears the mark when the run starts its next turn or is archived.
+ * @summary Set or clear the agent's triage mark.
+ */
+export const setAgentMark = (
+    id: string,
+    setAgentMarkBody: SetAgentMarkBody,
+ options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
+) => {
+
+
+      return apiFetch<Agent>(
+      {url: `/agents/${encodeURIComponent(String(id))}/mark`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: setAgentMarkBody, signal
+    },
+      options);
+    }
+
+
+
+export const getSetAgentMarkMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setAgentMark>>, TError,{id: string;data: SetAgentMarkBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setAgentMark>>, TError,{id: string;data: SetAgentMarkBody}, TContext> => {
+
+const mutationKey = ['setAgentMark'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setAgentMark>>, {id: string;data: SetAgentMarkBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setAgentMark(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetAgentMarkMutationResult = NonNullable<Awaited<ReturnType<typeof setAgentMark>>>
+    export type SetAgentMarkMutationBody = SetAgentMarkBody
+    export type SetAgentMarkMutationError = unknown
+
+    /**
+ * @summary Set or clear the agent's triage mark.
+ */
+export const useSetAgentMark = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setAgentMark>>, TError,{id: string;data: SetAgentMarkBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setAgentMark>>,
+        TError,
+        {id: string;data: SetAgentMarkBody},
+        TContext
+      > => {
+      return useMutation(getSetAgentMarkMutationOptions(options));
     }
     /**
  * @summary Send a message to the agent's chat.

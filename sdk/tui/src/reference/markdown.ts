@@ -14,7 +14,7 @@ export function renderCliDocs(root: CommandNode): string {
   lines.push(`# ${root.name} command reference`);
   lines.push('');
   lines.push(
-    'Generated from the command tree by `pnpm --filter reflex-cli docs:generate`.',
+    'Generated from the command tree by `pnpm --filter @runloop/reflex-cli docs:generate`.',
     'Do not edit by hand; `docs:check` and the test suite fail on drift.',
   );
   lines.push('');

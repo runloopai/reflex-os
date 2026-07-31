@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Scaffold a customizable Reflex chat pane into your React app. Components are copied into your codebase, shadcn-style.",
   "license": "MIT",
+  "keywords": ["reflex", "runloop", "agents", "react", "chat", "shadcn"],
+  "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/chat-kit#readme",
+  "bugs": "https://github.com/runloopai/reflex-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runloopai/reflex-os.git",
+    "directory": "sdk/chat-kit"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"

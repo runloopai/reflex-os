@@ -1,5 +1,5 @@
 import { Box, Text } from 'ink';
-import type { QueuedMessage } from '@reflex/shared';
+import type { QueuedMessage } from '@runloop/reflex-contract';
 import type { PendingSend } from '../chat/transcript.js';
 import { clip } from '../chat/format.js';
 

@@ -1,0 +1,37 @@
+# Builds and tests the published packages in the repository they are published
+# from. The private repository runs this same gate before exporting, so a
+# failure here means the export itself is wrong: something the packages need
+# was not exported, or a manifest resolves differently outside the monorepo.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      # No committed lockfile: the mirror is generated, so there is nothing to
+      # keep one in sync with.
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm lint:packages

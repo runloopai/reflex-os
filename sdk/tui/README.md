@@ -159,7 +159,7 @@ the committed spec.
 ## Docs, completion, and doctor
 
 The full command reference lives at [`docs/cli.md`](docs/cli.md), generated
-from the command tree by `pnpm --filter reflex-cli docs:generate`;
+from the command tree by `pnpm --filter @runloop/reflex-cli docs:generate`;
 `docs:check` (and the test suite) fail when it drifts. The same tree walk
 powers shell completion:
 
@@ -362,7 +362,8 @@ CI) — connect auto-detects the missing TTY and goes headless on its own.
 
 ## Developing
 
-The TUI lives at `sdk/tui` in the monorepo (workspace package `reflex-cli`).
+The TUI lives at `sdk/tui` in the monorepo (workspace package
+`@runloop/reflex-cli`).
 It is an [Ink](https://github.com/vadimdemedes/ink) 6 + React app behind a
 [Commander](https://github.com/tj/commander.js) command tree: the tree and
 dispatch in `src/cli.ts`, one runner module per command in `src/commands/`,
@@ -405,8 +406,8 @@ stale-export crashes at runtime.
 To get a `reflex-cli` on your PATH that tracks your checkout:
 
 ```bash
-pnpm --filter reflex-cli build   # once, from the repo root (self-contained bundle)
-pnpm add -g ./sdk/tui            # from the repo root
+pnpm --filter @runloop/reflex-cli build   # once, from the repo root (self-contained bundle)
+pnpm add -g ./sdk/tui                     # from the repo root
 reflex-cli
 ```
 

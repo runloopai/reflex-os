@@ -2,7 +2,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildContentBlocks, MAX_ATTACHMENTS_COUNT, type Attachment } from '@reflex/shared';
+import {
+  buildContentBlocks,
+  MAX_ATTACHMENTS_COUNT,
+  type Attachment,
+} from '@runloop/reflex-contract';
 import {
   assertAttachmentLimits,
   attachmentFromBytes,

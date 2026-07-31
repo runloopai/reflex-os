@@ -1,0 +1,19 @@
+{
+  "name": "reflex-os",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.13.1",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive --filter './sdk/*' build",
+    "test": "pnpm --recursive --filter './sdk/*' test",
+    "typecheck": "pnpm --recursive --filter './sdk/*' typecheck",
+    "lint:packages": "pnpm --recursive --filter './sdk/*' exec publint --strict",
+    "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint:packages"
+  },
+  "devDependencies": {
+    "publint": "^0.3.18"
+  }
+}

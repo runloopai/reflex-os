@@ -25,6 +25,7 @@ import type {
   ReorderAgentQueueBody,
   SendAgentControlResponseBody,
   SendAgentMessageBody,
+  SetAgentMarkBody,
   Snapshot,
   SwitchAgentSubscriptionBody,
   UpdateAgentBody,
@@ -426,6 +427,43 @@ export const interruptAgent = async (id: string, options?: RequestInit): Promise
     method: 'POST'
 
 
+  }
+);}
+
+
+export type setAgentMarkResponse200 = {
+  data: Agent
+  status: 200
+}
+
+export type setAgentMarkResponseSuccess = (setAgentMarkResponse200) & {
+  headers: Headers;
+};
+;
+
+export type setAgentMarkResponse = (setAgentMarkResponseSuccess)
+
+export const getSetAgentMarkUrl = (id: string,) => {
+
+
+
+
+  return `/agents/${encodeURIComponent(String(id))}/mark`
+}
+
+/**
+ * Marks a run blocked / in review / completed for triage. A null mark clears it. The server also clears the mark when the run starts its next turn or is archived.
+ * @summary Set or clear the agent's triage mark.
+ */
+export const setAgentMark = async (id: string,
+    setAgentMarkBody: SetAgentMarkBody, options?: RequestInit): Promise<setAgentMarkResponse> => {
+
+  return apiFetch<setAgentMarkResponse>(getSetAgentMarkUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(setAgentMarkBody)
   }
 );}
 

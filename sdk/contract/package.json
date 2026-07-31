@@ -1,0 +1,58 @@
+{
+  "name": "@runloop/reflex-contract",
+  "version": "0.1.0",
+  "description": "Zod schemas and helpers for the Reflex contract: attachments, sandbox options, and agent references. Shared by the Reflex server, its web app, and the published SDKs.",
+  "license": "MIT",
+  "keywords": [
+    "reflex",
+    "runloop",
+    "agents",
+    "schema",
+    "zod",
+    "contract"
+  ],
+  "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/contract#readme",
+  "bugs": "https://github.com/runloopai/reflex-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runloopai/reflex-os.git",
+    "directory": "sdk/contract"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@reflex/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write --log-level warn --ignore-unknown 'src/**' '*.md'",
+    "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**' '*.md'"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

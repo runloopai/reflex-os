@@ -1,16 +1,18 @@
+import type {
+  AgentModelSupportResponse,
+  Blueprint,
+  CreateAgentBody as AgentConfigInput,
+  CreateAgentBodyEnvVarsItem as AgentEnvVarInput,
+} from '@runloop/reflex-client';
 import {
   buildContentBlocks,
   buildGitRepoAttachment,
   isBaseBlueprint,
   resolveSandboxOptions,
-  type AgentConfigInput,
-  type AgentEnvVarInput,
-  type AgentModelSupportResponse,
   type Attachment,
-  type Blueprint,
   type PluginAttachmentValue,
   type ResourceSize,
-} from '@reflex/shared';
+} from '@runloop/reflex-contract';
 
 /**
  * Launch-wizard option derivation and payload assembly, ported from the web

@@ -1,8 +1,30 @@
-import {
-  DeviceStartResponseSchema,
-  DeviceTokenApprovedSchema,
-  type DeviceStartResponse,
-} from '@reflex/shared';
+import { z } from 'zod';
+import type { PollDeviceAuthToken200, StartDeviceAuth201 } from '@runloop/reflex-client';
+
+export type DeviceStartResponse = StartDeviceAuth201;
+
+/** The `approved` arm of the token endpoint's response union. */
+type DeviceTokenApproved = Extract<PollDeviceAuthToken200, { status: 'approved' }>;
+
+// These endpoints are hit with plain `fetch` rather than the generated client
+// (the CLI holds no credential yet), so the responses are parsed here instead
+// of trusted. Annotating each schema with the generated response type makes a
+// drift between this validation and the API a compile error rather than a
+// runtime surprise.
+const DeviceStartResponseSchema: z.ZodType<DeviceStartResponse> = z.object({
+  deviceCode: z.string(),
+  userCode: z.string(),
+  verificationUri: z.string(),
+  verificationUriComplete: z.string(),
+  interval: z.number(),
+  expiresIn: z.number(),
+});
+
+const DeviceTokenApprovedSchema: z.ZodType<DeviceTokenApproved> = z.object({
+  status: z.literal('approved'),
+  apiKey: z.string(),
+  organizationId: z.string(),
+});
 
 /**
  * Client for the server's device-authorization ("connect link") flow. The CLI

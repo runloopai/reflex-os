@@ -1,6 +1,6 @@
 # reflex-cli command reference
 
-Generated from the command tree by `pnpm --filter reflex-cli docs:generate`.
+Generated from the command tree by `pnpm --filter @runloop/reflex-cli docs:generate`.
 Do not edit by hand; `docs:check` and the test suite fail on drift.
 
 ```

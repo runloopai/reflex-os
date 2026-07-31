@@ -46,6 +46,7 @@ export const AxonEventType = {
   flownode_started: 'flow.node_started',
   flownode_completed: 'flow.node_completed',
   flownode_error: 'flow.node_error',
+  flownode_retrying: 'flow.node_retrying',
   flownode_skipped: 'flow.node_skipped',
   flowapproval_requested: 'flow.approval_requested',
   flowapproval_responded: 'flow.approval_responded',

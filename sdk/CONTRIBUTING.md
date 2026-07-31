@@ -19,7 +19,7 @@ Run a single package while iterating:
 pnpm --filter @runloop/reflex-client test
 pnpm --filter @runloop/reflex-chat-kit test
 pnpm --filter @runloop/reflex-ui test
-pnpm --filter reflex-cli test
+pnpm --filter @runloop/reflex-cli test
 ```
 
 Run `pnpm format` before committing.

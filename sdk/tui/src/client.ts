@@ -1,5 +1,5 @@
 import { configureReflex, reflexRequest } from '@runloop/reflex-client';
-import type { Workstation } from '@reflex/plugin-workstation/shared/types';
+import type { Workstation } from '@runloop/reflex-workstation';
 import type { TuiConfig } from './config.js';
 
 /** Point the shared reflex-client singleton at the configured server. */

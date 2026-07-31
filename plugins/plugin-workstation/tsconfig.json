@@ -1,0 +1,7 @@
+{
+  "extends": "@reflex/plugin-api/tsconfig.plugin.json",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "include": ["src", "../plugin-services.d.ts"]
+}

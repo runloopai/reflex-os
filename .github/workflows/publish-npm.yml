@@ -1,0 +1,114 @@
+# Publishes the sdk/ packages to npm using npm trusted publishing (OIDC).
+#
+# There is no NPM_TOKEN. npm mints a short-lived credential from this
+# workflow's OIDC identity, which is why publishing happens here rather than in
+# the private repository that develops these packages: trusted publishing only
+# issues a token to a public repository, and it is also what produces the
+# provenance attestation shown on npm.
+#
+# Each package needs a trusted publisher configured at
+# npmjs.com -> package -> Settings -> Trusted publisher, pointing at
+# `runloopai/reflex-os` and this workflow's filename. The filename is part of
+# the trust relationship: renaming this file breaks publishing until npm is
+# updated.
+#
+# The trigger is "a version landed on main that npm does not have yet" rather
+# than a release tag. Versions are decided upstream by release-please and
+# arrive here inside the export, and Copybara replays commits rather than tags,
+# so there is no tag to key off. Comparing against the registry instead makes
+# the run idempotent: re-running publishes nothing, and a publish that failed
+# halfway can simply be run again.
+name: Publish npm
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Run npm publish with --dry-run
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write # Required for OIDC
+
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1, which is newer than the version
+      # bundled with Node 24.
+      - name: Update npm
+        run: npm install --global npm@latest
+
+      # No committed lockfile: the mirror is generated, so there is nothing to
+      # keep one in sync with.
+      - run: pnpm install --no-frozen-lockfile
+
+      - name: Find packages npm does not have yet
+        id: pending
+        run: |
+          set -euo pipefail
+          pending=()
+          for dir in sdk/*/; do
+            dir="${dir%/}"
+            [[ -f "$dir/package.json" ]] || continue
+            [[ "$(jq -r '.private // false' "$dir/package.json")" == "true" ]] && continue
+            name=$(jq -r '.name' "$dir/package.json")
+            version=$(jq -r '.version' "$dir/package.json")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "skip $name@$version (already published)"
+            else
+              echo "publish $name@$version from $dir"
+              pending+=("$dir")
+            fi
+          done
+          printf '%s\n' "${pending[@]+"${pending[@]}"}" > /tmp/pending.txt
+          echo "count=${#pending[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and test
+        if: steps.pending.outputs.count != '0'
+        # Build and test the whole workspace, not just the pending packages:
+        # these packages depend on one another, so a release of one is only
+        # sound if its siblings still compile against it.
+        run: |
+          set -euo pipefail
+          pnpm build
+          pnpm typecheck
+          pnpm test
+          pnpm lint:packages
+
+      - name: Publish
+        if: steps.pending.outputs.count != '0'
+        # No NODE_AUTH_TOKEN: npm exchanges the OIDC identity for a short-lived
+        # credential and attaches provenance automatically.
+        #
+        # One filtered `pnpm publish` rather than `npm publish` per directory,
+        # for two reasons: pnpm walks the filtered set in dependency order, so a
+        # package is never on npm before something it depends on, and it rewrites
+        # `workspace:` and `catalog:` ranges into real ones on the way out.
+        run: |
+          set -euo pipefail
+          filters=()
+          while read -r dir; do
+            [[ -n "$dir" ]] || continue
+            filters+=(--filter "./$dir")
+          done < /tmp/pending.txt
+          pnpm "${filters[@]}" publish --access public --no-git-checks \
+            ${{ inputs.dry-run && '--dry-run' || '' }}

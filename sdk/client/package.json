@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Typed API client and live event stream for Reflex, authenticated with a personal API key.",
   "license": "MIT",
+  "keywords": ["reflex", "runloop", "agents", "api-client", "sdk"],
+  "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/client#readme",
+  "bugs": "https://github.com/runloopai/reflex-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runloopai/reflex-os.git",
+    "directory": "sdk/client"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"

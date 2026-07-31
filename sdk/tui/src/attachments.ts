@@ -8,7 +8,7 @@ import {
   MAX_ATTACHMENT_FILE_BYTES,
   classifyAttachmentBytes,
   type Attachment,
-} from '@reflex/shared';
+} from '@runloop/reflex-contract';
 
 /**
  * Chat attachments, the same mechanism the web composer uses: files are

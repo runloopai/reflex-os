@@ -15,7 +15,7 @@ import {
   type ReflexSocket,
   type ReflexStreamEvent,
 } from '@runloop/reflex-client';
-import { buildContentBlocks, type Attachment, type QueuedMessage } from '@reflex/shared';
+import { buildContentBlocks, type Attachment, type QueuedMessage } from '@runloop/reflex-contract';
 import {
   assertAttachmentLimits,
   attachmentFromBytes,

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   WORKSTATION_PROTOCOL_VERSION,
   WorkstationClientMessageSchema,
-} from '@reflex/plugin-workstation/shared/types';
+} from '@runloop/reflex-workstation';
 import {
   WorkstationConnection,
   buildConnectUrl,

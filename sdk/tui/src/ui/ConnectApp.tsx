@@ -1,6 +1,6 @@
 import { Box, Text, useApp, useInput } from 'ink';
 import { useEffect, useState } from 'react';
-import type { Workstation } from '@reflex/plugin-workstation/shared/types';
+import type { Workstation } from '@runloop/reflex-workstation';
 import type { ConnectEvent, WorkstationConnection } from '../connect/workstation-client.js';
 import { describePolicy, type ToolApprover } from '../connect/policy.js';
 import { ApprovalPrompt, useApproverPending } from './ApprovalPrompt.js';

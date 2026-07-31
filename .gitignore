@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.tgz
+*.log
+.DS_Store
+.env
+.env.*
+
+# Generated on install. The mirror is itself generated, so a committed
+# lockfile would go stale on the next export with nothing to reconcile it.
+pnpm-lock.yaml
