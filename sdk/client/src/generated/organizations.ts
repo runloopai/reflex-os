@@ -20,6 +20,7 @@ import type {
   ListLlmTaskAssignments200,
   ListOrgInvitesParams,
   ListOrgModelProviderSecretDependents200,
+  ListOrgTeams200,
   ListOrganizationsResponse,
   ListTeamSecrets200,
   LlmTaskAssignment,
@@ -1633,7 +1634,7 @@ export const getOrgSecretsStatus = async (id: string, options?: RequestInit): Pr
 
 
 export type listOrgTeamsResponse200 = {
-  data: void
+  data: ListOrgTeams200
   status: 200
 }
 

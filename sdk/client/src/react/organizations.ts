@@ -79,6 +79,10 @@ import type {
 } from './model/listOrgModelProviderSecretDependents200.js';
 
 import type {
+  ListOrgTeams200
+} from './model/listOrgTeams200.js';
+
+import type {
   ListOrganizationsResponse
 } from './model/listOrganizationsResponse.js';
 
@@ -3013,7 +3017,7 @@ export const listOrgTeams = (
 ) => {
 
 
-      return apiFetch<void>(
+      return apiFetch<ListOrgTeams200>(
       {url: `/organizations/${encodeURIComponent(String(id))}/teams`, method: 'GET', signal
     },
       options);

@@ -180,6 +180,8 @@ export * from './listOrganizationsResponseOrganizationsItemTeamsItem.js';
 export * from './listOrgInvitesParams.js';
 export * from './listOrgModelProviderSecretDependents200.js';
 export * from './listOrgModelProviderSecretDependents200DependentsItem.js';
+export * from './listOrgTeams200.js';
+export * from './listOrgTeams200TeamsItem.js';
 export * from './listPendingInvites200.js';
 export * from './listPendingInvites200InvitesItem.js';
 export * from './listPersonalApiKeys200.js';
