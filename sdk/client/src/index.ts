@@ -60,6 +60,8 @@ export type { AgentLivenessState, AgentLivenessEvent, LiveAgentStatus } from './
 export * from './generated/activity.js';
 export * from './generated/agent-associations.js';
 export * from './generated/agent-drafts.js';
+export * from './generated/agent-groups.js';
+export * from './generated/agent-labels.js';
 export * from './generated/agents.js';
 export * from './generated/auth.js';
 export * from './generated/blueprints.js';

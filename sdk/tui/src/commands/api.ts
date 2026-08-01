@@ -21,9 +21,14 @@ export interface ApiCallOptions {
 export function resolveApiOp(name: string): ApiOp {
   const exact = API_OPS.find((op) => op.id.toLowerCase() === name.toLowerCase());
   if (exact) return exact;
+  // Closest first: among the ops containing what was typed, the shortest id
+  // adds the least the caller did not type, so `Agent` leads with `getAgent`
+  // rather than whatever sorts first alphabetically. Ties keep the spec's
+  // alphabetical order, so the hint is stable across regenerations.
   const near = API_OPS.filter((op) => op.id.toLowerCase().includes(name.toLowerCase()))
-    .slice(0, 8)
-    .map((op) => op.id);
+    .map((op) => op.id)
+    .sort((a, b) => a.length - b.length)
+    .slice(0, 8);
   const hint = near.length
     ? `Did you mean: ${near.join(', ')}?`
     : 'Run `reflex-cli api --list` to see every operation.';

@@ -12,4 +12,5 @@ export const AgentAssociationRole = {
   creator: 'creator',
   reviewer: 'reviewer',
   assignee: 'assignee',
+  member: 'member',
 } as const;

@@ -24,6 +24,28 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "addAgentGroupMembers",
+    "method": "POST",
+    "path": "/agent-groups/{groupId}/members",
+    "summary": "Add agents to a group.",
+    "pathParams": [
+      "groupId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "addAgentLabelMembers",
+    "method": "POST",
+    "path": "/agent-labels/{labelId}/members",
+    "summary": "Apply a label to agents.",
+    "pathParams": [
+      "labelId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "addOrgEmailDomain",
     "method": "POST",
     "path": "/organizations/{id}/email-domains",
@@ -158,6 +180,24 @@ export const API_OPS: readonly ApiOp[] = [
     "method": "POST",
     "path": "/agents",
     "summary": "Create and launch a new agent run.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "createAgentGroup",
+    "method": "POST",
+    "path": "/agent-groups",
+    "summary": "Create an agent group, optionally with its first members.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "createAgentLabel",
+    "method": "POST",
+    "path": "/agent-labels",
+    "summary": "Create an agent label, optionally applying it straight away.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": true
@@ -322,6 +362,28 @@ export const API_OPS: readonly ApiOp[] = [
     "summary": "Delete a launch draft.",
     "pathParams": [
       "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "deleteAgentGroup",
+    "method": "DELETE",
+    "path": "/agent-groups/{groupId}",
+    "summary": "Delete an agent group and every membership in it.",
+    "pathParams": [
+      "groupId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "deleteAgentLabel",
+    "method": "DELETE",
+    "path": "/agent-labels/{labelId}",
+    "summary": "Delete an agent label and strip it from every agent.",
+    "pathParams": [
+      "labelId"
     ],
     "queryParams": [],
     "hasBody": false
@@ -1049,6 +1111,24 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "listAgentGroups",
+    "method": "GET",
+    "path": "/agent-groups",
+    "summary": "List agent groups in the active organization.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "listAgentLabels",
+    "method": "GET",
+    "path": "/agent-labels",
+    "summary": "List the agent labels in the active organization.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "listAgents",
     "method": "GET",
     "path": "/agents",
@@ -1528,6 +1608,28 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "removeAgentGroupMembers",
+    "method": "DELETE",
+    "path": "/agent-groups/{groupId}/members",
+    "summary": "Remove agents from a group.",
+    "pathParams": [
+      "groupId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "removeAgentLabelMembers",
+    "method": "DELETE",
+    "path": "/agent-labels/{labelId}/members",
+    "summary": "Remove a label from agents.",
+    "pathParams": [
+      "labelId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "removeOrgEmailDomain",
     "method": "DELETE",
     "path": "/organizations/{id}/email-domains/{domain}",
@@ -1884,6 +1986,28 @@ export const API_OPS: readonly ApiOp[] = [
     "summary": "Update an agent's name or pinned state.",
     "pathParams": [
       "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "updateAgentGroup",
+    "method": "PATCH",
+    "path": "/agent-groups/{groupId}",
+    "summary": "Rename an agent group.",
+    "pathParams": [
+      "groupId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "updateAgentLabel",
+    "method": "PATCH",
+    "path": "/agent-labels/{labelId}",
+    "summary": "Rename an agent label or reword its description.",
+    "pathParams": [
+      "labelId"
     ],
     "queryParams": [],
     "hasBody": true

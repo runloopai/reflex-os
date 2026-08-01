@@ -16,6 +16,12 @@ describe('resolveApiOp', () => {
     expect(() => resolveApiOp('agentList')).toThrow(/api --list/);
     expect(() => resolveApiOp('Agent')).toThrow(/Did you mean: .*getAgent/);
   });
+
+  it('leads the suggestions with the closest match, not the alphabetical head', () => {
+    // 48 operations contain "agent"; the useful one is the shortest, not
+    // whichever `addAgent…` sorts first.
+    expect(() => resolveApiOp('Agent')).toThrow(/Did you mean: getAgent, /);
+  });
 });
 
 describe('buildApiRequest', () => {
