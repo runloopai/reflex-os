@@ -37,7 +37,7 @@
     "build": "node ../../scripts/build-workspace.mjs"
   },
   "dependencies": {
-    "@fastify/websocket": "^11.3.0",
+    "@fastify/websocket": "catalog:",
     "@reflex/plugin-api": "workspace:*",
     "@reflex/plugin-mcp": "workspace:*",
     "@reflex/shared": "workspace:*",
@@ -50,8 +50,8 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@storybook/addon-docs": "^10.5.3",
-    "@storybook/addon-vitest": "^10.5.3",
+    "@storybook/addon-docs": "catalog:",
+    "@storybook/addon-vitest": "catalog:",
     "@storybook/react-vite": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@types/node": "catalog:",
@@ -64,8 +64,8 @@
     "lucide-react": "catalog:",
     "motion": "catalog:",
     "msw": "catalog:",
-    "msw-storybook-addon": "^2.0.7",
-    "playwright": "1.59.1",
+    "msw-storybook-addon": "catalog:",
+    "playwright": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "catalog:",

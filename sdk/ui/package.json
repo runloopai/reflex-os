@@ -52,8 +52,8 @@
     "format:check": "prettier --check --log-level warn --ignore-unknown 'src/**' 'scripts/**' '*.md'"
   },
   "dependencies": {
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "react-markdown": "catalog:",
+    "remark-gfm": "catalog:"
   },
   "peerDependencies": {
     "@runloop/reflex-client": "workspace:^",

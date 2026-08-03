@@ -1,0 +1,17 @@
+{
+  "$schema": "https://v2-9-14.turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    // `sdk/*` packages resolve workspace siblings through built output —
+    // their `exports` point at `dist/`, and they don't opt into the
+    // `@reflex/source` condition the app packages use to import each other
+    // from `src/`. So siblings must be built first, or the run fails on
+    // whichever half of the race lost: TS2307 from `tsc`, or Vite failing to
+    // resolve the package entry. The root definitions omit `^build` on
+    // purpose (app packages would pay a full build for nothing), so it is
+    // narrowed here. Set on every `sdk/*` package, not just today's
+    // consumers, so a new sibling dependency can't silently bring it back.
+    "typecheck": { "dependsOn": ["^build"] },
+    "test": { "dependsOn": ["^build"] }
+  }
+}
