@@ -26,6 +26,7 @@
 
 export * from './ids.js';
 export * from './agent-reference.js';
+export * from './context-reference.js';
 
 export {
   ATTACHMENTS_REQUEST_BODY_LIMIT,
