@@ -29,6 +29,7 @@ export const AxonEventType = {
   agentdev_server: 'agent.dev_server',
   agentperformance_warning: 'agent.performance_warning',
   agentdaemon_started: 'agent.daemon_started',
+  agentwork_assessment: 'agent.work_assessment',
   agentcredentials_refreshed: 'agent.credentials_refreshed',
   agentcredentials_refresh_failed: 'agent.credentials_refresh_failed',
   agentsourcedashboard: 'agent.source.dashboard',
