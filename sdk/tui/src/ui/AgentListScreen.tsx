@@ -3,17 +3,22 @@ import { useEffect, useReducer, useState } from 'react';
 import type { Agent } from '@runloop/reflex-client';
 import { filterAgents, listLayout, orderAgents } from './agent-list-model.js';
 import { relativeTime, statusColor } from './theme.js';
+import { UpdateNotice } from './UpdateNotice.js';
+import type { UpdateState } from './useUpdateCheck.js';
 import { useTerminalSize } from './useTerminalSize.js';
 
 interface AgentListScreenProps {
   agents: Agent[];
   loading: boolean;
   error: string | null;
+  /** Set once npm reports a newer CLI than the one running; null otherwise. */
+  update: UpdateState | null;
   onOpen: (agent: Agent) => void;
   onLaunch: () => void;
   onTogglePin: (agent: Agent) => void;
   onToggleArchive: (agent: Agent) => void;
   onRefresh: () => void;
+  onUpdate: () => void;
   onQuit: () => void;
 }
 
@@ -21,11 +26,13 @@ export function AgentListScreen({
   agents,
   loading,
   error,
+  update,
   onOpen,
   onLaunch,
   onTogglePin,
   onToggleArchive,
   onRefresh,
+  onUpdate,
   onQuit,
 }: AgentListScreenProps) {
   const [cursor, setCursor] = useState(0);
@@ -76,6 +83,7 @@ export function AgentListScreen({
     }
     if (input === 'n') onLaunch();
     if (input === 'r') onRefresh();
+    if (input === 'u' && update) onUpdate();
     if (input === 'q') onQuit();
   });
 
@@ -145,11 +153,18 @@ export function AgentListScreen({
           </Box>
         );
       })}
+      {/* Hidden while filtering: `u` types into the query there, so the
+          "press u to install" hint would be a lie. */}
+      {update && filter === null ? (
+        <Box marginTop={1}>
+          <UpdateNotice update={update} />
+        </Box>
+      ) : null}
       <Box marginTop={1}>
         <Text dimColor>
           {filter !== null
             ? 'type to filter · ↑/↓ select · enter open · esc clear'
-            : `↑/↓ · enter open · / filter · p pin · x ${showArchived ? 'unarchive' : 'archive'} · a ${showArchived ? 'active' : 'archived'} · n new · r refresh · q quit`}
+            : `↑/↓ · enter open · / filter · p pin · x ${showArchived ? 'unarchive' : 'archive'} · a ${showArchived ? 'active' : 'archived'} · n new · r refresh${update ? ' · u update' : ''} · q quit`}
         </Text>
       </Box>
     </Box>

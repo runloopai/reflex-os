@@ -46,11 +46,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      # No `cache: pnpm`: the mirror is generated and ships no pnpm-lock.yaml,
-      # so setup-node's pnpm cache has no lockfile to key on and would fail.
+      # setup-node v5 defaults package-manager-cache to true, which auto-detects
+      # pnpm and demands a pnpm-lock.yaml to key the cache on. The mirror is
+      # generated and ships no lockfile, so disable it explicitly (dropping
+      # `cache: pnpm` alone is not enough). The install step runs with
+      # --no-frozen-lockfile anyway, so caching cannot apply here.
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org
 
       # Trusted publishing needs npm >= 11.5.1, which is newer than the version

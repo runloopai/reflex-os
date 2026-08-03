@@ -177,7 +177,8 @@ required check fails, and `--json` emits the results for scripts.
 In the TUI: `↑/↓` + `enter` opens an agent's chat, `/` filters the list by
 name, status, or type, `p` pins/unpins the selected agent, `x` archives it
 (or unarchives, in the archived view), `a` flips to the archived agents (and
-back), `n` launches a new agent, `q` quits. Pinned agents sort first (marked
+back), `n` launches a new agent, `u` installs a newer CLI when one is
+published (see [Staying up to date](#staying-up-to-date)), `q` quits. Pinned agents sort first (marked
 `✦`), archived agents stay out of the active list, rows waiting on you
 (`needs_input`, `error`) read in their status color, and the terminal bell
 rings when any agent starts waiting on input — not just the one whose chat
@@ -191,6 +192,27 @@ backoff.
 The layout adapts to the terminal: list rows scale with height, the name
 column absorbs width changes, and the agent-type column drops out first in
 narrow panes so rows never wrap. Resizes apply live.
+
+## Staying up to date
+
+On startup the TUI asks the npm registry which version is published as
+`latest` and compares it to the running one. When yours is older, the agent
+list shows a line at the bottom:
+
+```text
+update available 0.1.0 → 0.2.0 · press u to install
+```
+
+Press `u` and the CLI hands the terminal back, runs
+`npm install -g @runloop/reflex-cli@latest`, and then `exec`s the new binary
+with the arguments this session started with, so `--connect --dir ~/dev`
+survives the upgrade. On Windows the update installs and the CLI exits; the
+next launch is the new version.
+
+The check is one HTTP GET with a 3 second timeout, and it fails silently: an
+offline machine, a proxy, or a slow registry just means no notice. Nothing
+installs without the keypress. Set `REFLEX_NO_UPDATE_CHECK=1` to skip the
+request entirely.
 
 ## Launching
 
@@ -368,8 +390,9 @@ It is an [Ink](https://github.com/vadimdemedes/ink) 6 + React app behind a
 [Commander](https://github.com/tj/commander.js) command tree: the tree and
 dispatch in `src/cli.ts`, one runner module per command in `src/commands/`,
 config resolution in `src/context.ts`, error formatting in `src/output/`,
-screens in `src/ui/`, and connect-mode logic (executor, approval policy,
-WebSocket client) in `src/connect/`.
+screens in `src/ui/`, connect-mode logic (executor, approval policy,
+WebSocket client) in `src/connect/`, and the npm update check in
+`src/update/`.
 
 ```bash
 pnpm install        # once, from the repo root

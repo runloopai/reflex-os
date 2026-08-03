@@ -21,7 +21,7 @@ const scenario = process.argv[2] ?? '--question';
 
 if (scenario === '--list') {
   // Agent list with the states worth eyeballing: pinned-first ordering, the
-  // needs_input/error attention colors, and the `/` filter.
+  // needs_input/error attention colors, the `/` filter, and the update notice.
   const now = Date.now();
   const listAgent = (over: Partial<Agent>): Agent =>
     ({
@@ -47,11 +47,13 @@ if (scenario === '--list') {
       ],
       loading: false,
       error: null,
+      update: { current: '0.1.0', latest: '0.2.0' },
       onOpen: () => process.exit(0),
       onLaunch: () => process.exit(0),
       onTogglePin: () => {},
       onToggleArchive: () => {},
       onRefresh: () => {},
+      onUpdate: () => process.exit(0),
       onQuit: () => process.exit(0),
     }),
   );

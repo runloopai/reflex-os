@@ -13,11 +13,13 @@ import {
 import { updateSavedConfig, type TuiConfig } from '../config.js';
 import type { ToolApprover } from '../connect/policy.js';
 import type { ConnectEvent, WorkstationConnection } from '../connect/workstation-client.js';
+import { runSelfUpdate } from '../update/install.js';
 import { AgentListScreen } from './AgentListScreen.js';
 import { ApprovalPrompt, useApproverPending } from './ApprovalPrompt.js';
 import { ChatScreen, type WorkstationState } from './ChatScreen.js';
 import { LaunchScreen } from './LaunchScreen.js';
 import { ringBell, setTerminalTitle } from './terminal.js';
+import { useUpdateCheck } from './useUpdateCheck.js';
 
 type Screen = { name: 'list' } | { name: 'chat'; agent: Agent } | { name: 'launch' };
 
@@ -41,6 +43,7 @@ export function App({ config, connection, approver, initialAgentId = null }: App
   const { exit } = useApp();
   const [screen, setScreen] = useState<Screen>({ name: 'list' });
   const pendingApproval = useApproverPending(approver);
+  const update = useUpdateCheck();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
@@ -223,6 +226,13 @@ export function App({ config, connection, approver, initialAgentId = null }: App
           onTogglePin={(agent) => void togglePin(agent)}
           onToggleArchive={(agent) => void toggleArchive(agent)}
           onRefresh={refresh}
+          update={update}
+          onUpdate={() => {
+            // The install replaces this process, so drop the workstation
+            // registration first — the server sees a clean disconnect.
+            connection?.stop();
+            runSelfUpdate();
+          }}
           onQuit={() => {
             connection?.stop();
             exit();
