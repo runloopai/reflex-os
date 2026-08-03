@@ -3,7 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import {
   createFakePluginAuthz,
   createTestLogger,
-  installRbacAutowiring,
+  preparePluginRouteApp,
 } from '@reflex/plugin-api/test';
 import { registerWorkstationRoutes } from '../server/workstation.routes.js';
 import type { WorkstationRegistryService } from '../server/workstation-registry.service.js';
@@ -34,14 +34,13 @@ function buildApp(
   // route here declares a read/write slug, so the permission check itself
   // already enforces "authenticated" (401) and "active org" (400) before
   // the slug check — no separate `orgGate` needed.
-  installRbacAutowiring(app, authz);
   app.addHook('preHandler', async (request) => {
     if (auth) {
       (request as unknown as { currentOrganizationId: string }).currentOrganizationId = ORG_ID;
       (request as unknown as { currentUser: { id: string } }).currentUser = { id: USER_ID };
     }
   });
-  registerWorkstationRoutes(app, registry, createTestLogger());
+  registerWorkstationRoutes(preparePluginRouteApp(app, authz), registry, createTestLogger());
   return app;
 }
 

@@ -1,4 +1,6 @@
+import type { PluginRouteRegistrar } from '@reflex/plugin-api';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyContextConfig } from 'fastify/types/context.js';
 import '@fastify/websocket';
 import { requireUserId, RouteScope, type PluginLogger } from '@reflex/plugin-api';
 import {
@@ -46,13 +48,13 @@ function sendFrame(socket: { send(data: string): void }, frame: WorkstationServe
  * upgrade request). The first frame must be `register`; after that the
  * socket carries `tool.call`/`tool.result` and heartbeat frames.
  *
- * RBAC enforcement is autowired from each route's `config.rbac` posture
+ * RBAC enforcement is installed from each route's `config.rbac` posture
  * by the host's plugin registration proxy (see `rbac-enforcer.ts` /
  * `injectRbacEnforcementHandler`), so this function no longer needs an
  * `authz` handle to build its own preHandlers.
  */
 export function registerWorkstationRoutes(
-  app: FastifyInstance,
+  app: PluginRouteRegistrar<'org-scoped'>,
   registry: WorkstationRegistryService,
   log: PluginLogger,
 ) {
@@ -61,7 +63,7 @@ export function registerWorkstationRoutes(
     { config: { rbac: { scope: RouteScope.ActiveOrg, read: 'agents:read' } } },
     async (request, reply) => {
       try {
-        const organizationId = request.currentOrganizationId!;
+        const organizationId = request.currentOrganizationId;
         const userId = requireUserId(request);
         return reply.send({ workstations: await registry.list(organizationId, userId) });
       } catch (err) {
@@ -75,7 +77,7 @@ export function registerWorkstationRoutes(
     { config: { rbac: { scope: RouteScope.ActiveOrg, read: 'agents:read' } } },
     async (request, reply) => {
       try {
-        const organizationId = request.currentOrganizationId!;
+        const organizationId = request.currentOrganizationId;
         const userId = requireUserId(request);
         const calls = await registry.listCalls(request.params.id, organizationId, userId);
         return reply.send({ calls });
@@ -92,7 +94,7 @@ export function registerWorkstationRoutes(
     },
     async (request, reply) => {
       try {
-        const organizationId = request.currentOrganizationId!;
+        const organizationId = request.currentOrganizationId;
         const userId = requireUserId(request);
         await registry.delete(request.params.id, organizationId, userId);
         return reply.status(204).send();
@@ -102,7 +104,7 @@ export function registerWorkstationRoutes(
     },
   );
 
-  app.get(
+  (app as unknown as FastifyInstance).get(
     '/workstations/connect',
     {
       websocket: true,
@@ -119,13 +121,25 @@ export function registerWorkstationRoutes(
       config: {
         otel: false,
         rbac: { scope: RouteScope.ActiveOrg, read: 'agents:read', write: 'agents:write' },
-      } as Record<string, unknown>,
+      } as FastifyContextConfig,
     },
     (socket, request: FastifyRequest) => {
-      let organizationId: string;
+      // Websocket registration escapes PluginRouteApp typing via the Fastify
+      // cast above. The ActiveOrg route context has already gated the upgrade;
+      // re-check here so a bare-Fastify unit test without that gate fails closed
+      // without calling `requireOrg` (org-derivation ratchet).
+      if (!request.currentOrganizationId) {
+        sendFrame(socket, {
+          v: WORKSTATION_PROTOCOL_VERSION,
+          type: 'error',
+          message: 'No active organization for this connection',
+        });
+        socket.close(1008, 'no active organization');
+        return;
+      }
+      const organizationId = request.currentOrganizationId!;
       let userId: string;
       try {
-        organizationId = request.currentOrganizationId!;
         userId = requireUserId(request);
       } catch {
         sendFrame(socket, {
