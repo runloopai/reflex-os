@@ -1,9 +1,16 @@
 {
   "name": "@runloop/reflex-workstation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The Reflex workstation wire protocol: the messages and tool calls a machine speaks to be driven as a workstation by a Reflex agent.",
   "license": "MIT",
-  "keywords": ["reflex", "runloop", "agents", "workstation", "protocol", "zod"],
+  "keywords": [
+    "reflex",
+    "runloop",
+    "agents",
+    "workstation",
+    "protocol",
+    "zod"
+  ],
   "homepage": "https://github.com/runloopai/reflex-os/tree/main/sdk/workstation#readme",
   "bugs": "https://github.com/runloopai/reflex-os/issues",
   "repository": {
@@ -28,7 +35,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

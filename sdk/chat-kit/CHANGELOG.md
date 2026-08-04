@@ -1,0 +1,9 @@
+# Changelog
+
+## [0.2.0](https://github.com/runloopai/reflex/compare/reflex-chat-kit-v0.1.0...reflex-chat-kit-v0.2.0) (2026-08-04)
+
+
+### Features
+
+* publish the Reflex SDK to npm from reflex-os ([#2862](https://github.com/runloopai/reflex/issues/2862)) ([20f246d](https://github.com/runloopai/reflex/commit/20f246d0830d93d92a63b4616c63486da9b96f1c))
+* **sdk:** agent-activity chat kit, launch-catalog routes, and the Reflex Arcade demo ([#2313](https://github.com/runloopai/reflex/issues/2313)) ([ba398a9](https://github.com/runloopai/reflex/commit/ba398a972fe2d480c98b59f0c57d6587d109fffa))
