@@ -143,8 +143,7 @@ export function wrapContextRefContext(
 }
 
 export type ContextRefSegment =
-  | { type: 'text'; value: string }
-  | { type: 'context'; kind: string; id: string; title: string };
+  { type: 'text'; value: string } | { type: 'context'; kind: string; id: string; title: string };
 
 /**
  * Split text into plain-text segments and compact `@[title](kind:id)` markers.
