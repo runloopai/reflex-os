@@ -95,7 +95,11 @@ export interface QuestionItem {
 }
 
 export type PermissionDecision =
-  'allowed' | 'allowed-always' | 'denied' | 'interrupted' | 'expired';
+  | 'allowed'
+  | 'allowed-always'
+  | 'denied'
+  | 'interrupted'
+  | 'expired';
 
 export interface PermissionItem {
   kind: 'permission';
