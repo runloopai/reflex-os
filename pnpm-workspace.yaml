@@ -7,17 +7,17 @@ packages:
   - sdk/*
 
 catalog:
-  '@tanstack/react-query': ^5.101.2
+  '@tanstack/react-query': ^5.101.4
   '@types/node': ^24.10.1
-  '@types/react': ^19.2.17
-  react: ^19.2.7
+  '@types/react': ^19.2.18
+  react: ^19.2.8
   react-markdown: ^10.1.0
   remark-gfm: ^4.0.1
   tsx: ^4.23.5
   typescript: ~5.9.3
   vite: ^7.3.1
   vitest: ^4.1.10
-  zod: ^4.3.6
+  zod: ^4.4.3
 
 # sdk/tui bundles itself with esbuild, which needs its postinstall to fetch
 # the platform binary. Without this pnpm silently skips it and the build
