@@ -1043,6 +1043,41 @@ export const unpinAgent = async (id: string, options?: RequestInit): Promise<unp
 );}
 
 
+export type markAgentUnreadResponse200 = {
+  data: AgentView
+  status: 200
+}
+
+export type markAgentUnreadResponseSuccess = (markAgentUnreadResponse200) & {
+  headers: Headers;
+};
+;
+
+export type markAgentUnreadResponse = (markAgentUnreadResponseSuccess)
+
+export const getMarkAgentUnreadUrl = (id: string,) => {
+
+
+
+
+  return `/agents/${encodeURIComponent(String(id))}/unread`
+}
+
+/**
+ * @summary Mark the agent unread for the current user.
+ */
+export const markAgentUnread = async (id: string, options?: RequestInit): Promise<markAgentUnreadResponse> => {
+
+  return apiFetch<markAgentUnreadResponse>(getMarkAgentUnreadUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
 export type recordAgentViewResponse200 = {
   data: AgentView
   status: 200

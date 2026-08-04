@@ -1492,6 +1492,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "markAgentUnread",
+    "method": "POST",
+    "path": "/agents/{id}/unread",
+    "summary": "Mark the agent unread for the current user.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "markOrgPluginsConfigured",
     "method": "POST",
     "path": "/organizations/{id}/plugins/mark-configured",

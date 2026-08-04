@@ -1955,6 +1955,67 @@ export const useUnpinAgent = <TError = unknown,
       return useMutation(getUnpinAgentMutationOptions(options));
     }
     /**
+ * @summary Mark the agent unread for the current user.
+ */
+export const markAgentUnread = (
+    id: string,
+ options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
+) => {
+
+
+      return apiFetch<AgentView>(
+      {url: `/agents/${encodeURIComponent(String(id))}/unread`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+export const getMarkAgentUnreadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAgentUnread>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markAgentUnread>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['markAgentUnread'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markAgentUnread>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  markAgentUnread(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkAgentUnreadMutationResult = NonNullable<Awaited<ReturnType<typeof markAgentUnread>>>
+
+    export type MarkAgentUnreadMutationError = unknown
+
+    /**
+ * @summary Mark the agent unread for the current user.
+ */
+export const useMarkAgentUnread = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markAgentUnread>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markAgentUnread>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getMarkAgentUnreadMutationOptions(options));
+    }
+    /**
  * @summary Record that the current user has viewed the agent.
  */
 export const recordAgentView = (
