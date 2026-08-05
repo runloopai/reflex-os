@@ -158,3 +158,7 @@ The hooks share the transport configured with `configureReflex`, including org s
 ## Regenerating (maintainers)
 
 The functions under `src/generated/` (root entry) and the hooks under `src/react/` are produced by orval from `openapi/openapi.public.json`. Regenerate with `pnpm client:generate` at the repo root; do not edit generated files by hand. The admin (`/admin/*`) surface is intentionally excluded and never ships in this package.
+
+`pnpm install` performs this generation automatically. Both directories are
+gitignored local artifacts; commit the OpenAPI specs and hand-authored exports,
+not the generated client files.

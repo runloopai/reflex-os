@@ -26,7 +26,10 @@ Run `pnpm format` before committing.
 
 ## Generated and synchronized sources
 
-Do not edit `client/src/generated/` or `client/src/react/` by hand. They are generated from the public OpenAPI document. From the repository root, run:
+Do not edit or commit `client/src/generated/` or `client/src/react/`. They are
+gitignored and generated from the committed public OpenAPI document during
+`pnpm install`. To regenerate and validate them explicitly, run from the
+repository root:
 
 ```bash
 pnpm api:generate

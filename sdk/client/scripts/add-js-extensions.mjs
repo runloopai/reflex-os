@@ -9,8 +9,8 @@
  * fully-specified relative imports. Runs as the `reflexSdk` and `reflex`
  * projects' `afterAllFilesWrite` hook in `orval.config.ts` (covering both
  * `src/generated` and `src/react`), so `pnpm client:generate` always produces
- * the rewritten (and therefore committed) form and `pnpm client:check` stays
- * drift-free. Idempotent: already-suffixed specifiers are left alone.
+ * Node-ready local output. Idempotent: already-suffixed specifiers are left
+ * alone.
  */
 import { readdirSync, readFileSync, writeFileSync, statSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

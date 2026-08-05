@@ -6,6 +6,10 @@ dist/
 .env
 .env.*
 
+# Generated from the committed public OpenAPI spec during `pnpm install`.
+sdk/client/src/generated/
+sdk/client/src/react/
+
 # Generated on install. The mirror is itself generated, so a committed
 # lockfile would go stale on the next export with nothing to reconcile it.
 pnpm-lock.yaml

@@ -30,4 +30,7 @@ Report vulnerabilities through the repository's [security policy](../.github/SEC
 Constraints:
 
 - No runtime dependencies on private `@reflex/*` workspace packages. Contract shapes that the server and external clients must agree on live in `@runloop/reflex-contract`, which `@reflex/shared` re-exports, rather than being duplicated.
-- `sdk/client/src/generated/` is orval output (see `orval.config.ts` at the repo root). Regenerate with `pnpm client:generate`; `pnpm client:check` fails CI on drift.
+- `sdk/client/src/generated/` and `sdk/client/src/react/` are gitignored orval
+  output (see `orval.config.ts` at the repo root). `pnpm install` generates
+  them from the committed public OpenAPI spec; `pnpm client:check` verifies
+  codegen and the hand-authored exports in CI.

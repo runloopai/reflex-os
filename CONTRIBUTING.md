@@ -36,7 +36,10 @@ Maintainers apply accepted changes upstream and run the wider monorepo's suite b
 
 Some directories are generated. Editing them by hand does not stick, because the generator overwrites them upstream.
 
-- `sdk/client/src/generated/` and `sdk/client/src/react/` are generated from the public OpenAPI document. If one of these looks wrong, the fix belongs in the API or the generator, so describe the problem in an issue.
+- `sdk/client/src/generated/` and `sdk/client/src/react/` are gitignored and
+  generated during `pnpm install` from the committed public OpenAPI document.
+  If one of these looks wrong, the fix belongs in the API or the generator, so
+  describe the problem in an issue.
 - `sdk/ui/src/` is copied from `sdk/chat-kit/registry/`, which is the source of truth for the chat components. Edit the registry, not the copy. Tests fail on drift.
 
 ### Checklist
