@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/runloopai/reflex/compare/reflex-chat-kit-v0.2.0...reflex-chat-kit-v0.2.1) (2026-08-05)
+
+
+### Reverts
+
+* Revert "chore(deps): upgrade root tooling dependencies" ([#2988](https://github.com/runloopai/reflex/issues/2988)) ([7cec6d3](https://github.com/runloopai/reflex/commit/7cec6d3ac008151e41b8e7da5237e4cd282c0eb4))
+
 ## [0.2.0](https://github.com/runloopai/reflex/compare/reflex-chat-kit-v0.1.0...reflex-chat-kit-v0.2.0) (2026-08-04)
 
 

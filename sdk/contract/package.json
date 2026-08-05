@@ -1,6 +1,6 @@
 {
   "name": "@runloop/reflex-contract",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Zod schemas and helpers for the Reflex contract: attachments, sandbox options, and agent references. Shared by the Reflex server, its web app, and the published SDKs.",
   "license": "MIT",
   "keywords": [

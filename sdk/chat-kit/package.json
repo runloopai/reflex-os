@@ -1,6 +1,6 @@
 {
   "name": "@runloop/reflex-chat-kit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Scaffold a customizable Reflex chat pane into your React app. Components are copied into your codebase, shadcn-style.",
   "license": "MIT",
   "keywords": [

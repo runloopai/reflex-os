@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.2.0...reflex-cli-v0.3.0) (2026-08-05)
+
+
+### Features
+
+* **web:** mark an agent unread from the Mark as picker ([#2995](https://github.com/runloopai/reflex/issues/2995)) ([b212b42](https://github.com/runloopai/reflex/commit/b212b429773188f68badd830eb5cc7a7e3b6eafa))
+
+
+### Reverts
+
+* Revert "chore(deps): upgrade root tooling dependencies" ([#2988](https://github.com/runloopai/reflex/issues/2988)) ([7cec6d3](https://github.com/runloopai/reflex/commit/7cec6d3ac008151e41b8e7da5237e4cd282c0eb4))
+
 ## [0.2.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.1.0...reflex-cli-v0.2.0) (2026-08-04)
 
 
