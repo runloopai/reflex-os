@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.3.0...reflex-client-v0.4.0) (2026-08-05)
+
+
+### Features
+
+* **onboarding:** make org setup business profile driven & rm plugins sections ([#2819](https://github.com/runloopai/reflex/issues/2819)) ([3a1a6ec](https://github.com/runloopai/reflex/commit/3a1a6ecb5e95af56f2c7a22a66cb2238cd5318a6))
+
 ## [0.3.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.2.0...reflex-client-v0.3.0) (2026-08-05)
 
 
