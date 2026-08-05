@@ -79,6 +79,73 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "adminGetOrgSandboxProvider",
+    "method": "GET",
+    "path": "/organizations/{id}/sandbox-provider",
+    "summary": "Report a target org's sandbox provider key and account.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "adminGetOrgSandboxProviderHealth",
+    "method": "GET",
+    "path": "/organizations/{id}/sandbox-provider/health",
+    "summary": "Report whether a target org's stored sandbox key works.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "adminGetOrgSecretsStatus",
+    "method": "GET",
+    "path": "/organizations/{id}/secrets/status",
+    "summary": "Report which of a target org's secrets are set.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "adminSetOrgSandboxProvider",
+    "method": "PUT",
+    "path": "/organizations/{id}/sandbox-provider",
+    "summary": "Validate and save a target org's sandbox provider API key.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "adminSetOrgSecret",
+    "method": "PUT",
+    "path": "/organizations/{id}/secrets/{name}",
+    "summary": "Save a target org's secret by name.",
+    "pathParams": [
+      "id",
+      "name"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "adminValidateOrgSandboxProvider",
+    "method": "POST",
+    "path": "/organizations/{id}/sandbox-provider/validate",
+    "summary": "Check a sandbox provider API key against a target org's pin without saving it.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "approveDeviceAuth",
     "method": "POST",
     "path": "/device/approve",
@@ -143,21 +210,18 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "completeOrgBootstrap",
     "method": "POST",
-    "path": "/organizations/{id}/bootstrap-complete",
+    "path": "/org-setup/bootstrap-complete",
     "summary": "Mark the org's guided setup as complete.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
   {
     "id": "completePluginSetupStep",
     "method": "POST",
-    "path": "/organizations/{id}/plugins/{plugin}/setup-steps/{step}/complete",
+    "path": "/org-setup/plugins/{plugin}/setup-steps/{step}/complete",
     "summary": "Mark a plugin setup step as complete.",
     "pathParams": [
-      "id",
       "plugin",
       "step"
     ],
@@ -167,11 +231,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "copyOrgKeyMaterial",
     "method": "POST",
-    "path": "/organizations/{id}/copy-key-material",
+    "path": "/org-setup/copy-key-material",
     "summary": "Copy sandbox and model provider keys from another org.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": true
   },
@@ -856,22 +918,18 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "getOrgSecretsStatus",
     "method": "GET",
-    "path": "/organizations/{id}/secrets/status",
+    "path": "/org-setup/secrets/status",
     "summary": "Report which of the org's secrets are set.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
   {
     "id": "getOrgSetupState",
     "method": "GET",
-    "path": "/organizations/{id}/org-setup/state",
+    "path": "/org-setup/state",
     "summary": "Report the org's guided setup progress.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
@@ -939,22 +997,18 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "getSandboxProvider",
     "method": "GET",
-    "path": "/organizations/{id}/sandbox-provider",
+    "path": "/org-setup/sandbox-provider",
     "summary": "Report the org's sandbox provider key and account.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
   {
     "id": "getSandboxProviderHealth",
     "method": "GET",
-    "path": "/organizations/{id}/sandbox-provider/health",
+    "path": "/org-setup/sandbox-provider/health",
     "summary": "Report whether the org's stored sandbox key works.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
@@ -1396,11 +1450,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "listPluginSetupSteps",
     "method": "GET",
-    "path": "/organizations/{id}/plugins/setup-steps",
+    "path": "/org-setup/plugins/setup-steps",
     "summary": "List setup steps for the org's active plugins.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
@@ -1503,17 +1555,6 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
-    "id": "markOrgPluginsConfigured",
-    "method": "POST",
-    "path": "/organizations/{id}/plugins/mark-configured",
-    "summary": "Mark the org's plugin selection as configured.",
-    "pathParams": [
-      "id"
-    ],
-    "queryParams": [],
-    "hasBody": false
-  },
-  {
     "id": "pinAgent",
     "method": "POST",
     "path": "/agents/{id}/pin",
@@ -1548,11 +1589,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "provisionOrganizationRunloopAccount",
     "method": "POST",
-    "path": "/organizations/{id}/runloop-provider/provision",
+    "path": "/org-setup/runloop-provider/provision",
     "summary": "Provision a Runloop account for an organization",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
@@ -1858,10 +1897,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "setOrgSecret",
     "method": "PUT",
-    "path": "/organizations/{id}/secrets/{name}",
+    "path": "/org-setup/secrets/{name}",
     "summary": "Save an org secret by name.",
     "pathParams": [
-      "id",
       "name"
     ],
     "queryParams": [],
@@ -1870,11 +1908,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "setSandboxProvider",
     "method": "PUT",
-    "path": "/organizations/{id}/sandbox-provider",
+    "path": "/org-setup/sandbox-provider",
     "summary": "Validate and save the org's sandbox provider API key.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": true
   },
@@ -1935,10 +1971,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "testPluginSetupStep",
     "method": "POST",
-    "path": "/organizations/{id}/plugins/{plugin}/setup-steps/{step}/test",
+    "path": "/org-setup/plugins/{plugin}/setup-steps/{step}/test",
     "summary": "Run a plugin setup step's connection test.",
     "pathParams": [
-      "id",
       "plugin",
       "step"
     ],
@@ -2164,11 +2199,9 @@ export const API_OPS: readonly ApiOp[] = [
   {
     "id": "validateSandboxProvider",
     "method": "POST",
-    "path": "/organizations/{id}/sandbox-provider/validate",
+    "path": "/org-setup/sandbox-provider/validate",
     "summary": "Check a sandbox provider API key without saving it.",
-    "pathParams": [
-      "id"
-    ],
+    "pathParams": [],
     "queryParams": [],
     "hasBody": true
   }

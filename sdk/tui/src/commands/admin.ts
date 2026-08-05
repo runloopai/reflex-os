@@ -3,6 +3,12 @@ import { createInterface } from 'node:readline';
 import {
   addOrgMember,
   addTeamMember,
+  adminGetOrgSandboxProvider,
+  adminGetOrgSandboxProviderHealth,
+  adminGetOrgSecretsStatus,
+  adminSetOrgSandboxProvider,
+  adminSetOrgSecret,
+  adminValidateOrgSandboxProvider,
   assignOrgRole,
   createMyModelProviderSecret,
   createOrgInvite,
@@ -17,11 +23,8 @@ import {
   getOrgPlugin,
   getOrgPluginSettings,
   getOrgRole,
-  getOrgSecretsStatus,
   getOrganization,
   getReflexConfig,
-  getSandboxProvider,
-  getSandboxProviderHealth,
   getTeam,
   getUser,
   getUserProviders,
@@ -46,13 +49,10 @@ import {
   setFeatureFlag,
   setFeatureFlagOverride,
   setOrgPluginSettings,
-  setOrgSecret,
-  setSandboxProvider,
   setTeamMemberRole,
   uninstallOrgPlugin,
   updateOrganization,
   updateTeam,
-  validateSandboxProvider,
   CreateMyModelProviderSecretBodyProvider,
   CreateMyModelProviderSecretBodyType,
   type CreateMyModelProviderSecretBody,
@@ -235,6 +235,13 @@ async function resolveSecretValue(
  * Resolve the org id for a path-scoped operation: an explicit argument
  * first, then the active org from `--org` / config. Slugs resolve to ids
  * through the membership list, since the org routes take ids only.
+ *
+ * An unresolvable slug is a hard error, never passed through raw: several
+ * of these commands write secrets to the org slot named by this value, so
+ * a slug that silently reached the server would land a live credential in
+ * an orphaned slot while reporting success. Platform admins targeting an
+ * org they are not a member of (the admin support surface) cannot resolve
+ * its slug through their own membership list — they must pass the id.
  */
 async function resolveOrgId(explicit?: string): Promise<string> {
   const raw = explicit && explicit.trim() !== '' ? explicit : getReflexConfig().organizationId;
@@ -246,7 +253,13 @@ async function resolveOrgId(explicit?: string): Promise<string> {
   if (raw.startsWith('org_')) return raw;
   const { organizations } = (await listOrganizations()).data;
   const match = organizations.find((m) => m.organization.id === raw || m.organization.slug === raw);
-  return match ? match.organization.id : raw;
+  if (!match) {
+    throw new UsageError(
+      `"${raw}" does not match any of your organizations. For an org you are ` +
+        'not a member of, pass its id (org_…) instead of its slug.',
+    );
+  }
+  return match.organization.id;
 }
 
 /** Accept a user id as-is; resolve an email through the visible user list. */
@@ -854,12 +867,12 @@ export function adminCommandGroups(): CommandGroup[] {
     },
     {
       noun: 'orgs sandbox',
-      summary: "manage the org's sandbox provider key",
+      summary: "manage the org's sandbox provider key (platform admin)",
       commands: [
         {
           name: 'show',
           summary: "report the org's sandbox provider key and account",
-          fetch: async () => (await getSandboxProvider(await resolveOrgId())).data,
+          fetch: async () => (await adminGetOrgSandboxProvider(await resolveOrgId())).data,
           render: (data) => {
             const view = data as unknown as {
               provider: string;
@@ -897,7 +910,7 @@ export function adminCommandGroups(): CommandGroup[] {
               '--api-key',
               'Sandbox provider API key (hidden): ',
             );
-            return (await setSandboxProvider(await resolveOrgId(), { apiKey })).data;
+            return (await adminSetOrgSandboxProvider(await resolveOrgId(), { apiKey })).data;
           },
           render: (data) => {
             const { account } = data as unknown as { account?: SandboxAccountView };
@@ -909,7 +922,7 @@ export function adminCommandGroups(): CommandGroup[] {
         {
           name: 'health',
           summary: "report whether the org's stored sandbox key works",
-          fetch: async () => (await getSandboxProviderHealth(await resolveOrgId())).data,
+          fetch: async () => (await adminGetOrgSandboxProviderHealth(await resolveOrgId())).data,
           render: (data) => {
             const { status, account } = data as unknown as {
               status: string;
@@ -941,7 +954,7 @@ export function adminCommandGroups(): CommandGroup[] {
               '--api-key',
               'Sandbox provider API key (hidden): ',
             );
-            return (await validateSandboxProvider(await resolveOrgId(), { apiKey })).data;
+            return (await adminValidateOrgSandboxProvider(await resolveOrgId(), { apiKey })).data;
           },
           render: (data) => {
             const { account } = data as unknown as { account?: SandboxAccountView };
@@ -995,7 +1008,7 @@ export function adminCommandGroups(): CommandGroup[] {
     },
     {
       noun: 'orgs secrets',
-      summary: "manage the org's secrets",
+      summary: "manage the org's secrets (platform admin)",
       commands: [
         {
           name: 'set <name>',
@@ -1009,14 +1022,14 @@ export function adminCommandGroups(): CommandGroup[] {
               '--value',
               `Value for ${name} (hidden): `,
             );
-            return (await setOrgSecret(await resolveOrgId(), name, { value })).data;
+            return (await adminSetOrgSecret(await resolveOrgId(), name, { value })).data;
           },
           render: (_data, [name]) => `Saved ${name}.`,
         },
         {
           name: 'status',
           summary: "report which of the org's secrets are set",
-          fetch: async () => (await getOrgSecretsStatus(await resolveOrgId())).data,
+          fetch: async () => (await adminGetOrgSecretsStatus(await resolveOrgId())).data,
           render: (data) => {
             const { secrets } = data as unknown as { secrets: SecretStatusItemView[] };
             if (!secrets.length) return 'No secrets.';

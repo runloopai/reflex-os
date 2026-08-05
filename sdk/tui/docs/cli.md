@@ -1020,7 +1020,7 @@ Options:
 reflex-cli orgs sandbox [options] [command]
 ```
 
-manage the org's sandbox provider key
+manage the org's sandbox provider key (platform admin)
 
 #### orgs sandbox health
 
@@ -1078,7 +1078,7 @@ Options:
 reflex-cli orgs secrets [options] [command]
 ```
 
-manage the org's secrets
+manage the org's secrets (platform admin)
 
 #### orgs secrets set
 

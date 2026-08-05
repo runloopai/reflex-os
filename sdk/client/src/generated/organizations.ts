@@ -7,16 +7,17 @@
 import type {
   AddOrgEmailDomainBody,
   AddOrgMemberBody,
+  AdminSetOrgSandboxProviderBody,
+  AdminSetOrgSecretBody,
+  AdminValidateOrgSandboxProviderBody,
   AssignOrgRoleBody,
   BaseImageView,
-  CopyOrgKeyMaterialBody,
   CreateOrgInviteBody,
   CreateOrgModelProviderSecretBody,
   CreateOrgTeamBody,
   CreateOrganizationBody,
   CreateTeamModelProviderSecretBody,
   CreateTeamSecretBody,
-  ErrorEnvelope,
   ListLlmTaskAssignments200,
   ListOrgInvitesParams,
   ListOrgModelProviderSecretDependents200,
@@ -26,20 +27,16 @@ import type {
   LlmTaskAssignment,
   ModelProviderSecret,
   Organization,
-  ProvisionOrganizationRunloopAccount200,
   RevokeOrgRoleBody,
   ScopedSecret,
   SetBaseImageOverridesBody,
   SetOrgPluginSettingsBody,
-  SetOrgSecretBody,
-  SetSandboxProviderBody,
   UpdateOrgModelProviderSecretBody,
   UpdateOrgRoleBody,
   UpdateOrganizationBody,
   UpdateTeamModelProviderSecretBody,
   UpdateTeamSecretBody,
-  UpsertLlmTaskAssignmentBody,
-  ValidateSandboxProviderBody
+  UpsertLlmTaskAssignmentBody
 } from './model/index.js';
 
 import { apiFetch } from '../http.js';
@@ -327,78 +324,6 @@ export const rebuildBaseImage = async (id: string, options?: RequestInit): Promi
     method: 'POST'
 
 
-  }
-);}
-
-
-export type completeOrgBootstrapResponse200 = {
-  data: void
-  status: 200
-}
-
-export type completeOrgBootstrapResponseSuccess = (completeOrgBootstrapResponse200) & {
-  headers: Headers;
-};
-;
-
-export type completeOrgBootstrapResponse = (completeOrgBootstrapResponseSuccess)
-
-export const getCompleteOrgBootstrapUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/bootstrap-complete`
-}
-
-/**
- * @summary Mark the org's guided setup as complete.
- */
-export const completeOrgBootstrap = async (id: string, options?: RequestInit): Promise<completeOrgBootstrapResponse> => {
-
-  return apiFetch<completeOrgBootstrapResponse>(getCompleteOrgBootstrapUrl(id),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-export type copyOrgKeyMaterialResponse200 = {
-  data: void
-  status: 200
-}
-
-export type copyOrgKeyMaterialResponseSuccess = (copyOrgKeyMaterialResponse200) & {
-  headers: Headers;
-};
-;
-
-export type copyOrgKeyMaterialResponse = (copyOrgKeyMaterialResponseSuccess)
-
-export const getCopyOrgKeyMaterialUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/copy-key-material`
-}
-
-/**
- * The caller needs secrets access on both the source and target orgs.
- * @summary Copy sandbox and model provider keys from another org.
- */
-export const copyOrgKeyMaterial = async (id: string,
-    copyOrgKeyMaterialBody: CopyOrgKeyMaterialBody, options?: RequestInit): Promise<copyOrgKeyMaterialResponse> => {
-
-  return apiFetch<copyOrgKeyMaterialResponse>(getCopyOrgKeyMaterialUrl(id),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(copyOrgKeyMaterialBody)
   }
 );}
 
@@ -737,41 +662,6 @@ export const removeOrgMember = async (id: string,
 );}
 
 
-export type getOrgSetupStateResponse200 = {
-  data: void
-  status: 200
-}
-
-export type getOrgSetupStateResponseSuccess = (getOrgSetupStateResponse200) & {
-  headers: Headers;
-};
-;
-
-export type getOrgSetupStateResponse = (getOrgSetupStateResponseSuccess)
-
-export const getGetOrgSetupStateUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/org-setup/state`
-}
-
-/**
- * @summary Report the org's guided setup progress.
- */
-export const getOrgSetupState = async (id: string, options?: RequestInit): Promise<getOrgSetupStateResponse> => {
-
-  return apiFetch<getOrgSetupStateResponse>(getGetOrgSetupStateUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
 export type listOrgPluginsResponse200 = {
   data: void
   status: 200
@@ -1030,154 +920,6 @@ export const previewOrgPluginUninstall = async (id: string,
 );}
 
 
-export type completePluginSetupStepResponse200 = {
-  data: void
-  status: 200
-}
-
-export type completePluginSetupStepResponseSuccess = (completePluginSetupStepResponse200) & {
-  headers: Headers;
-};
-;
-
-export type completePluginSetupStepResponse = (completePluginSetupStepResponseSuccess)
-
-export const getCompletePluginSetupStepUrl = (id: string,
-    plugin: string,
-    step: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/plugins/${encodeURIComponent(String(plugin))}/setup-steps/${encodeURIComponent(String(step))}/complete`
-}
-
-/**
- * @summary Mark a plugin setup step as complete.
- */
-export const completePluginSetupStep = async (id: string,
-    plugin: string,
-    step: string, options?: RequestInit): Promise<completePluginSetupStepResponse> => {
-
-  return apiFetch<completePluginSetupStepResponse>(getCompletePluginSetupStepUrl(id,plugin,step),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-export type testPluginSetupStepResponse200 = {
-  data: void
-  status: 200
-}
-
-export type testPluginSetupStepResponseSuccess = (testPluginSetupStepResponse200) & {
-  headers: Headers;
-};
-;
-
-export type testPluginSetupStepResponse = (testPluginSetupStepResponseSuccess)
-
-export const getTestPluginSetupStepUrl = (id: string,
-    plugin: string,
-    step: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/plugins/${encodeURIComponent(String(plugin))}/setup-steps/${encodeURIComponent(String(step))}/test`
-}
-
-/**
- * @summary Run a plugin setup step's connection test.
- */
-export const testPluginSetupStep = async (id: string,
-    plugin: string,
-    step: string, options?: RequestInit): Promise<testPluginSetupStepResponse> => {
-
-  return apiFetch<testPluginSetupStepResponse>(getTestPluginSetupStepUrl(id,plugin,step),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-export type markOrgPluginsConfiguredResponse200 = {
-  data: void
-  status: 200
-}
-
-export type markOrgPluginsConfiguredResponseSuccess = (markOrgPluginsConfiguredResponse200) & {
-  headers: Headers;
-};
-;
-
-export type markOrgPluginsConfiguredResponse = (markOrgPluginsConfiguredResponseSuccess)
-
-export const getMarkOrgPluginsConfiguredUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/plugins/mark-configured`
-}
-
-/**
- * @summary Mark the org's plugin selection as configured.
- */
-export const markOrgPluginsConfigured = async (id: string, options?: RequestInit): Promise<markOrgPluginsConfiguredResponse> => {
-
-  return apiFetch<markOrgPluginsConfiguredResponse>(getMarkOrgPluginsConfiguredUrl(id),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-export type listPluginSetupStepsResponse200 = {
-  data: void
-  status: 200
-}
-
-export type listPluginSetupStepsResponseSuccess = (listPluginSetupStepsResponse200) & {
-  headers: Headers;
-};
-;
-
-export type listPluginSetupStepsResponse = (listPluginSetupStepsResponseSuccess)
-
-export const getListPluginSetupStepsUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/plugins/setup-steps`
-}
-
-/**
- * @summary List setup steps for the org's active plugins.
- */
-export const listPluginSetupSteps = async (id: string, options?: RequestInit): Promise<listPluginSetupStepsResponse> => {
-
-  return apiFetch<listPluginSetupStepsResponse>(getListPluginSetupStepsUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
 export type listOrgRolesResponse200 = {
   data: void
   status: 200
@@ -1361,76 +1103,19 @@ export const revokeOrgRole = async (id: string,
 );}
 
 
-export type provisionOrganizationRunloopAccountResponse200 = {
-  data: ProvisionOrganizationRunloopAccount200
-  status: 200
-}
-
-export type provisionOrganizationRunloopAccountResponse400 = {
-  data: ErrorEnvelope
-  status: 400
-}
-
-export type provisionOrganizationRunloopAccountResponse404 = {
-  data: ErrorEnvelope
-  status: 404
-}
-
-export type provisionOrganizationRunloopAccountResponse409 = {
-  data: ErrorEnvelope
-  status: 409
-}
-
-export type provisionOrganizationRunloopAccountResponse503 = {
-  data: ErrorEnvelope
-  status: 503
-}
-
-export type provisionOrganizationRunloopAccountResponseSuccess = (provisionOrganizationRunloopAccountResponse200) & {
-  headers: Headers;
-};
-export type provisionOrganizationRunloopAccountResponseError = (provisionOrganizationRunloopAccountResponse400 | provisionOrganizationRunloopAccountResponse404 | provisionOrganizationRunloopAccountResponse409 | provisionOrganizationRunloopAccountResponse503) & {
-  headers: Headers;
-};
-
-export type provisionOrganizationRunloopAccountResponse = (provisionOrganizationRunloopAccountResponseSuccess | provisionOrganizationRunloopAccountResponseError)
-
-export const getProvisionOrganizationRunloopAccountUrl = (id: string,) => {
-
-
-
-
-  return `/organizations/${encodeURIComponent(String(id))}/runloop-provider/provision`
-}
-
-/**
- * @summary Provision a Runloop account for an organization
- */
-export const provisionOrganizationRunloopAccount = async (id: string, options?: RequestInit): Promise<provisionOrganizationRunloopAccountResponse> => {
-
-  return apiFetch<provisionOrganizationRunloopAccountResponse>(getProvisionOrganizationRunloopAccountUrl(id),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
-export type getSandboxProviderResponse200 = {
+export type adminGetOrgSandboxProviderResponse200 = {
   data: void
   status: 200
 }
 
-export type getSandboxProviderResponseSuccess = (getSandboxProviderResponse200) & {
+export type adminGetOrgSandboxProviderResponseSuccess = (adminGetOrgSandboxProviderResponse200) & {
   headers: Headers;
 };
 ;
 
-export type getSandboxProviderResponse = (getSandboxProviderResponseSuccess)
+export type adminGetOrgSandboxProviderResponse = (adminGetOrgSandboxProviderResponseSuccess)
 
-export const getGetSandboxProviderUrl = (id: string,) => {
+export const getAdminGetOrgSandboxProviderUrl = (id: string,) => {
 
 
 
@@ -1439,11 +1124,11 @@ export const getGetSandboxProviderUrl = (id: string,) => {
 }
 
 /**
- * @summary Report the org's sandbox provider key and account.
+ * @summary Report a target org's sandbox provider key and account.
  */
-export const getSandboxProvider = async (id: string, options?: RequestInit): Promise<getSandboxProviderResponse> => {
+export const adminGetOrgSandboxProvider = async (id: string, options?: RequestInit): Promise<adminGetOrgSandboxProviderResponse> => {
 
-  return apiFetch<getSandboxProviderResponse>(getGetSandboxProviderUrl(id),
+  return apiFetch<adminGetOrgSandboxProviderResponse>(getAdminGetOrgSandboxProviderUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1453,19 +1138,19 @@ export const getSandboxProvider = async (id: string, options?: RequestInit): Pro
 );}
 
 
-export type setSandboxProviderResponse200 = {
+export type adminSetOrgSandboxProviderResponse200 = {
   data: void
   status: 200
 }
 
-export type setSandboxProviderResponseSuccess = (setSandboxProviderResponse200) & {
+export type adminSetOrgSandboxProviderResponseSuccess = (adminSetOrgSandboxProviderResponse200) & {
   headers: Headers;
 };
 ;
 
-export type setSandboxProviderResponse = (setSandboxProviderResponseSuccess)
+export type adminSetOrgSandboxProviderResponse = (adminSetOrgSandboxProviderResponseSuccess)
 
-export const getSetSandboxProviderUrl = (id: string,) => {
+export const getAdminSetOrgSandboxProviderUrl = (id: string,) => {
 
 
 
@@ -1474,34 +1159,34 @@ export const getSetSandboxProviderUrl = (id: string,) => {
 }
 
 /**
- * @summary Validate and save the org's sandbox provider API key.
+ * @summary Validate and save a target org's sandbox provider API key.
  */
-export const setSandboxProvider = async (id: string,
-    setSandboxProviderBody: SetSandboxProviderBody, options?: RequestInit): Promise<setSandboxProviderResponse> => {
+export const adminSetOrgSandboxProvider = async (id: string,
+    adminSetOrgSandboxProviderBody: AdminSetOrgSandboxProviderBody, options?: RequestInit): Promise<adminSetOrgSandboxProviderResponse> => {
 
-  return apiFetch<setSandboxProviderResponse>(getSetSandboxProviderUrl(id),
+  return apiFetch<adminSetOrgSandboxProviderResponse>(getAdminSetOrgSandboxProviderUrl(id),
   {
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(setSandboxProviderBody)
+    body: JSON.stringify(adminSetOrgSandboxProviderBody)
   }
 );}
 
 
-export type getSandboxProviderHealthResponse200 = {
+export type adminGetOrgSandboxProviderHealthResponse200 = {
   data: void
   status: 200
 }
 
-export type getSandboxProviderHealthResponseSuccess = (getSandboxProviderHealthResponse200) & {
+export type adminGetOrgSandboxProviderHealthResponseSuccess = (adminGetOrgSandboxProviderHealthResponse200) & {
   headers: Headers;
 };
 ;
 
-export type getSandboxProviderHealthResponse = (getSandboxProviderHealthResponseSuccess)
+export type adminGetOrgSandboxProviderHealthResponse = (adminGetOrgSandboxProviderHealthResponseSuccess)
 
-export const getGetSandboxProviderHealthUrl = (id: string,) => {
+export const getAdminGetOrgSandboxProviderHealthUrl = (id: string,) => {
 
 
 
@@ -1510,11 +1195,11 @@ export const getGetSandboxProviderHealthUrl = (id: string,) => {
 }
 
 /**
- * @summary Report whether the org's stored sandbox key works.
+ * @summary Report whether a target org's stored sandbox key works.
  */
-export const getSandboxProviderHealth = async (id: string, options?: RequestInit): Promise<getSandboxProviderHealthResponse> => {
+export const adminGetOrgSandboxProviderHealth = async (id: string, options?: RequestInit): Promise<adminGetOrgSandboxProviderHealthResponse> => {
 
-  return apiFetch<getSandboxProviderHealthResponse>(getGetSandboxProviderHealthUrl(id),
+  return apiFetch<adminGetOrgSandboxProviderHealthResponse>(getAdminGetOrgSandboxProviderHealthUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1524,19 +1209,19 @@ export const getSandboxProviderHealth = async (id: string, options?: RequestInit
 );}
 
 
-export type validateSandboxProviderResponse200 = {
+export type adminValidateOrgSandboxProviderResponse200 = {
   data: void
   status: 200
 }
 
-export type validateSandboxProviderResponseSuccess = (validateSandboxProviderResponse200) & {
+export type adminValidateOrgSandboxProviderResponseSuccess = (adminValidateOrgSandboxProviderResponse200) & {
   headers: Headers;
 };
 ;
 
-export type validateSandboxProviderResponse = (validateSandboxProviderResponseSuccess)
+export type adminValidateOrgSandboxProviderResponse = (adminValidateOrgSandboxProviderResponseSuccess)
 
-export const getValidateSandboxProviderUrl = (id: string,) => {
+export const getAdminValidateOrgSandboxProviderUrl = (id: string,) => {
 
 
 
@@ -1545,34 +1230,34 @@ export const getValidateSandboxProviderUrl = (id: string,) => {
 }
 
 /**
- * @summary Check a sandbox provider API key without saving it.
+ * @summary Check a sandbox provider API key against a target org's pin without saving it.
  */
-export const validateSandboxProvider = async (id: string,
-    validateSandboxProviderBody: ValidateSandboxProviderBody, options?: RequestInit): Promise<validateSandboxProviderResponse> => {
+export const adminValidateOrgSandboxProvider = async (id: string,
+    adminValidateOrgSandboxProviderBody: AdminValidateOrgSandboxProviderBody, options?: RequestInit): Promise<adminValidateOrgSandboxProviderResponse> => {
 
-  return apiFetch<validateSandboxProviderResponse>(getValidateSandboxProviderUrl(id),
+  return apiFetch<adminValidateOrgSandboxProviderResponse>(getAdminValidateOrgSandboxProviderUrl(id),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(validateSandboxProviderBody)
+    body: JSON.stringify(adminValidateOrgSandboxProviderBody)
   }
 );}
 
 
-export type setOrgSecretResponse200 = {
+export type adminSetOrgSecretResponse200 = {
   data: void
   status: 200
 }
 
-export type setOrgSecretResponseSuccess = (setOrgSecretResponse200) & {
+export type adminSetOrgSecretResponseSuccess = (adminSetOrgSecretResponse200) & {
   headers: Headers;
 };
 ;
 
-export type setOrgSecretResponse = (setOrgSecretResponseSuccess)
+export type adminSetOrgSecretResponse = (adminSetOrgSecretResponseSuccess)
 
-export const getSetOrgSecretUrl = (id: string,
+export const getAdminSetOrgSecretUrl = (id: string,
     name: string,) => {
 
 
@@ -1582,35 +1267,35 @@ export const getSetOrgSecretUrl = (id: string,
 }
 
 /**
- * @summary Save an org secret by name.
+ * @summary Save a target org's secret by name.
  */
-export const setOrgSecret = async (id: string,
+export const adminSetOrgSecret = async (id: string,
     name: string,
-    setOrgSecretBody: SetOrgSecretBody, options?: RequestInit): Promise<setOrgSecretResponse> => {
+    adminSetOrgSecretBody: AdminSetOrgSecretBody, options?: RequestInit): Promise<adminSetOrgSecretResponse> => {
 
-  return apiFetch<setOrgSecretResponse>(getSetOrgSecretUrl(id,name),
+  return apiFetch<adminSetOrgSecretResponse>(getAdminSetOrgSecretUrl(id,name),
   {
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(setOrgSecretBody)
+    body: JSON.stringify(adminSetOrgSecretBody)
   }
 );}
 
 
-export type getOrgSecretsStatusResponse200 = {
+export type adminGetOrgSecretsStatusResponse200 = {
   data: void
   status: 200
 }
 
-export type getOrgSecretsStatusResponseSuccess = (getOrgSecretsStatusResponse200) & {
+export type adminGetOrgSecretsStatusResponseSuccess = (adminGetOrgSecretsStatusResponse200) & {
   headers: Headers;
 };
 ;
 
-export type getOrgSecretsStatusResponse = (getOrgSecretsStatusResponseSuccess)
+export type adminGetOrgSecretsStatusResponse = (adminGetOrgSecretsStatusResponseSuccess)
 
-export const getGetOrgSecretsStatusUrl = (id: string,) => {
+export const getAdminGetOrgSecretsStatusUrl = (id: string,) => {
 
 
 
@@ -1619,11 +1304,11 @@ export const getGetOrgSecretsStatusUrl = (id: string,) => {
 }
 
 /**
- * @summary Report which of the org's secrets are set.
+ * @summary Report which of a target org's secrets are set.
  */
-export const getOrgSecretsStatus = async (id: string, options?: RequestInit): Promise<getOrgSecretsStatusResponse> => {
+export const adminGetOrgSecretsStatus = async (id: string, options?: RequestInit): Promise<adminGetOrgSecretsStatusResponse> => {
 
-  return apiFetch<getOrgSecretsStatusResponse>(getGetOrgSecretsStatusUrl(id),
+  return apiFetch<adminGetOrgSecretsStatusResponse>(getAdminGetOrgSecretsStatusUrl(id),
   {
     ...options,
     method: 'GET'

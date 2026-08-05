@@ -27,16 +27,24 @@ import type {
 } from './model/addOrgMemberBody.js';
 
 import type {
+  AdminSetOrgSandboxProviderBody
+} from './model/adminSetOrgSandboxProviderBody.js';
+
+import type {
+  AdminSetOrgSecretBody
+} from './model/adminSetOrgSecretBody.js';
+
+import type {
+  AdminValidateOrgSandboxProviderBody
+} from './model/adminValidateOrgSandboxProviderBody.js';
+
+import type {
   AssignOrgRoleBody
 } from './model/assignOrgRoleBody.js';
 
 import type {
   BaseImageView
 } from './model/baseImageView.js';
-
-import type {
-  CopyOrgKeyMaterialBody
-} from './model/copyOrgKeyMaterialBody.js';
 
 import type {
   CreateOrgInviteBody
@@ -61,10 +69,6 @@ import type {
 import type {
   CreateTeamSecretBody
 } from './model/createTeamSecretBody.js';
-
-import type {
-  ErrorEnvelope
-} from './model/errorEnvelope.js';
 
 import type {
   ListLlmTaskAssignments200
@@ -103,10 +107,6 @@ import type {
 } from './model/organization.js';
 
 import type {
-  ProvisionOrganizationRunloopAccount200
-} from './model/provisionOrganizationRunloopAccount200.js';
-
-import type {
   RevokeOrgRoleBody
 } from './model/revokeOrgRoleBody.js';
 
@@ -121,14 +121,6 @@ import type {
 import type {
   SetOrgPluginSettingsBody
 } from './model/setOrgPluginSettingsBody.js';
-
-import type {
-  SetOrgSecretBody
-} from './model/setOrgSecretBody.js';
-
-import type {
-  SetSandboxProviderBody
-} from './model/setSandboxProviderBody.js';
 
 import type {
   UpdateOrgModelProviderSecretBody
@@ -153,10 +145,6 @@ import type {
 import type {
   UpsertLlmTaskAssignmentBody
 } from './model/upsertLlmTaskAssignmentBody.js';
-
-import type {
-  ValidateSandboxProviderBody
-} from './model/validateSandboxProviderBody.js';
 
 import { apiFetch } from '../react-mutator.js';
 
@@ -705,132 +693,6 @@ export const useRebuildBaseImage = <TError = unknown,
         TContext
       > => {
       return useMutation(getRebuildBaseImageMutationOptions(options));
-    }
-    /**
- * @summary Mark the org's guided setup as complete.
- */
-export const completeOrgBootstrap = (
-    id: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/bootstrap-complete`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-export const getCompleteOrgBootstrapMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOrgBootstrap>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof completeOrgBootstrap>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['completeOrgBootstrap'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeOrgBootstrap>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  completeOrgBootstrap(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CompleteOrgBootstrapMutationResult = NonNullable<Awaited<ReturnType<typeof completeOrgBootstrap>>>
-
-    export type CompleteOrgBootstrapMutationError = unknown
-
-    /**
- * @summary Mark the org's guided setup as complete.
- */
-export const useCompleteOrgBootstrap = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOrgBootstrap>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof completeOrgBootstrap>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getCompleteOrgBootstrapMutationOptions(options));
-    }
-    /**
- * The caller needs secrets access on both the source and target orgs.
- * @summary Copy sandbox and model provider keys from another org.
- */
-export const copyOrgKeyMaterial = (
-    id: string,
-    copyOrgKeyMaterialBody: CopyOrgKeyMaterialBody,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/copy-key-material`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: copyOrgKeyMaterialBody, signal
-    },
-      options);
-    }
-
-
-
-export const getCopyOrgKeyMaterialMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyOrgKeyMaterial>>, TError,{id: string;data: CopyOrgKeyMaterialBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof copyOrgKeyMaterial>>, TError,{id: string;data: CopyOrgKeyMaterialBody}, TContext> => {
-
-const mutationKey = ['copyOrgKeyMaterial'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof copyOrgKeyMaterial>>, {id: string;data: CopyOrgKeyMaterialBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  copyOrgKeyMaterial(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CopyOrgKeyMaterialMutationResult = NonNullable<Awaited<ReturnType<typeof copyOrgKeyMaterial>>>
-    export type CopyOrgKeyMaterialMutationBody = CopyOrgKeyMaterialBody
-    export type CopyOrgKeyMaterialMutationError = unknown
-
-    /**
- * @summary Copy sandbox and model provider keys from another org.
- */
-export const useCopyOrgKeyMaterial = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof copyOrgKeyMaterial>>, TError,{id: string;data: CopyOrgKeyMaterialBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof copyOrgKeyMaterial>>,
-        TError,
-        {id: string;data: CopyOrgKeyMaterialBody},
-        TContext
-      > => {
-      return useMutation(getCopyOrgKeyMaterialMutationOptions(options));
     }
     /**
  * @summary List the email domains claimed by the organization.
@@ -1421,74 +1283,6 @@ export const useRemoveOrgMember = <TError = unknown,
       return useMutation(getRemoveOrgMemberMutationOptions(options));
     }
     /**
- * @summary Report the org's guided setup progress.
- */
-export const getOrgSetupState = (
-    id: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/org-setup/state`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getGetOrgSetupStateQueryKey = (id: string,) => {
-    return [
-    `/organizations/${id}/org-setup/state`
-    ] as const;
-    }
-
-
-export const getGetOrgSetupStateQueryOptions = <TData = Awaited<ReturnType<typeof getOrgSetupState>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrgSetupState>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetOrgSetupStateQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrgSetupState>>> = ({ signal }) => getOrgSetupState(id, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrgSetupState>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetOrgSetupStateQueryResult = NonNullable<Awaited<ReturnType<typeof getOrgSetupState>>>
-export type GetOrgSetupStateQueryError = unknown
-
-
-/**
- * @summary Report the org's guided setup progress.
- */
-
-export function useGetOrgSetupState<TData = Awaited<ReturnType<typeof getOrgSetupState>>, TError = unknown>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrgSetupState>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetOrgSetupStateQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
  * @summary List the org's installed, available, and system plugins.
  */
 export const listOrgPlugins = (
@@ -1962,261 +1756,6 @@ export function usePreviewOrgPluginUninstall<TData = Awaited<ReturnType<typeof p
 
 
 /**
- * @summary Mark a plugin setup step as complete.
- */
-export const completePluginSetupStep = (
-    id: string,
-    plugin: string,
-    step: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/plugins/${encodeURIComponent(String(plugin))}/setup-steps/${encodeURIComponent(String(step))}/complete`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-export const getCompletePluginSetupStepMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completePluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof completePluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext> => {
-
-const mutationKey = ['completePluginSetupStep'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completePluginSetupStep>>, {id: string;plugin: string;step: string}> = (props) => {
-          const {id,plugin,step} = props ?? {};
-
-          return  completePluginSetupStep(id,plugin,step,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CompletePluginSetupStepMutationResult = NonNullable<Awaited<ReturnType<typeof completePluginSetupStep>>>
-
-    export type CompletePluginSetupStepMutationError = unknown
-
-    /**
- * @summary Mark a plugin setup step as complete.
- */
-export const useCompletePluginSetupStep = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completePluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof completePluginSetupStep>>,
-        TError,
-        {id: string;plugin: string;step: string},
-        TContext
-      > => {
-      return useMutation(getCompletePluginSetupStepMutationOptions(options));
-    }
-    /**
- * @summary Run a plugin setup step's connection test.
- */
-export const testPluginSetupStep = (
-    id: string,
-    plugin: string,
-    step: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/plugins/${encodeURIComponent(String(plugin))}/setup-steps/${encodeURIComponent(String(step))}/test`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-export const getTestPluginSetupStepMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testPluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof testPluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext> => {
-
-const mutationKey = ['testPluginSetupStep'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testPluginSetupStep>>, {id: string;plugin: string;step: string}> = (props) => {
-          const {id,plugin,step} = props ?? {};
-
-          return  testPluginSetupStep(id,plugin,step,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TestPluginSetupStepMutationResult = NonNullable<Awaited<ReturnType<typeof testPluginSetupStep>>>
-
-    export type TestPluginSetupStepMutationError = unknown
-
-    /**
- * @summary Run a plugin setup step's connection test.
- */
-export const useTestPluginSetupStep = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testPluginSetupStep>>, TError,{id: string;plugin: string;step: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof testPluginSetupStep>>,
-        TError,
-        {id: string;plugin: string;step: string},
-        TContext
-      > => {
-      return useMutation(getTestPluginSetupStepMutationOptions(options));
-    }
-    /**
- * @summary Mark the org's plugin selection as configured.
- */
-export const markOrgPluginsConfigured = (
-    id: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/plugins/mark-configured`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-export const getMarkOrgPluginsConfiguredMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markOrgPluginsConfigured>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof markOrgPluginsConfigured>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['markOrgPluginsConfigured'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markOrgPluginsConfigured>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  markOrgPluginsConfigured(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type MarkOrgPluginsConfiguredMutationResult = NonNullable<Awaited<ReturnType<typeof markOrgPluginsConfigured>>>
-
-    export type MarkOrgPluginsConfiguredMutationError = unknown
-
-    /**
- * @summary Mark the org's plugin selection as configured.
- */
-export const useMarkOrgPluginsConfigured = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markOrgPluginsConfigured>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof markOrgPluginsConfigured>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getMarkOrgPluginsConfiguredMutationOptions(options));
-    }
-    /**
- * @summary List setup steps for the org's active plugins.
- */
-export const listPluginSetupSteps = (
-    id: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<void>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/plugins/setup-steps`, method: 'GET', signal
-    },
-      options);
-    }
-
-
-
-
-export const getListPluginSetupStepsQueryKey = (id: string,) => {
-    return [
-    `/organizations/${id}/plugins/setup-steps`
-    ] as const;
-    }
-
-
-export const getListPluginSetupStepsQueryOptions = <TData = Awaited<ReturnType<typeof listPluginSetupSteps>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPluginSetupSteps>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListPluginSetupStepsQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPluginSetupSteps>>> = ({ signal }) => listPluginSetupSteps(id, requestOptions, signal);
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPluginSetupSteps>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListPluginSetupStepsQueryResult = NonNullable<Awaited<ReturnType<typeof listPluginSetupSteps>>>
-export type ListPluginSetupStepsQueryError = unknown
-
-
-/**
- * @summary List setup steps for the org's active plugins.
- */
-
-export function useListPluginSetupSteps<TData = Awaited<ReturnType<typeof listPluginSetupSteps>>, TError = unknown>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPluginSetupSteps>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListPluginSetupStepsQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-/**
  * @summary List the roles available in the organization.
  */
 export const listOrgRoles = (
@@ -2551,70 +2090,9 @@ export const useRevokeOrgRole = <TError = unknown,
       return useMutation(getRevokeOrgRoleMutationOptions(options));
     }
     /**
- * @summary Provision a Runloop account for an organization
+ * @summary Report a target org's sandbox provider key and account.
  */
-export const provisionOrganizationRunloopAccount = (
-    id: string,
- options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
-) => {
-
-
-      return apiFetch<ProvisionOrganizationRunloopAccount200>(
-      {url: `/organizations/${encodeURIComponent(String(id))}/runloop-provider/provision`, method: 'POST', signal
-    },
-      options);
-    }
-
-
-
-export const getProvisionOrganizationRunloopAccountMutationOptions = <TError = ErrorEnvelope,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['provisionOrganizationRunloopAccount'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  provisionOrganizationRunloopAccount(id,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ProvisionOrganizationRunloopAccountMutationResult = NonNullable<Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>>
-
-    export type ProvisionOrganizationRunloopAccountMutationError = ErrorEnvelope
-
-    /**
- * @summary Provision a Runloop account for an organization
- */
-export const useProvisionOrganizationRunloopAccount = <TError = ErrorEnvelope,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof apiFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof provisionOrganizationRunloopAccount>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getProvisionOrganizationRunloopAccountMutationOptions(options));
-    }
-    /**
- * @summary Report the org's sandbox provider key and account.
- */
-export const getSandboxProvider = (
+export const adminGetOrgSandboxProvider = (
     id: string,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
@@ -2629,45 +2107,45 @@ export const getSandboxProvider = (
 
 
 
-export const getGetSandboxProviderQueryKey = (id: string,) => {
+export const getAdminGetOrgSandboxProviderQueryKey = (id: string,) => {
     return [
     `/organizations/${id}/sandbox-provider`
     ] as const;
     }
 
 
-export const getGetSandboxProviderQueryOptions = <TData = Awaited<ReturnType<typeof getSandboxProvider>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxProvider>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export const getAdminGetOrgSandboxProviderQueryOptions = <TData = Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSandboxProviderQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getAdminGetOrgSandboxProviderQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSandboxProvider>>> = ({ signal }) => getSandboxProvider(id, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>> = ({ signal }) => adminGetOrgSandboxProvider(id, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSandboxProvider>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetSandboxProviderQueryResult = NonNullable<Awaited<ReturnType<typeof getSandboxProvider>>>
-export type GetSandboxProviderQueryError = unknown
+export type AdminGetOrgSandboxProviderQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>>
+export type AdminGetOrgSandboxProviderQueryError = unknown
 
 
 /**
- * @summary Report the org's sandbox provider key and account.
+ * @summary Report a target org's sandbox provider key and account.
  */
 
-export function useGetSandboxProvider<TData = Awaited<ReturnType<typeof getSandboxProvider>>, TError = unknown>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxProvider>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export function useAdminGetOrgSandboxProvider<TData = Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>, TError = unknown>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProvider>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetSandboxProviderQueryOptions(id,options)
+  const queryOptions = getAdminGetOrgSandboxProviderQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2680,11 +2158,11 @@ export function useGetSandboxProvider<TData = Awaited<ReturnType<typeof getSandb
 
 
 /**
- * @summary Validate and save the org's sandbox provider API key.
+ * @summary Validate and save a target org's sandbox provider API key.
  */
-export const setSandboxProvider = (
+export const adminSetOrgSandboxProvider = (
     id: string,
-    setSandboxProviderBody: SetSandboxProviderBody,
+    adminSetOrgSandboxProviderBody: AdminSetOrgSandboxProviderBody,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
 
@@ -2692,18 +2170,18 @@ export const setSandboxProvider = (
       return apiFetch<void>(
       {url: `/organizations/${encodeURIComponent(String(id))}/sandbox-provider`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: setSandboxProviderBody, signal
+      data: adminSetOrgSandboxProviderBody, signal
     },
       options);
     }
 
 
 
-export const getSetSandboxProviderMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setSandboxProvider>>, TError,{id: string;data: SetSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof setSandboxProvider>>, TError,{id: string;data: SetSandboxProviderBody}, TContext> => {
+export const getAdminSetOrgSandboxProviderMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>, TError,{id: string;data: AdminSetOrgSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>, TError,{id: string;data: AdminSetOrgSandboxProviderBody}, TContext> => {
 
-const mutationKey = ['setSandboxProvider'];
+const mutationKey = ['adminSetOrgSandboxProvider'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2713,10 +2191,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setSandboxProvider>>, {id: string;data: SetSandboxProviderBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>, {id: string;data: AdminSetOrgSandboxProviderBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  setSandboxProvider(id,data,requestOptions)
+          return  adminSetOrgSandboxProvider(id,data,requestOptions)
         }
 
 
@@ -2726,27 +2204,27 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetSandboxProviderMutationResult = NonNullable<Awaited<ReturnType<typeof setSandboxProvider>>>
-    export type SetSandboxProviderMutationBody = SetSandboxProviderBody
-    export type SetSandboxProviderMutationError = unknown
+    export type AdminSetOrgSandboxProviderMutationResult = NonNullable<Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>>
+    export type AdminSetOrgSandboxProviderMutationBody = AdminSetOrgSandboxProviderBody
+    export type AdminSetOrgSandboxProviderMutationError = unknown
 
     /**
- * @summary Validate and save the org's sandbox provider API key.
+ * @summary Validate and save a target org's sandbox provider API key.
  */
-export const useSetSandboxProvider = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setSandboxProvider>>, TError,{id: string;data: SetSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+export const useAdminSetOrgSandboxProvider = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>, TError,{id: string;data: AdminSetOrgSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof setSandboxProvider>>,
+        Awaited<ReturnType<typeof adminSetOrgSandboxProvider>>,
         TError,
-        {id: string;data: SetSandboxProviderBody},
+        {id: string;data: AdminSetOrgSandboxProviderBody},
         TContext
       > => {
-      return useMutation(getSetSandboxProviderMutationOptions(options));
+      return useMutation(getAdminSetOrgSandboxProviderMutationOptions(options));
     }
     /**
- * @summary Report whether the org's stored sandbox key works.
+ * @summary Report whether a target org's stored sandbox key works.
  */
-export const getSandboxProviderHealth = (
+export const adminGetOrgSandboxProviderHealth = (
     id: string,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
@@ -2761,45 +2239,45 @@ export const getSandboxProviderHealth = (
 
 
 
-export const getGetSandboxProviderHealthQueryKey = (id: string,) => {
+export const getAdminGetOrgSandboxProviderHealthQueryKey = (id: string,) => {
     return [
     `/organizations/${id}/sandbox-provider/health`
     ] as const;
     }
 
 
-export const getGetSandboxProviderHealthQueryOptions = <TData = Awaited<ReturnType<typeof getSandboxProviderHealth>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxProviderHealth>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export const getAdminGetOrgSandboxProviderHealthQueryOptions = <TData = Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSandboxProviderHealthQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getAdminGetOrgSandboxProviderHealthQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSandboxProviderHealth>>> = ({ signal }) => getSandboxProviderHealth(id, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>> = ({ signal }) => adminGetOrgSandboxProviderHealth(id, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSandboxProviderHealth>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetSandboxProviderHealthQueryResult = NonNullable<Awaited<ReturnType<typeof getSandboxProviderHealth>>>
-export type GetSandboxProviderHealthQueryError = unknown
+export type AdminGetOrgSandboxProviderHealthQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>>
+export type AdminGetOrgSandboxProviderHealthQueryError = unknown
 
 
 /**
- * @summary Report whether the org's stored sandbox key works.
+ * @summary Report whether a target org's stored sandbox key works.
  */
 
-export function useGetSandboxProviderHealth<TData = Awaited<ReturnType<typeof getSandboxProviderHealth>>, TError = unknown>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSandboxProviderHealth>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export function useAdminGetOrgSandboxProviderHealth<TData = Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>, TError = unknown>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSandboxProviderHealth>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetSandboxProviderHealthQueryOptions(id,options)
+  const queryOptions = getAdminGetOrgSandboxProviderHealthQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2812,11 +2290,11 @@ export function useGetSandboxProviderHealth<TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * @summary Check a sandbox provider API key without saving it.
+ * @summary Check a sandbox provider API key against a target org's pin without saving it.
  */
-export const validateSandboxProvider = (
+export const adminValidateOrgSandboxProvider = (
     id: string,
-    validateSandboxProviderBody: ValidateSandboxProviderBody,
+    adminValidateOrgSandboxProviderBody: AdminValidateOrgSandboxProviderBody,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
 
@@ -2824,18 +2302,18 @@ export const validateSandboxProvider = (
       return apiFetch<void>(
       {url: `/organizations/${encodeURIComponent(String(id))}/sandbox-provider/validate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: validateSandboxProviderBody, signal
+      data: adminValidateOrgSandboxProviderBody, signal
     },
       options);
     }
 
 
 
-export const getValidateSandboxProviderMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof validateSandboxProvider>>, TError,{id: string;data: ValidateSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof validateSandboxProvider>>, TError,{id: string;data: ValidateSandboxProviderBody}, TContext> => {
+export const getAdminValidateOrgSandboxProviderMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>, TError,{id: string;data: AdminValidateOrgSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>, TError,{id: string;data: AdminValidateOrgSandboxProviderBody}, TContext> => {
 
-const mutationKey = ['validateSandboxProvider'];
+const mutationKey = ['adminValidateOrgSandboxProvider'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2845,10 +2323,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof validateSandboxProvider>>, {id: string;data: ValidateSandboxProviderBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>, {id: string;data: AdminValidateOrgSandboxProviderBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  validateSandboxProvider(id,data,requestOptions)
+          return  adminValidateOrgSandboxProvider(id,data,requestOptions)
         }
 
 
@@ -2858,30 +2336,30 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ValidateSandboxProviderMutationResult = NonNullable<Awaited<ReturnType<typeof validateSandboxProvider>>>
-    export type ValidateSandboxProviderMutationBody = ValidateSandboxProviderBody
-    export type ValidateSandboxProviderMutationError = unknown
+    export type AdminValidateOrgSandboxProviderMutationResult = NonNullable<Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>>
+    export type AdminValidateOrgSandboxProviderMutationBody = AdminValidateOrgSandboxProviderBody
+    export type AdminValidateOrgSandboxProviderMutationError = unknown
 
     /**
- * @summary Check a sandbox provider API key without saving it.
+ * @summary Check a sandbox provider API key against a target org's pin without saving it.
  */
-export const useValidateSandboxProvider = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof validateSandboxProvider>>, TError,{id: string;data: ValidateSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+export const useAdminValidateOrgSandboxProvider = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>, TError,{id: string;data: AdminValidateOrgSandboxProviderBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof validateSandboxProvider>>,
+        Awaited<ReturnType<typeof adminValidateOrgSandboxProvider>>,
         TError,
-        {id: string;data: ValidateSandboxProviderBody},
+        {id: string;data: AdminValidateOrgSandboxProviderBody},
         TContext
       > => {
-      return useMutation(getValidateSandboxProviderMutationOptions(options));
+      return useMutation(getAdminValidateOrgSandboxProviderMutationOptions(options));
     }
     /**
- * @summary Save an org secret by name.
+ * @summary Save a target org's secret by name.
  */
-export const setOrgSecret = (
+export const adminSetOrgSecret = (
     id: string,
     name: string,
-    setOrgSecretBody: SetOrgSecretBody,
+    adminSetOrgSecretBody: AdminSetOrgSecretBody,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
 
@@ -2889,18 +2367,18 @@ export const setOrgSecret = (
       return apiFetch<void>(
       {url: `/organizations/${encodeURIComponent(String(id))}/secrets/${encodeURIComponent(String(name))}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: setOrgSecretBody, signal
+      data: adminSetOrgSecretBody, signal
     },
       options);
     }
 
 
 
-export const getSetOrgSecretMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setOrgSecret>>, TError,{id: string;name: string;data: SetOrgSecretBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof setOrgSecret>>, TError,{id: string;name: string;data: SetOrgSecretBody}, TContext> => {
+export const getAdminSetOrgSecretMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSecret>>, TError,{id: string;name: string;data: AdminSetOrgSecretBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSecret>>, TError,{id: string;name: string;data: AdminSetOrgSecretBody}, TContext> => {
 
-const mutationKey = ['setOrgSecret'];
+const mutationKey = ['adminSetOrgSecret'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2910,10 +2388,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setOrgSecret>>, {id: string;name: string;data: SetOrgSecretBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminSetOrgSecret>>, {id: string;name: string;data: AdminSetOrgSecretBody}> = (props) => {
           const {id,name,data} = props ?? {};
 
-          return  setOrgSecret(id,name,data,requestOptions)
+          return  adminSetOrgSecret(id,name,data,requestOptions)
         }
 
 
@@ -2923,27 +2401,27 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetOrgSecretMutationResult = NonNullable<Awaited<ReturnType<typeof setOrgSecret>>>
-    export type SetOrgSecretMutationBody = SetOrgSecretBody
-    export type SetOrgSecretMutationError = unknown
+    export type AdminSetOrgSecretMutationResult = NonNullable<Awaited<ReturnType<typeof adminSetOrgSecret>>>
+    export type AdminSetOrgSecretMutationBody = AdminSetOrgSecretBody
+    export type AdminSetOrgSecretMutationError = unknown
 
     /**
- * @summary Save an org secret by name.
+ * @summary Save a target org's secret by name.
  */
-export const useSetOrgSecret = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setOrgSecret>>, TError,{id: string;name: string;data: SetOrgSecretBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
+export const useAdminSetOrgSecret = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminSetOrgSecret>>, TError,{id: string;name: string;data: AdminSetOrgSecretBody}, TContext>, request?: SecondParameter<typeof apiFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof setOrgSecret>>,
+        Awaited<ReturnType<typeof adminSetOrgSecret>>,
         TError,
-        {id: string;name: string;data: SetOrgSecretBody},
+        {id: string;name: string;data: AdminSetOrgSecretBody},
         TContext
       > => {
-      return useMutation(getSetOrgSecretMutationOptions(options));
+      return useMutation(getAdminSetOrgSecretMutationOptions(options));
     }
     /**
- * @summary Report which of the org's secrets are set.
+ * @summary Report which of a target org's secrets are set.
  */
-export const getOrgSecretsStatus = (
+export const adminGetOrgSecretsStatus = (
     id: string,
  options?: SecondParameter<typeof apiFetch>,signal?: AbortSignal
 ) => {
@@ -2958,45 +2436,45 @@ export const getOrgSecretsStatus = (
 
 
 
-export const getGetOrgSecretsStatusQueryKey = (id: string,) => {
+export const getAdminGetOrgSecretsStatusQueryKey = (id: string,) => {
     return [
     `/organizations/${id}/secrets/status`
     ] as const;
     }
 
 
-export const getGetOrgSecretsStatusQueryOptions = <TData = Awaited<ReturnType<typeof getOrgSecretsStatus>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrgSecretsStatus>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export const getAdminGetOrgSecretsStatusQueryOptions = <TData = Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>, TError = unknown>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetOrgSecretsStatusQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getAdminGetOrgSecretsStatusQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrgSecretsStatus>>> = ({ signal }) => getOrgSecretsStatus(id, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>> = ({ signal }) => adminGetOrgSecretsStatus(id, requestOptions, signal);
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrgSecretsStatus>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type GetOrgSecretsStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getOrgSecretsStatus>>>
-export type GetOrgSecretsStatusQueryError = unknown
+export type AdminGetOrgSecretsStatusQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>>
+export type AdminGetOrgSecretsStatusQueryError = unknown
 
 
 /**
- * @summary Report which of the org's secrets are set.
+ * @summary Report which of a target org's secrets are set.
  */
 
-export function useGetOrgSecretsStatus<TData = Awaited<ReturnType<typeof getOrgSecretsStatus>>, TError = unknown>(
- id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrgSecretsStatus>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
+export function useAdminGetOrgSecretsStatus<TData = Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>, TError = unknown>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminGetOrgSecretsStatus>>, TError, TData>, request?: SecondParameter<typeof apiFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getGetOrgSecretsStatusQueryOptions(id,options)
+  const queryOptions = getAdminGetOrgSecretsStatusQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

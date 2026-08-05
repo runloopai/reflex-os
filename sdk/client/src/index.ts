@@ -72,6 +72,7 @@ export * from './generated/invites.js';
 export * from './generated/mcp.js';
 export * from './generated/me.js';
 export * from './generated/organizations.js';
+export * from './generated/org-setup.js';
 export * from './generated/permissions.js';
 export * from './generated/plugins.js';
 export * from './generated/profile.js';
