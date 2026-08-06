@@ -354,6 +354,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "createResourceGrant",
+    "method": "POST",
+    "path": "/resource-grants",
+    "summary": "Share a resource: open an active grant to a user, team, or the whole org.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "createServiceAccount",
     "method": "POST",
     "path": "/service-accounts",
@@ -995,6 +1004,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getResourceGrant",
+    "method": "GET",
+    "path": "/resource-grants/{grantId}",
+    "summary": "Read one grant by id.",
+    "pathParams": [
+      "grantId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getSandboxProvider",
     "method": "GET",
     "path": "/org-setup/sandbox-provider",
@@ -1457,6 +1477,36 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "listResourceGrants",
+    "method": "GET",
+    "path": "/resource-grants",
+    "summary": "List grants the caller can see, newest first.",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "resourceType",
+        "required": false
+      },
+      {
+        "name": "resourceId",
+        "required": false
+      },
+      {
+        "name": "subjectType",
+        "required": false
+      },
+      {
+        "name": "subjectId",
+        "required": false
+      },
+      {
+        "name": "includeEnded",
+        "required": false
+      }
+    ],
+    "hasBody": false
+  },
+  {
     "id": "listServiceAccountApiKeys",
     "method": "GET",
     "path": "/service-accounts/{id}/keys",
@@ -1784,6 +1834,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "revokeResourceGrant",
+    "method": "DELETE",
+    "path": "/resource-grants/{grantId}",
+    "summary": "Revoke a grant: end its sharing interval now, keeping the row as audit record.",
+    "pathParams": [
+      "grantId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "revokeServiceAccountApiKey",
     "method": "DELETE",
     "path": "/service-accounts/{id}/keys/{keyId}",
@@ -1901,6 +1962,17 @@ export const API_OPS: readonly ApiOp[] = [
     "summary": "Save an org secret by name.",
     "pathParams": [
       "name"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "setResourceGrantExpiry",
+    "method": "POST",
+    "path": "/resource-grants/{grantId}/expire",
+    "summary": "Move an active grant expiry: later, earlier but future, or null for never.",
+    "pathParams": [
+      "grantId"
     ],
     "queryParams": [],
     "hasBody": true

@@ -76,6 +76,7 @@ export * from './generated/org-setup.js';
 export * from './generated/permissions.js';
 export * from './generated/plugins.js';
 export * from './generated/profile.js';
+export * from './generated/resource-grants.js';
 export * from './generated/secrets.js';
 export * from './generated/service-accounts.js';
 export * from './generated/snapshots.js';

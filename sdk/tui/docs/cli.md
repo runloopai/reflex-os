@@ -1250,7 +1250,7 @@ add a personal model provider key
 Options:
 
 - `--json`: print the raw JSON response instead of a table
-- `--provider <provider>`: provider (required): anthropic, openai, xai, google, openrouter, cursor, fireworks-ai, vercel, nebius
+- `--provider <provider>`: provider (required): anthropic, openai, xai, google, openrouter, cursor, fireworks-ai, baseten, vercel, nebius
 - `--name <name>`: key name (required)
 - `--type <type>`: apiKey (default) or subscription
 - `--base-url <url>`: custom API base URL

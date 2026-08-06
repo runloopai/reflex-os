@@ -68,6 +68,9 @@
       "name": "profile"
     },
     {
+      "name": "resource-grants"
+    },
+    {
       "name": "secrets"
     },
     {
@@ -6570,6 +6573,7 @@
                       "openrouter",
                       "cursor",
                       "fireworks-ai",
+                      "baseten",
                       "vercel",
                       "nebius"
                     ]
@@ -9342,6 +9346,7 @@
                       "openrouter",
                       "cursor",
                       "fireworks-ai",
+                      "baseten",
                       "vercel",
                       "nebius"
                     ]
@@ -9687,6 +9692,7 @@
                       "openrouter",
                       "cursor",
                       "fireworks-ai",
+                      "baseten",
                       "vercel",
                       "nebius"
                     ]
@@ -10305,6 +10311,272 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProfileStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource-grants": {
+      "get": {
+        "operationId": "listResourceGrants",
+        "summary": "List grants the caller can see, newest first.",
+        "tags": [
+          "resource-grants"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "resourceType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "subjectType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ResourceGrantSubjectType"
+            }
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^usr_[A-Za-z0-9]{22}$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^tem_[A-Za-z0-9]{22}$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^org_[A-Za-z0-9]{22}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "includeEnded",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceGrantListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createResourceGrant",
+        "summary": "Share a resource: open an active grant to a user, team, or the whole org.",
+        "tags": [
+          "resource-grants"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResourceGrantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceGrantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource-grants/{grantId}": {
+      "get": {
+        "operationId": "getResourceGrant",
+        "summary": "Read one grant by id.",
+        "tags": [
+          "resource-grants"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^rsg_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceGrantResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "revokeResourceGrant",
+        "summary": "Revoke a grant: end its sharing interval now, keeping the row as audit record.",
+        "tags": [
+          "resource-grants"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^rsg_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceGrantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resource-grants/{grantId}/expire": {
+      "post": {
+        "operationId": "setResourceGrantExpiry",
+        "summary": "Move an active grant expiry: later, earlier but future, or null for never.",
+        "tags": [
+          "resource-grants"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^rsg_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetResourceGrantExpiryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceGrantResponse"
                 }
               }
             }
@@ -12447,6 +12719,7 @@
                               "openrouter",
                               "cursor",
                               "fireworks-ai",
+                              "baseten",
                               "vercel",
                               "nebius"
                             ]
@@ -13748,6 +14021,60 @@
         ],
         "additionalProperties": false
       },
+      "CreateResourceGrantRequest": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "resourceId": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+          },
+          "subjectType": {
+            "$ref": "#/components/schemas/ResourceGrantSubjectType"
+          },
+          "subjectId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^usr_[A-Za-z0-9]{22}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^tem_[A-Za-z0-9]{22}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^org_[A-Za-z0-9]{22}$"
+              }
+            ]
+          },
+          "roleId": {
+            "type": "string",
+            "pattern": "^(?:rol_[A-Za-z0-9]{22}|builtin-(?:org|team)-[a-z0-9-]+)$"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "resourceType",
+          "resourceId",
+          "subjectType",
+          "subjectId",
+          "roleId"
+        ]
+      },
       "CustomSandboxSizeLimits": {
         "type": "object",
         "properties": {
@@ -14186,6 +14513,7 @@
               "openrouter",
               "cursor",
               "fireworks-ai",
+              "baseten",
               "vercel",
               "nebius"
             ]
@@ -14550,6 +14878,115 @@
         ],
         "additionalProperties": false
       },
+      "ResourceGrant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^rsg_[A-Za-z0-9]{22}$"
+          },
+          "organizationId": {
+            "type": "string",
+            "pattern": "^org_[A-Za-z0-9]{22}$"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+          },
+          "subjectType": {
+            "$ref": "#/components/schemas/ResourceGrantSubjectType"
+          },
+          "subjectId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^usr_[A-Za-z0-9]{22}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^tem_[A-Za-z0-9]{22}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^org_[A-Za-z0-9]{22}$"
+              }
+            ]
+          },
+          "roleId": {
+            "type": "string",
+            "pattern": "^(?:rol_[A-Za-z0-9]{22}|builtin-(?:org|team)-[a-z0-9-]+)$"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "canManage": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "resourceType",
+          "resourceId",
+          "subjectType",
+          "subjectId",
+          "roleId",
+          "createdAt",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "ResourceGrantListResponse": {
+        "type": "object",
+        "properties": {
+          "grants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceGrant"
+            }
+          }
+        },
+        "required": [
+          "grants"
+        ],
+        "additionalProperties": false
+      },
+      "ResourceGrantResponse": {
+        "type": "object",
+        "properties": {
+          "grant": {
+            "$ref": "#/components/schemas/ResourceGrant"
+          },
+          "created": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "grant"
+        ],
+        "additionalProperties": false
+      },
+      "ResourceGrantSubjectType": {
+        "type": "string",
+        "enum": [
+          "user",
+          "team",
+          "org"
+        ]
+      },
       "ScopedSecret": {
         "type": "object",
         "properties": {
@@ -14585,6 +15022,24 @@
           "updatedAt"
         ],
         "additionalProperties": false
+      },
+      "SetResourceGrantExpiryRequest": {
+        "type": "object",
+        "properties": {
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "expiresAt"
+        ]
       },
       "Snapshot": {
         "type": "object",
