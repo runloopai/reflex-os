@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.4.0...reflex-cli-v0.5.0) (2026-08-07)
+
+
+### Features
+
+* ask to share when an agent run is not shared with you ([#3194](https://github.com/runloopai/reflex/issues/3194)) ([2d61ea0](https://github.com/runloopai/reflex/commit/2d61ea0176381516b334cf34dd7de5a6fa187f7b))
+* **opencode:** add Baseten provider ([#2390](https://github.com/runloopai/reflex/issues/2390)) ([5b1ceac](https://github.com/runloopai/reflex/commit/5b1ceac9443ce3d57ebe9272ca2b0b330d63e91c))
+* **rbac:** revocable, expiring resource grants with a self-service management API ([#2975](https://github.com/runloopai/reflex/issues/2975)) ([d074755](https://github.com/runloopai/reflex/commit/d07475553c88267d6fde300465b6c63cfd90e642))
+
+
+### Bug Fixes
+
+* **rbac:** harden resource-grant reads, admin shares, and expiry errors ([#3172](https://github.com/runloopai/reflex/issues/3172)) ([9549075](https://github.com/runloopai/reflex/commit/954907509af2d1e19f07337a4c0f8c4c19b9e6dd))
+* **web:** show existing shares and the sharer in the agent share dialog ([#3193](https://github.com/runloopai/reflex/issues/3193)) ([b74b77e](https://github.com/runloopai/reflex/commit/b74b77e243905aac867c259362083c72fc556b18))
+
 ## [0.4.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.3.0...reflex-cli-v0.4.0) (2026-08-05)
 
 

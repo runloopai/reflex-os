@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.4.0...reflex-client-v0.5.0) (2026-08-07)
+
+
+### Features
+
+* ask to share when an agent run is not shared with you ([#3194](https://github.com/runloopai/reflex/issues/3194)) ([2d61ea0](https://github.com/runloopai/reflex/commit/2d61ea0176381516b334cf34dd7de5a6fa187f7b))
+* gate agent write controls on the caller's actual access ([#3239](https://github.com/runloopai/reflex/issues/3239)) ([2a926dd](https://github.com/runloopai/reflex/commit/2a926dd158b43b372c07bbff1b199b7f37525ef4))
+* **rbac:** revocable, expiring resource grants with a self-service management API ([#2975](https://github.com/runloopai/reflex/issues/2975)) ([d074755](https://github.com/runloopai/reflex/commit/d07475553c88267d6fde300465b6c63cfd90e642))
+* **web:** update a subscription from the model provider picker ([#3156](https://github.com/runloopai/reflex/issues/3156)) ([d251420](https://github.com/runloopai/reflex/commit/d251420f18e21d534b78c76820bea8eeaf50a879))
+
+
+### Bug Fixes
+
+* **build:** regenerate openapi spec and resync client sha256 ([#3253](https://github.com/runloopai/reflex/issues/3253)) ([1a057fe](https://github.com/runloopai/reflex/commit/1a057feb450e02639132a0fced219e7a38e1cd72))
+* **rbac:** harden resource-grant reads, admin shares, and expiry errors ([#3172](https://github.com/runloopai/reflex/issues/3172)) ([9549075](https://github.com/runloopai/reflex/commit/954907509af2d1e19f07337a4c0f8c4c19b9e6dd))
+* **web:** show existing shares and the sharer in the agent share dialog ([#3193](https://github.com/runloopai/reflex/issues/3193)) ([b74b77e](https://github.com/runloopai/reflex/commit/b74b77e243905aac867c259362083c72fc556b18))
+
 ## [0.4.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.3.0...reflex-client-v0.4.0) (2026-08-05)
 
 
