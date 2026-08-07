@@ -12663,6 +12663,9 @@
                 "type": "null"
               }
             ]
+          },
+          "viewerAccess": {
+            "$ref": "#/components/schemas/AgentViewerAccess"
           }
         },
         "required": [
@@ -13254,6 +13257,14 @@
           "lastViewedAt"
         ],
         "additionalProperties": false
+      },
+      "AgentViewerAccess": {
+        "type": "string",
+        "enum": [
+          "owner",
+          "edit",
+          "view"
+        ]
       },
       "AgentViewsResponse": {
         "type": "object",
@@ -14209,6 +14220,9 @@
                 "type": "null"
               }
             ]
+          },
+          "viewerAccess": {
+            "$ref": "#/components/schemas/AgentViewerAccess"
           },
           "launchWarnings": {
             "type": "array",
