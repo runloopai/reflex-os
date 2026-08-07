@@ -155,6 +155,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "approveShareRequest",
+    "method": "POST",
+    "path": "/share-requests/{requestId}/approve",
+    "summary": "Approve a share request: open a grant to the requester and mark it approved.",
+    "pathParams": [
+      "requestId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "archiveAgent",
     "method": "POST",
     "path": "/agents/{id}/archive",
@@ -383,6 +394,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "createShareRequest",
+    "method": "POST",
+    "path": "/share-requests",
+    "summary": "Ask the owner of a resource to share it with you.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "createTeamModelProviderSecret",
     "method": "POST",
     "path": "/organizations/{organizationId}/teams/{teamId}/model-provider-secrets",
@@ -422,6 +442,17 @@ export const API_OPS: readonly ApiOp[] = [
     "summary": "Decline an organization invite",
     "pathParams": [
       "inviteId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "declineShareRequest",
+    "method": "POST",
+    "path": "/share-requests/{requestId}/decline",
+    "summary": "Decline a share request, keeping the row as the audit record of the ask.",
+    "pathParams": [
+      "requestId"
     ],
     "queryParams": [],
     "hasBody": false
@@ -1524,6 +1555,28 @@ export const API_OPS: readonly ApiOp[] = [
     "summary": "List the organization's service accounts.",
     "pathParams": [],
     "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "listShareRequests",
+    "method": "GET",
+    "path": "/share-requests",
+    "summary": "List share requests the caller can see, newest first.",
+    "pathParams": [],
+    "queryParams": [
+      {
+        "name": "resourceType",
+        "required": false
+      },
+      {
+        "name": "resourceId",
+        "required": false
+      },
+      {
+        "name": "status",
+        "required": false
+      }
+    ],
     "hasBody": false
   },
   {

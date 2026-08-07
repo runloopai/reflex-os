@@ -77,6 +77,9 @@
       "name": "service-accounts"
     },
     {
+      "name": "share-requests"
+    },
+    {
       "name": "snapshots"
     },
     {
@@ -11144,6 +11147,199 @@
         }
       }
     },
+    "/share-requests": {
+      "get": {
+        "operationId": "listShareRequests",
+        "summary": "List share requests the caller can see, newest first.",
+        "tags": [
+          "share-requests"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "resourceType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ShareRequestStatus"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareRequestListResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createShareRequest",
+        "summary": "Ask the owner of a resource to share it with you.",
+        "tags": [
+          "share-requests"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShareRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareRequestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/share-requests/{requestId}/approve": {
+      "post": {
+        "operationId": "approveShareRequest",
+        "summary": "Approve a share request: open a grant to the requester and mark it approved.",
+        "tags": [
+          "share-requests"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^srq_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveShareRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareRequestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/share-requests/{requestId}/decline": {
+      "post": {
+        "operationId": "declineShareRequest",
+        "summary": "Decline a share request, keeping the row as the audit record of the ask.",
+        "tags": [
+          "share-requests"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^srq_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareRequestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/snapshots": {
       "get": {
         "operationId": "listSnapshots",
@@ -13074,6 +13270,21 @@
         ],
         "additionalProperties": false
       },
+      "ApproveShareRequestRequest": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string",
+            "enum": [
+              "view",
+              "edit"
+            ]
+          }
+        },
+        "required": [
+          "access"
+        ]
+      },
       "AvailableSecret": {
         "type": "object",
         "properties": {
@@ -14075,6 +14286,28 @@
           "roleId"
         ]
       },
+      "CreateShareRequestRequest": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "resourceId": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "resourceType",
+          "resourceId"
+        ]
+      },
       "CustomSandboxSizeLimits": {
         "type": "object",
         "properties": {
@@ -15039,6 +15272,121 @@
         },
         "required": [
           "expiresAt"
+        ]
+      },
+      "ShareRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^srq_[A-Za-z0-9]{22}$"
+          },
+          "organizationId": {
+            "type": "string",
+            "pattern": "^org_[A-Za-z0-9]{22}$"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string",
+            "pattern": "^[a-z]{3}_[A-Za-z0-9]{22}$"
+          },
+          "requesterUserId": {
+            "type": "string",
+            "pattern": "^usr_[A-Za-z0-9]{22}$"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ShareRequestStatus"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "resolvedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolvedByUserId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^usr_[A-Za-z0-9]{22}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "canResolve": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "resourceType",
+          "resourceId",
+          "requesterUserId",
+          "message",
+          "status",
+          "createdAt",
+          "resolvedAt",
+          "resolvedByUserId"
+        ],
+        "additionalProperties": false
+      },
+      "ShareRequestListResponse": {
+        "type": "object",
+        "properties": {
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShareRequest"
+            }
+          }
+        },
+        "required": [
+          "requests"
+        ],
+        "additionalProperties": false
+      },
+      "ShareRequestResponse": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/ShareRequest"
+          },
+          "created": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request"
+        ],
+        "additionalProperties": false
+      },
+      "ShareRequestStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "declined"
         ]
       },
       "Snapshot": {

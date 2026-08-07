@@ -79,6 +79,7 @@ export * from './generated/profile.js';
 export * from './generated/resource-grants.js';
 export * from './generated/secrets.js';
 export * from './generated/service-accounts.js';
+export * from './generated/share-requests.js';
 export * from './generated/snapshots.js';
 export * from './generated/status.js';
 export * from './generated/teams.js';
