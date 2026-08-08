@@ -65,7 +65,7 @@ export const workstationMcp: PluginMcpDefinition = {
         "Run a shell command on the owner's connected workstation (their real machine — be conservative). " +
         'Requires the workstation to be online in the Reflex TUI. Paths and cwd resolve inside its tool root.',
       inputSchema: WorkstationIdSchema.extend(RunCommandParamsSchema.shape),
-      perm: 'agents:write',
+      rbac: { read: 'agents:read', write: 'agents:write' },
       handler: makeHandler('run_command', RunCommandParamsSchema),
     },
     {
@@ -76,7 +76,7 @@ export const workstationMcp: PluginMcpDefinition = {
         'Paths resolve inside the workstation tool root.',
       inputSchema: WorkstationIdSchema.extend(ReadFileParamsSchema.shape),
       readOnly: true,
-      perm: 'agents:read',
+      rbac: { read: 'agents:read' },
       handler: makeHandler('read_file', ReadFileParamsSchema),
     },
     {
@@ -86,7 +86,7 @@ export const workstationMcp: PluginMcpDefinition = {
         "Write a file on the owner's connected workstation (creates parent directories). " +
         'Paths resolve inside the workstation tool root.',
       inputSchema: WorkstationIdSchema.extend(WriteFileParamsSchema.shape),
-      perm: 'agents:write',
+      rbac: { read: 'agents:read', write: 'agents:write' },
       handler: makeHandler('write_file', WriteFileParamsSchema),
     },
     {
@@ -96,7 +96,7 @@ export const workstationMcp: PluginMcpDefinition = {
         "List a directory on the owner's connected workstation. Defaults to the workstation tool root.",
       inputSchema: WorkstationIdSchema.extend(ListDirectoryParamsSchema.shape),
       readOnly: true,
-      perm: 'agents:read',
+      rbac: { read: 'agents:read' },
       handler: makeHandler('list_directory', ListDirectoryParamsSchema),
     },
   ],
