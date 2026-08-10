@@ -67,10 +67,15 @@ import {
   type UpdateTeamBody,
   type User,
 } from '@runloop/reflex-client';
+
 import { defaultConfigPath, updateSavedConfig } from '../config.js';
 import { UsageError } from '../output/errors.js';
 import { colorStatus, formatRelativeTime, renderKv, renderTable } from '../output/table.js';
 import type { CommandGroup } from './define.js';
+
+const PERSONAL_MODEL_PROVIDER_SECRET_PROVIDERS = Object.values(
+  CreateMyModelProviderSecretBodyProvider,
+);
 
 /**
  * The admin surface: org, team, role, plugin, sandbox, secret, key, flag,
@@ -1129,7 +1134,7 @@ export function adminCommandGroups(): CommandGroup[] {
           options: [
             {
               flags: '--provider <provider>',
-              description: `provider (required): ${Object.values(CreateMyModelProviderSecretBodyProvider).join(', ')}`,
+              description: `provider (required): ${PERSONAL_MODEL_PROVIDER_SECRET_PROVIDERS.join(', ')}`,
             },
             { flags: '--name <name>', description: 'key name (required)' },
             { flags: '--type <type>', description: 'apiKey (default) or subscription' },
@@ -1142,7 +1147,7 @@ export function adminCommandGroups(): CommandGroup[] {
             if (!provider || !name) {
               throw new UsageError('Provider keys need --provider and --name.');
             }
-            const providers = Object.values(CreateMyModelProviderSecretBodyProvider) as string[];
+            const providers = PERSONAL_MODEL_PROVIDER_SECRET_PROVIDERS as string[];
             if (!providers.includes(provider)) {
               throw new UsageError(`--provider expects one of: ${providers.join(', ')}`);
             }

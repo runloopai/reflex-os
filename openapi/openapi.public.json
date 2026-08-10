@@ -9230,7 +9230,8 @@
                           "gemini-2.5-flash",
                           "grok-4.20",
                           "grok-4.1-fast",
-                          "glm-5.2"
+                          "glm-5.2",
+                          "glm-5.2-runloop"
                         ]
                       },
                       {
@@ -12942,7 +12943,8 @@
                               "fireworks-ai",
                               "baseten",
                               "vercel",
-                              "nebius"
+                              "nebius",
+                              "runloop"
                             ]
                           }
                         },
@@ -13074,6 +13076,7 @@
                       "type": "string",
                       "enum": [
                         "admin",
+                        "service_default",
                         "system_recommended",
                         "fallback"
                       ]
@@ -14686,7 +14689,8 @@
                   "gemini-2.5-flash",
                   "grok-4.20",
                   "grok-4.1-fast",
-                  "glm-5.2"
+                  "glm-5.2",
+                  "glm-5.2-runloop"
                 ]
               },
               {
@@ -14784,7 +14788,8 @@
               "fireworks-ai",
               "baseten",
               "vercel",
-              "nebius"
+              "nebius",
+              "runloop"
             ]
           },
           "type": {
