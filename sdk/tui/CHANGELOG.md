@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.5.0...reflex-cli-v0.6.0) (2026-08-11)
+
+
+### Features
+
+* add Runloop model provider ([#2939](https://github.com/runloopai/reflex/issues/2939)) ([b1c0d36](https://github.com/runloopai/reflex/commit/b1c0d365ccb707469f116070f231a35d3648705e))
+* **groups:** scope agent groups to each user ([#3365](https://github.com/runloopai/reflex/issues/3365)) ([de6ac5c](https://github.com/runloopai/reflex/commit/de6ac5c109fc2338238c6643186127688bdc6873))
+
 ## [0.5.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.4.0...reflex-cli-v0.5.0) (2026-08-07)
 
 

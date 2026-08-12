@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.5.0...reflex-client-v0.6.0) (2026-08-11)
+
+
+### Features
+
+* add Runloop model provider ([#2939](https://github.com/runloopai/reflex/issues/2939)) ([b1c0d36](https://github.com/runloopai/reflex/commit/b1c0d365ccb707469f116070f231a35d3648705e))
+* **agents:** pick labels and a group when launching a run ([#3386](https://github.com/runloopai/reflex/issues/3386)) ([3679a96](https://github.com/runloopai/reflex/commit/3679a96745c1c46b45e4b7b57d5d24eb49a00e89))
+* **crew:** data-defined AI software teams (M0 + M1 actor runtime) ([#3401](https://github.com/runloopai/reflex/issues/3401)) ([6d6ff59](https://github.com/runloopai/reflex/commit/6d6ff5900866d7d74e8f3d5af3821fc23e436b54))
+* **flows:** show what changed when publishing, and title the change with an LLM ([#3166](https://github.com/runloopai/reflex/issues/3166)) ([46cb4f1](https://github.com/runloopai/reflex/commit/46cb4f189bb8f5042dc566ac2edbae9444a6a694))
+* **groups:** scope agent groups to each user ([#3365](https://github.com/runloopai/reflex/issues/3365)) ([de6ac5c](https://github.com/runloopai/reflex/commit/de6ac5c109fc2338238c6643186127688bdc6873))
+
+
+### Bug Fixes
+
+* **server:** keep the sandbox bridge connected and self-heal the daemon list ([#3426](https://github.com/runloopai/reflex/issues/3426)) ([28425f7](https://github.com/runloopai/reflex/commit/28425f7462cfd48c4735b0f2bab02da87e23ed66))
+
 ## [0.5.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.4.0...reflex-client-v0.5.0) (2026-08-07)
 
 

@@ -44,13 +44,13 @@ export const workstationPlugin = definePlugin({
     'Connect agents to your own machine. Run the Reflex TUI in connect mode and attach the workstation at launch to give the agent shell and file tools on it.',
   tags: ['integration', 'tools'],
   // Per-org opt-in. Connecting an agent to a user's own machine is a
-  // security-sensitive capability, so it ships behind the preview channel and
-  // is not installed by default: orgs that have not enabled the preview channel
+  // security-sensitive capability, so it ships behind the alpha channel and
+  // is not installed by default: orgs that have not enabled the alpha channel
   // and installed the plugin never see any workstation UI (the Workstations
   // page, the Connect launch attachment, the mention provider, or the
   // `workstation_*` tool-call renderers) because the host strips this plugin's
   // entire web manifest per-request for orgs without it installed.
-  orgInstall: { installable: true, defaultInstalled: false, releaseStatus: 'preview' },
+  orgInstall: { installable: true, defaultInstalled: false, releaseStatus: 'alpha' },
   dependencies: ['mcp'],
   idPrefixes: workstationIds.prefixes,
   server: {

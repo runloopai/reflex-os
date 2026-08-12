@@ -148,8 +148,8 @@ Options:
 - `--model <model>`: model override
 - `--name <name>`: display name
 - `--system-prompt <text>`: system prompt
-- `--blueprint <name>`: blueprint to boot from
-- `--snapshot <id>`: snapshot to boot from (replaces blueprint)
+- `--blueprint <name>`: Blueprint to boot from
+- `--snapshot <id>`: snapshot to boot from (replaces Blueprint)
 - `--size <size>`: devbox resource size (SMALL … XX_LARGE)
 - `--env <KEY=VALUE>`: environment variable (repeatable)
 - `--attach <path>`: attach a file (repeatable); sent as content blocks like the web composer
@@ -1215,8 +1215,8 @@ Options:
 - `--model <model>`: model override
 - `--name <name>`: display name
 - `--system-prompt <text>`: system prompt
-- `--blueprint <name>`: blueprint to boot from
-- `--snapshot <id>`: snapshot to boot from (replaces blueprint)
+- `--blueprint <name>`: Blueprint to boot from
+- `--snapshot <id>`: snapshot to boot from (replaces Blueprint)
 - `--size <size>`: devbox resource size (SMALL … XX_LARGE)
 - `--env <KEY=VALUE>`: environment variable (repeatable)
 - `--attach <path>`: attach a file (repeatable); sent as content blocks like the web composer

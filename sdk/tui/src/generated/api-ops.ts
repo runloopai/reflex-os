@@ -1219,7 +1219,7 @@ export const API_OPS: readonly ApiOp[] = [
     "id": "listAgentGroups",
     "method": "GET",
     "path": "/agent-groups",
-    "summary": "List agent groups in the active organization.",
+    "summary": "List the current user's agent groups in the active organization.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": false

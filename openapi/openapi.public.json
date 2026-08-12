@@ -553,6 +553,18 @@
                           "plan"
                         ]
                       },
+                      "labelIds": {
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^alb_[A-Za-z0-9]{22}$"
+                        }
+                      },
+                      "groupId": {
+                        "type": "string",
+                        "pattern": "^agp_[A-Za-z0-9]{22}$"
+                      },
                       "authMethod": {
                         "type": "string",
                         "enum": [
@@ -744,7 +756,7 @@
     "/agent-groups": {
       "get": {
         "operationId": "listAgentGroups",
-        "summary": "List agent groups in the active organization.",
+        "summary": "List the current user's agent groups in the active organization.",
         "tags": [
           "agent-groups"
         ],
@@ -1697,6 +1709,18 @@
                       "implement",
                       "plan"
                     ]
+                  },
+                  "labelIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^alb_[A-Za-z0-9]{22}$"
+                    }
+                  },
+                  "groupId": {
+                    "type": "string",
+                    "pattern": "^agp_[A-Za-z0-9]{22}$"
                   },
                   "authMethod": {
                     "type": "string",
@@ -9187,7 +9211,8 @@
               "type": "string",
               "enum": [
                 "agent-summary",
-                "slack-interaction"
+                "slack-interaction",
+                "change-summary"
               ]
             }
           },
@@ -13244,6 +13269,9 @@
           },
           "running": {
             "type": "boolean"
+          },
+          "source": {
+            "type": "string"
           }
         },
         "required": [
@@ -13413,6 +13441,14 @@
               "flow.completed",
               "flow.error",
               "flow.cancelled",
+              "crew.task_dispatched",
+              "crew.task_completed",
+              "crew.task_failed",
+              "crew.result_published",
+              "crew.actor_post",
+              "crew.gate_requested",
+              "crew.gate_resolved",
+              "crew.escalation",
               "message",
               "webhook",
               "turn.started",
@@ -14664,7 +14700,8 @@
             "type": "string",
             "enum": [
               "agent-summary",
-              "slack-interaction"
+              "slack-interaction",
+              "change-summary"
             ]
           },
           "enabled": {
