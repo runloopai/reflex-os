@@ -4216,7 +4216,7 @@
                                   "type": "array",
                                   "items": {
                                     "type": "string",
-                                    "pattern": "^[a-z_]+:[a-z_]+$"
+                                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                                   }
                                 }
                               },
@@ -4236,7 +4236,7 @@
                             "type": "array",
                             "items": {
                               "type": "string",
-                              "pattern": "^[a-z_]+:[a-z_]+$"
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                             }
                           },
                           "teams": {
@@ -8702,7 +8702,7 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "pattern": "^[a-z_]+:[a-z_]+$"
+                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                     }
                   }
                 }
@@ -14671,7 +14671,7 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "pattern": "^[a-z_]+:[a-z_]+$"
+                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                         }
                       }
                     },
@@ -14691,7 +14691,7 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "pattern": "^[a-z_]+:[a-z_]+$"
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "teams": {
