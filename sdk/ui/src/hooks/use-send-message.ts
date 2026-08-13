@@ -67,6 +67,19 @@ export function useSendMessage(
           ? { message: input.message || undefined, content: toContentBlocks(input) }
           : { message: input.message };
       const { data } = await sendAgentMessage(agentId, body);
+      if ('commandId' in data) {
+        // 202 accepted-but-pending (asynchronous command delivery): the
+        // message is durably enqueued server-side — a success, never a
+        // retry. Synthesize a local ack; the stream carries the real
+        // events once the send lands.
+        return {
+          id: `accepted-${data.commandId}`,
+          streamId: 'pending',
+          type: 'message',
+          payload: null,
+          timestamp: Date.now(),
+        };
+      }
       return data;
     },
     onMutate: (input) => {

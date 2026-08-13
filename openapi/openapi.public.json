@@ -1981,6 +1981,7 @@
       "post": {
         "operationId": "sendAgentControlResponse",
         "summary": "Answer a pending control request from the agent.",
+        "description": "Returns { ok: true } once the answer reaches the agent, or 409 (control_response_no_pending_request) when no request is parked. With mailbox command delivery, an answer whose outcome is still unknown at the bounded wait returns 202 with { status: \"pending\", commandId }.",
         "tags": [
           "agents"
         ],
@@ -2022,7 +2023,34 @@
         },
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCommandPendingResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -2099,6 +2127,7 @@
       "post": {
         "operationId": "interruptAgent",
         "summary": "Interrupt the agent's current turn.",
+        "description": "Returns the interrupted agent. With mailbox command delivery, an interrupt whose outcome is still unknown at the bounded wait returns 202 with { status: \"pending\", commandId }.",
         "tags": [
           "agents"
         ],
@@ -2124,7 +2153,24 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCommandPendingResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -2205,6 +2251,7 @@
       "post": {
         "operationId": "sendAgentMessage",
         "summary": "Send a message to the agent's chat.",
+        "description": "Returns 201 with the acknowledging event once the message reaches the agent. With mailbox command delivery, a send whose outcome is still unknown at the bounded wait returns 202 with { status: \"pending\", commandId }: the message is accepted and durable, delivery just has not been confirmed yet.",
         "tags": [
           "agents"
         ],
@@ -2317,6 +2364,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AxonEvent"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCommandPendingResponse"
                 }
               }
             }
@@ -12783,6 +12840,23 @@
           "role",
           "externalId",
           "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "AgentCommandPendingResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "pending"
+          },
+          "commandId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "commandId"
         ],
         "additionalProperties": false
       },
