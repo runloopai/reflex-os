@@ -7,7 +7,7 @@
  * logic. You own this file; adjust the message-building rules to fit your
  * product.
  */
-import type { ReflexStreamEvent } from '@runloop/reflex-client';
+import type { AgentCommandPendingResponse, ReflexStreamEvent } from '@runloop/reflex-client';
 
 /** Drop events whose `id` was already seen, preserving order. */
 export function deduplicateEvents<T extends { id: string }>(events: T[]): T[] {
@@ -971,6 +971,26 @@ export function userEventText(event: {
 }
 
 /**
+ * Separator between the typed message and the synthetic attachment list in
+ * an optimistic pending event's text. The real stream echo never carries
+ * this suffix, so reconciliation strips it before comparing.
+ */
+const PENDING_ATTACHMENT_SEPARATOR = '\n📎 ';
+
+/** Display text for the optimistic pending bubble of an outgoing send. */
+export function pendingUserMessageText(message: string, attachmentNames: string[]): string {
+  return attachmentNames.length > 0
+    ? `${message}${PENDING_ATTACHMENT_SEPARATOR}${attachmentNames.join(', ')}`
+    : message;
+}
+
+/** The typed message of a pending bubble, without the attachment suffix. */
+function strippedPendingText(text: string): string {
+  const index = text.lastIndexOf(PENDING_ATTACHMENT_SEPARATOR);
+  return index === -1 ? text : text.slice(0, index);
+}
+
+/**
  * Drop optimistic `pending-*` entries that the server has confirmed.
  *
  * A send is "confirmed" when a real user-authored event with the same text
@@ -993,9 +1013,81 @@ export function reconcilePendingEvents(events: ReflexStreamEvent[]): ReflexStrea
   return events.filter((event) => {
     if (!event.id.startsWith('pending-')) return true;
     const text = userEventText(event);
-    // Attachment suffixes (📎 ...) keep the pending text distinct from the
-    // plain echo; match on the first line, which is the typed message.
-    const firstLine = text?.split('\n')[0] ?? '';
-    return !(text && (confirmed.has(text) || confirmed.has(firstLine)));
+    if (!text) return true;
+    // The optimistic text may carry a synthetic attachment suffix (📎 ...)
+    // the real echo never has; also compare without it so a send with
+    // attachments matches its echo, including multiline messages. An
+    // attachment-only send strips to nothing and can never text-match —
+    // `expireAcceptedSend` is its backstop after a 202, and the direct
+    // path removes it by id.
+    const typed = strippedPendingText(text);
+    return !(confirmed.has(text) || (typed.length > 0 && confirmed.has(typed)));
   });
+}
+
+/**
+ * How long an optimistic bubble may stay pending after a 202 before the
+ * client gives up on it (`expireAcceptedSend`). Long enough for a drain
+ * delivering into a devbox that is resuming from suspension; short enough
+ * that a command that failed after the server's bounded wait does not read
+ * as "Sending…" forever.
+ */
+export const ACCEPTED_SEND_EXPIRY_MS = 60_000;
+
+/**
+ * Drop the optimistic entry of an accepted-but-pending (202) send that no
+ * stream event ever confirmed.
+ *
+ * A mailbox command can still fail after the 202 — the drain records the
+ * failure durably on the command row, but that outcome deliberately has no
+ * read surface, so no stream event ever arrives for it. Removing the
+ * bubble after `ACCEPTED_SEND_EXPIRY_MS` restores direct-delivery parity,
+ * where a failed send removed the bubble through the mutation's error
+ * path. This is also the backstop for attachment-only sends, whose echo
+ * carries no text for `reconcilePendingEvents` to match. No-op when the
+ * send was already confirmed — the entry is gone by then.
+ */
+export function expireAcceptedSend(
+  events: ReflexStreamEvent[],
+  pendingId: string,
+): ReflexStreamEvent[] {
+  return events.filter((event) => event.id !== pendingId);
+}
+
+/**
+ * Narrow an agent-command verb response to the 202 accepted-but-pending
+ * body (`{ status: 'pending', commandId }`): asynchronous (mailbox)
+ * command delivery has the command durably enqueued, but the send outcome
+ * was still unknown at the server's bounded wait. A success, never a retry.
+ */
+export function isAgentCommandAccepted(value: unknown): value is AgentCommandPendingResponse {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { status?: unknown }).status === 'pending' &&
+    typeof (value as { commandId?: unknown }).commandId === 'string'
+  );
+}
+
+/**
+ * Fold a send-message response into the stream cache.
+ *
+ * - A real event (201) replaces the optimistic `pending-*` entry the send
+ *   added, deduplicated against the socket echo which may have landed
+ *   first.
+ * - An accepted-but-pending response (202, mailbox delivery) keeps the
+ *   optimistic entry as-is: the command is durably enqueued but the real
+ *   user event has not reached the stream yet. When the drain delivers it,
+ *   the socket echo reconciles the optimistic entry away — the same
+ *   `reconcilePendingEvents` pass the stream subscription already runs.
+ */
+export function applySendMessageResult(
+  events: ReflexStreamEvent[],
+  result: ReflexStreamEvent | AgentCommandPendingResponse,
+  pendingId: string,
+): ReflexStreamEvent[] {
+  if (isAgentCommandAccepted(result)) return events;
+  return reconcilePendingEvents(
+    deduplicateEvents([...events.filter((e) => e.id !== pendingId), result]),
+  );
 }
