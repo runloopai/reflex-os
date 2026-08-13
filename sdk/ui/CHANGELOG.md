@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/runloopai/reflex/compare/reflex-ui-v0.2.1...reflex-ui-v0.3.0) (2026-08-13)
+
+
+### Features
+
+* **server:** AGENT_COMMAND_DELIVERY selector + fix the 202 optimistic-bubble bug ([#3601](https://github.com/runloopai/reflex/issues/3601)) ([d8db4ed](https://github.com/runloopai/reflex/commit/d8db4ede451c15c2657b778899d837afbe1057a9))
+* **server:** bounded outcome wait for mailbox agent commands ([#3553](https://github.com/runloopai/reflex/issues/3553)) ([f692692](https://github.com/runloopai/reflex/commit/f692692d917ce5f3771d8746493671b0e995d035))
+
 ## [0.2.1](https://github.com/runloopai/reflex/compare/reflex-ui-v0.2.0...reflex-ui-v0.2.1) (2026-08-05)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.7.0...reflex-client-v0.8.0) (2026-08-13)
+
+
+### Features
+
+* **server:** bounded outcome wait for mailbox agent commands ([#3553](https://github.com/runloopai/reflex/issues/3553)) ([f692692](https://github.com/runloopai/reflex/commit/f692692d917ce5f3771d8746493671b0e995d035))
+
 ## [0.7.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.6.0...reflex-client-v0.7.0) (2026-08-13)
 
 

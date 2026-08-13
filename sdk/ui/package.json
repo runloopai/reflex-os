@@ -1,6 +1,6 @@
 {
   "name": "@runloop/reflex-ui",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Importable Reflex chat components for React, built from the same templates @runloop/reflex-chat-kit copies into your app.",
   "license": "MIT",
   "keywords": [
