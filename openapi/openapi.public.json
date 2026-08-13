@@ -10418,7 +10418,7 @@
     "/resource-grants": {
       "get": {
         "operationId": "listResourceGrants",
-        "summary": "List a page of the grants the caller can see, newest first. Naming one `resourceId` lists every grant on it when the caller can read that resource.",
+        "summary": "List a page of the grants the caller can see, newest first. Naming one `resourceType` + `resourceId` lists every grant on it when the caller can read that resource.",
         "tags": [
           "resource-grants"
         ],

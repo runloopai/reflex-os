@@ -1511,7 +1511,7 @@ export const API_OPS: readonly ApiOp[] = [
     "id": "listResourceGrants",
     "method": "GET",
     "path": "/resource-grants",
-    "summary": "List a page of the grants the caller can see, newest first. Naming one `resourceId` lists every grant on it when the caller can read that resource.",
+    "summary": "List a page of the grants the caller can see, newest first. Naming one `resourceType` + `resourceId` lists every grant on it when the caller can read that resource.",
     "pathParams": [],
     "queryParams": [
       {
