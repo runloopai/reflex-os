@@ -4278,6 +4278,13 @@
                                 },
                                 "createdAt": {
                                   "type": "number"
+                                },
+                                "permissions": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                  }
                                 }
                               },
                               "required": [
@@ -4286,7 +4293,8 @@
                                 "slug",
                                 "name",
                                 "description",
-                                "createdAt"
+                                "createdAt",
+                                "permissions"
                               ],
                               "additionalProperties": false
                             }
@@ -14733,6 +14741,13 @@
                       },
                       "createdAt": {
                         "type": "number"
+                      },
+                      "permissions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                        }
                       }
                     },
                     "required": [
@@ -14741,7 +14756,8 @@
                       "slug",
                       "name",
                       "description",
-                      "createdAt"
+                      "createdAt",
+                      "permissions"
                     ],
                     "additionalProperties": false
                   }
