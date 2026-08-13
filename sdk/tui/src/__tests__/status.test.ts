@@ -19,6 +19,7 @@ function makeAgent(overrides: Partial<Agent> = {}): Agent {
     createdAt: NOW - 90_000,
     archived: false,
     organizationId: 'org_1',
+    ownerId: 'org_1',
     pinned: false,
     ...overrides,
   } as Agent;

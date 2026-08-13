@@ -70,6 +70,7 @@ describe('workstation attachment ownership', () => {
     streamId: null,
     status: 'running',
     organizationId: workstation.organizationId,
+    ownerId: userId,
     userId,
   });
 

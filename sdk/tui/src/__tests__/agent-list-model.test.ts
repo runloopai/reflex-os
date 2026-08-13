@@ -14,6 +14,7 @@ function makeAgent(overrides: Partial<Agent>): Agent {
     createdAt: 1,
     archived: false,
     organizationId: 'org_1',
+    ownerId: 'org_1',
     pinned: false,
     ...overrides,
   } as Agent;

@@ -12599,6 +12599,9 @@
           "archived": {
             "type": "boolean"
           },
+          "ownerId": {
+            "type": "string"
+          },
           "userId": {
             "anyOf": [
               {
@@ -12794,6 +12797,7 @@
           "prompt",
           "createdAt",
           "archived",
+          "ownerId",
           "organizationId",
           "pinned"
         ],
@@ -14186,6 +14190,9 @@
           "archived": {
             "type": "boolean"
           },
+          "ownerId": {
+            "type": "string"
+          },
           "userId": {
             "anyOf": [
               {
@@ -14387,6 +14394,7 @@
           "prompt",
           "createdAt",
           "archived",
+          "ownerId",
           "organizationId",
           "pinned"
         ],
