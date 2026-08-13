@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.6.0...reflex-client-v0.7.0) (2026-08-13)
+
+
+### Features
+
+* **web:** tell users when self-serve org creation is turned off ([#3461](https://github.com/runloopai/reflex/issues/3461)) ([f44ffe7](https://github.com/runloopai/reflex/commit/f44ffe7a52da0a016d38bec17846a75c8835ea3b))
+
 ## [0.6.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.5.0...reflex-client-v0.6.0) (2026-08-11)
 
 

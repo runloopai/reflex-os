@@ -4290,6 +4290,9 @@
                         "users"
                       ],
                       "additionalProperties": false
+                    },
+                    "allowSelfServeOrgCreation": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
