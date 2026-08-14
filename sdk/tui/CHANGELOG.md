@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.6.0...reflex-cli-v0.7.0) (2026-08-14)
+
+
+### Features
+
+* **server:** fence agents and agent groups on owner_id, retire the NULL owner ([#3645](https://github.com/runloopai/reflex/issues/3645)) ([09bad82](https://github.com/runloopai/reflex/commit/09bad82de06952504bb8d4c6746c3c4f76a43531))
+* **server:** generalize resource grants through the resource-kind registry ([#3543](https://github.com/runloopai/reflex/issues/3543)) ([42bf64c](https://github.com/runloopai/reflex/commit/42bf64c2236ce139de813b9dc41e39e1e8b9b03d))
+
 ## [0.6.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.5.0...reflex-cli-v0.6.0) (2026-08-11)
 
 
