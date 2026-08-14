@@ -8,6 +8,7 @@ import {
   type SetupItem,
   type ToolItem,
 } from '../chat/transcript.js';
+import { editSummary } from '../chat/format.js';
 
 let eventSeq = 0;
 
@@ -265,6 +266,126 @@ describe('TranscriptEngine', () => {
       { content: 'step one', status: 'completed' },
       { content: 'step two', status: 'pending' },
     ]);
+  });
+
+  describe('Write change summaries', () => {
+    /** Run one Write call to completion and return the summary its row renders. */
+    function writeSummary(
+      resultText: string,
+      toolUseResult?: Record<string, unknown>,
+      content = 'x = 2\ny = 3\n',
+    ): string | null {
+      const engine = new TranscriptEngine();
+      feed(
+        engine,
+        event('turn.started', {}),
+        assistantEvent([
+          {
+            type: 'tool_use',
+            id: 'tu-w',
+            name: 'Write',
+            input: { file_path: '/repo/app.py', content },
+          },
+        ]),
+        event('turn.claude.user', {
+          ...(toolUseResult ? { tool_use_result: toolUseResult } : {}),
+          message: { content: [{ type: 'tool_result', tool_use_id: 'tu-w', content: resultText }] },
+        }),
+      );
+      const tool = engine.getItems().find((i) => i.kind === 'tool') as ToolItem;
+      return editSummary(tool.name, tool.input, tool.fileChange);
+    }
+
+    it('counts the whole file for a create', () => {
+      expect(
+        writeSummary('File created successfully at: /repo/app.py', {
+          type: 'create',
+          filePath: '/repo/app.py',
+          content: 'x = 2\ny = 3\n',
+          structuredPatch: [],
+        }),
+      ).toBe('+2 lines');
+    });
+
+    it('identifies an empty created file without claiming it was unchanged', () => {
+      expect(
+        writeSummary(
+          'File created successfully at: /repo/app.py',
+          {
+            type: 'create',
+            filePath: '/repo/app.py',
+            content: '',
+            structuredPatch: [],
+          },
+          '',
+        ),
+      ).toBe('created empty file');
+    });
+
+    it('reports no change for an update with an empty patch', () => {
+      expect(
+        writeSummary('The file /repo/app.py has been updated successfully.', {
+          type: 'update',
+          filePath: '/repo/app.py',
+          content: 'x = 2\ny = 3\n',
+          structuredPatch: [],
+        }),
+      ).toBe('no change');
+    });
+
+    it('counts an update off its structured patch', () => {
+      expect(
+        writeSummary('The file /repo/app.py has been updated successfully.', {
+          type: 'update',
+          filePath: '/repo/app.py',
+          content: 'x = 2\ny = 3\n',
+          structuredPatch: [
+            {
+              oldStart: 1,
+              oldLines: 2,
+              newStart: 1,
+              newLines: 2,
+              lines: [' x = 2', '-y = 2', '+y = 3'],
+            },
+          ],
+        }),
+      ).toBe('-1 +1 lines');
+    });
+
+    it('says nothing when the file existed and the result carries no patch', () => {
+      expect(
+        writeSummary('The file /repo/app.py has been updated successfully.', {
+          type: 'update',
+          filePath: '/repo/app.py',
+          content: 'x = 2\ny = 3\n',
+        }),
+      ).toBeNull();
+      // Same when the structured result is missing entirely and only the text says so.
+      expect(writeSummary('The file /repo/app.py has been updated successfully.')).toBeNull();
+    });
+
+    it('says nothing when the result says neither created nor updated', () => {
+      expect(writeSummary('ok')).toBeNull();
+    });
+
+    it('makes no claim while the call is still running', () => {
+      const engine = new TranscriptEngine();
+      feed(
+        engine,
+        event('turn.started', {}),
+        assistantEvent([
+          {
+            type: 'tool_use',
+            id: 'tu-w',
+            name: 'Write',
+            input: { file_path: '/repo/app.py', content: 'x = 2\ny = 3\n' },
+          },
+        ]),
+      );
+      const tool = engine.getItems().find((i) => i.kind === 'tool') as ToolItem;
+      expect(tool.fileChange).toBeNull();
+      expect(editSummary(tool.name, tool.input, tool.fileChange)).toBeNull();
+    });
   });
 
   it('keeps background-task tools live past the turn and finishes them on task_completed', () => {

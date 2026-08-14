@@ -43,15 +43,48 @@ export function outputSummary(
   return { lines, hiddenCount: Math.max(0, all.length - lines.length) };
 }
 
-/** `+12 lines` / `-3 +5` style change summary for Write/Edit tool inputs. */
-export function editSummary(name: string, input: Record<string, unknown> | null): string | null {
-  if (!input) return null;
+/**
+ * What a file-editing tool's result says it changed on disk: line counts when
+ * the result is specific enough to give them, `'unknown'` when it isn't.
+ *
+ * `Write` is why the second case exists. Its input is the same whether it
+ * creates a file or replaces one, so counting its content as added lines is
+ * only true for a new file. When the result says the file already existed but
+ * carries nothing about what it held, no honest count exists and the row says
+ * nothing rather than claiming the whole file changed.
+ */
+export type FileChange =
+  | {
+      operation: 'create' | 'update';
+      added: number;
+      removed: number;
+    }
+  | 'unknown';
+
+/**
+ * `+12 lines` / `-3 +5 lines` style change summary for a file-editing tool
+ * call, or null when there is nothing trustworthy to say yet.
+ *
+ * `Edit` and `StrReplace` carry both sides in their input, so their summary is
+ * available the moment the call starts. `Write` has to wait for `fileChange`,
+ * which the transcript fills in from the tool result.
+ */
+export function editSummary(
+  name: string,
+  input: Record<string, unknown> | null,
+  fileChange?: FileChange | null,
+): string | null {
   const countLines = (text: unknown): number | null =>
     typeof text === 'string' ? text.split('\n').length : null;
   if (name === 'Write') {
-    const added = countLines(input.content) ?? countLines(input.contents);
-    return added !== null ? `+${added} lines` : null;
+    if (!fileChange || fileChange === 'unknown') return null;
+    const { operation, added, removed } = fileChange;
+    if (added === 0 && removed === 0) {
+      return operation === 'create' ? 'created empty file' : 'no change';
+    }
+    return removed === 0 ? `+${added} lines` : `-${removed} +${added} lines`;
   }
+  if (!input) return null;
   if (name === 'Edit' || name === 'StrReplace') {
     const removed = countLines(input.old_string);
     const added = countLines(input.new_string);

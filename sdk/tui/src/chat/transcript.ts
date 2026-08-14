@@ -5,6 +5,7 @@ import {
   parseFileEnvelopes,
   type AskUserQuestionItem,
 } from '@runloop/reflex-contract';
+import type { FileChange } from './format.js';
 
 /**
  * Live transcript engine for the TUI chat screen.
@@ -68,6 +69,11 @@ export interface ToolItem {
   durationSecs: number | null;
   /** Set while the call runs as a background task (keeps it live past turn end). */
   backgroundTaskId: string | null;
+  /**
+   * What a `Write` call did on disk, from its result. Null until the result
+   * arrives, and for every other tool. See {@link FileChange}.
+   */
+  fileChange: FileChange | null;
 }
 
 export interface PlanEntry {
@@ -338,6 +344,70 @@ function toolResultText(content: unknown): string {
   if (typeof content === 'string') return content;
   if (Array.isArray(content)) return joinTextBlocks(content);
   return '';
+}
+
+const CREATED_RESULT_TEXT = /^File created successfully at:/;
+
+/** Lines in a file's contents, ignoring the empty line a trailing newline leaves behind. */
+function countLines(text: string): number {
+  if (text.length === 0) return 0;
+  return text.replace(/\n$/, '').split('\n').length;
+}
+
+/** Added/removed lines counted off a `structuredPatch` hunk list, when the result carries one. */
+function countPatchLines(patch: unknown): { added: number; removed: number } | null {
+  if (!Array.isArray(patch)) return null;
+  let added = 0;
+  let removed = 0;
+  for (const hunk of patch) {
+    if (!isRecord(hunk) || !Array.isArray(hunk.lines)) return null;
+    for (const line of hunk.lines) {
+      if (typeof line !== 'string') continue;
+      if (line.startsWith('+')) added++;
+      else if (line.startsWith('-')) removed++;
+    }
+  }
+  return { added, removed };
+}
+
+/**
+ * What a completed `Write` call changed, from its result rather than its input.
+ *
+ * A create is the whole file added. An update is whatever its `structuredPatch`
+ * says, and `'unknown'` when the result reports an update without one: the row
+ * would otherwise present the entire file as new lines. Results that say
+ * neither are unknown too, since assuming "new file" is exactly the wrong
+ * guess for a file that already existed.
+ */
+function parseWriteChange(
+  input: Record<string, unknown> | null,
+  toolUseResult: Record<string, unknown> | null,
+  outputText: string,
+): FileChange {
+  // One `tool_use_result` accompanies the whole message, so it only speaks for
+  // this call when its file path agrees (or when it names no path at all).
+  const filePath = toolUseResult?.filePath;
+  const result =
+    typeof filePath === 'string' && filePath !== input?.file_path ? null : toolUseResult;
+  const written = [input?.content, input?.contents, result?.content].find(
+    (value): value is string => typeof value === 'string',
+  );
+  const created = (): FileChange =>
+    written === undefined
+      ? 'unknown'
+      : { operation: 'create', added: countLines(written), removed: 0 };
+
+  const type = result?.type;
+  if (type === 'create') return created();
+  if (type === 'update') {
+    const counts = countPatchLines(result?.structuredPatch);
+    return counts ? { operation: 'update', ...counts } : 'unknown';
+  }
+
+  // Without a structured result, only the "created" text is specific enough to
+  // count: an update says nothing about what the file held, and a result that
+  // says neither could be either.
+  return CREATED_RESULT_TEXT.test(outputText) ? created() : 'unknown';
 }
 
 /** Whether the event is an echoed user prompt (starts a turn). */
@@ -848,6 +918,7 @@ export class TranscriptEngine {
       startedAt: ts,
       durationSecs: null,
       backgroundTaskId: null,
+      fileChange: null,
     });
   }
 
@@ -886,6 +957,9 @@ export class TranscriptEngine {
         continue;
       }
       item.status = isError ? 'failed' : 'completed';
+      if (!isError && item.name === 'Write') {
+        item.fileChange = parseWriteChange(item.input, toolUseResult, outputText);
+      }
       item.durationSecs = durationSecs(item.startedAt, ts);
       item.final = true;
     }
@@ -1196,6 +1270,7 @@ export class TranscriptEngine {
           startedAt: ts,
           durationSecs: null,
           backgroundTaskId: null,
+          fileChange: null,
         });
         return;
       }

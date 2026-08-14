@@ -165,7 +165,7 @@ function renderTool(item: ToolItem): string {
       : '';
   const lines = [`\n${glyph} ${toolHeadline(item.name, item.input)}${duration}`];
 
-  const change = editSummary(item.name, item.input);
+  const change = editSummary(item.name, item.input, item.fileChange);
   if (change) {
     lines.push(color(`  ⎿ ${change}`, 'dim'));
   } else if (item.output) {

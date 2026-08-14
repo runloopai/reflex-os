@@ -267,7 +267,7 @@ function ToolItemView({ item, spinnerFrame }: { item: ToolItem; spinnerFrame: st
         ? 'yellow'
         : 'red';
 
-  const change = editSummary(item.name, item.input);
+  const change = editSummary(item.name, item.input, item.fileChange);
   const resultLines: string[] = [];
   let hidden = 0;
   if (item.output && !change) {
