@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.7.0...reflex-cli-v0.7.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **chat:** stop counting an overwritten file as all-new lines ([#3486](https://github.com/runloopai/reflex/issues/3486)) ([6dec82e](https://github.com/runloopai/reflex/commit/6dec82eb9e877f0cff1780e9b4781e178e9accea))
+
 ## [0.7.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.6.0...reflex-cli-v0.7.0) (2026-08-14)
 
 
