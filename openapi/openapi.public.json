@@ -5963,7 +5963,18 @@
         "tags": [
           "mcp"
         ],
-        "x-route-scope": "user",
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Response",
