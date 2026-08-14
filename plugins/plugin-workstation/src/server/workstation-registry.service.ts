@@ -1,4 +1,4 @@
-import { and, desc, eq, lt } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, lt, notInArray, or } from 'drizzle-orm';
 import type { PluginContext, PluginLogger } from '@reflex/plugin-api';
 import type { WsBroadcastServiceContract } from '@reflex/plugin-api/services';
 import {
@@ -49,6 +49,12 @@ export class WorkstationServiceError extends Error {
     return err instanceof WorkstationServiceError;
   }
 }
+
+/**
+ * Row shape as stored, i.e. the public `Workstation` plus the internal
+ * `connectedInstanceId` stamp that never leaves the server.
+ */
+type StoredWorkstationRow = Workstation & { connectedInstanceId: string | null };
 
 interface Connection {
   workstationId: string;
@@ -116,6 +122,8 @@ export interface CallToolInput {
 export class WorkstationRegistryService {
   private readonly db: PluginContext['db'];
   private readonly log: PluginLogger;
+  /** Boot-scoped host identity stamped on the presence rows this instance owns. */
+  private readonly instanceId: string;
   private broadcast?: WsBroadcastServiceContract;
   private readonly connections = new Map<string, Connection>();
   private readonly pending = new Map<string, PendingCall>();
@@ -123,6 +131,7 @@ export class WorkstationRegistryService {
 
   constructor(ctx: PluginContext) {
     this.db = ctx.db;
+    this.instanceId = ctx.instanceId;
     this.log = ctx.log.child ? ctx.log.child('workstation-registry') : ctx.log;
   }
 
@@ -131,15 +140,27 @@ export class WorkstationRegistryService {
   }
 
   /**
-   * Reset every `online` row to `offline`. Called once at plugin boot:
-   * sockets never survive a server restart, so any lingering `online`
-   * status is stale by definition.
+   * Reset to `offline` the `online` rows this instance can speak for: rows
+   * stamped with its own boot-scoped id (a crashed disconnect write) and
+   * unattributed rows from before instance stamping existed. Called once at
+   * plugin boot. At N>1 a peer replica's stamped rows are live sockets on
+   * that peer, so they must survive this instance's restart; rows stamped
+   * by dead incarnations go offline via the stale sweep in the heartbeat
+   * tick instead (their `lastSeenAt` stops being refreshed).
    */
   async resetPresence(): Promise<void> {
     await this.db
       .update(workstations)
-      .set({ status: 'offline', connectedAt: null })
-      .where(eq(workstations.status, 'online'));
+      .set({ status: 'offline', connectedAt: null, connectedInstanceId: null })
+      .where(
+        and(
+          eq(workstations.status, 'online'),
+          or(
+            isNull(workstations.connectedInstanceId),
+            eq(workstations.connectedInstanceId, this.instanceId),
+          ),
+        ),
+      );
   }
 
   /** Drop audit rows past the retention window. Called once at boot. */
@@ -166,7 +187,7 @@ export class WorkstationRegistryService {
     );
     const existing = await this.db.select().from(workstations).where(identity).limit(1);
 
-    let row: Workstation;
+    let row: StoredWorkstationRow;
     if (existing.length > 0) {
       const id = existing[0]!.id;
       const [updated] = await this.db
@@ -175,12 +196,13 @@ export class WorkstationRegistryService {
           platform: input.platform,
           toolRoot: input.toolRoot ?? null,
           status: 'online',
+          connectedInstanceId: this.instanceId,
           connectedAt: now,
           lastSeenAt: now,
         })
         .where(eq(workstations.id, id))
         .returning();
-      row = updated as Workstation;
+      row = updated as StoredWorkstationRow;
     } else {
       const [inserted] = await this.db
         .insert(workstations)
@@ -191,6 +213,7 @@ export class WorkstationRegistryService {
           platform: input.platform,
           toolRoot: input.toolRoot ?? null,
           status: 'online',
+          connectedInstanceId: this.instanceId,
           userId: input.userId,
           organizationId: input.organizationId,
           connectedAt: now,
@@ -198,7 +221,7 @@ export class WorkstationRegistryService {
           createdAt: now,
         })
         .returning();
-      row = inserted as Workstation;
+      row = inserted as StoredWorkstationRow;
     }
 
     const previous = this.connections.get(row.id);
@@ -221,8 +244,9 @@ export class WorkstationRegistryService {
       { workstationId: row.id, hostname: row.hostname, name: row.name },
       'workstation connected',
     );
-    this.broadcastUpdated(row);
-    return row;
+    const publicRow = this.toPublicWorkstation(row);
+    this.broadcastUpdated(publicRow);
+    return publicRow;
   }
 
   /**
@@ -270,7 +294,10 @@ export class WorkstationRegistryService {
    * Mark a workstation offline and reject its in-flight calls. `socket`
    * guards against a stale close racing a fresh registration: when the old
    * socket's `close` event fires after `register()` already swapped in a
-   * new one, the disconnect is ignored.
+   * new one, the disconnect is ignored. The DB write is additionally
+   * guarded on this instance's stamp: a takeover by a peer replica leaves
+   * this instance holding a dying socket for a row it no longer owns, and
+   * that socket's close must not erase the peer's live presence.
    */
   async disconnect(workstationId: string, socket?: WorkstationSocketLike): Promise<void> {
     const conn = this.connections.get(workstationId);
@@ -291,11 +318,21 @@ export class WorkstationRegistryService {
 
     const [row] = await this.db
       .update(workstations)
-      .set({ status: 'offline', connectedAt: null, lastSeenAt: Date.now() })
-      .where(eq(workstations.id, workstationId))
+      .set({
+        status: 'offline',
+        connectedAt: null,
+        connectedInstanceId: null,
+        lastSeenAt: Date.now(),
+      })
+      .where(
+        and(
+          eq(workstations.id, workstationId),
+          eq(workstations.connectedInstanceId, this.instanceId),
+        ),
+      )
       .returning();
     this.log.info({ workstationId }, 'workstation disconnected');
-    if (row) this.broadcastUpdated(row as Workstation);
+    if (row) this.broadcastUpdated(this.toPublicWorkstation(row as StoredWorkstationRow));
   }
 
   isOnline(workstationId: string): boolean {
@@ -307,13 +344,8 @@ export class WorkstationRegistryService {
       ? and(eq(workstations.organizationId, organizationId), eq(workstations.userId, userId))
       : eq(workstations.organizationId, organizationId);
     const rows = await this.db.select().from(workstations).where(scope);
-    // Live socket presence wins over whatever the row says — a row can lag
-    // (e.g. between a socket drop and the async status write).
-    return (rows as Workstation[])
-      .map((row) => ({
-        ...row,
-        status: this.connections.has(row.id) ? ('online' as const) : ('offline' as const),
-      }))
+    return (rows as StoredWorkstationRow[])
+      .map((row) => this.toPublicWorkstation(row))
       .sort((a, b) => b.lastSeenAt - a.lastSeenAt);
   }
 
@@ -325,9 +357,27 @@ export class WorkstationRegistryService {
         and(eq(workstations.id, workstationId), eq(workstations.organizationId, organizationId)),
       )
       .limit(1);
-    const row = rows[0] as Workstation | undefined;
+    const row = rows[0] as StoredWorkstationRow | undefined;
     if (!row) return undefined;
-    return { ...row, status: this.connections.has(row.id) ? 'online' : 'offline' };
+    return this.toPublicWorkstation(row);
+  }
+
+  /**
+   * Project a stored row to the public `Workstation` shape: drop the
+   * internal instance stamp, and resolve `status` from the freshest source.
+   * A live local socket wins; a row stamped by another instance is trusted
+   * as written (its owner keeps it honest, the stale sweep reaps it if the
+   * owner dies); an own-stamped or unattributed row without a live local
+   * socket is offline — the row is just lagging its disconnect write.
+   */
+  private toPublicWorkstation(row: StoredWorkstationRow): Workstation {
+    const { connectedInstanceId, ...pub } = row;
+    const status = this.connections.has(row.id)
+      ? ('online' as const)
+      : connectedInstanceId && connectedInstanceId !== this.instanceId
+        ? row.status
+        : ('offline' as const);
+    return { ...pub, status };
   }
 
   /**
@@ -475,8 +525,62 @@ export class WorkstationRegistryService {
           void this.disconnect(conn.workstationId, conn.socket);
         }
       }
+      void this.syncPresenceRows().catch((err: unknown) => {
+        this.log.warn(
+          { err: err instanceof Error ? err.message : String(err) },
+          'failed to sync workstation presence rows',
+        );
+      });
     }, WORKSTATION_HEARTBEAT_INTERVAL_MS);
     this.heartbeatTimer.unref?.();
+  }
+
+  /**
+   * Keep the shared presence table honest across replicas. Each tick this
+   * instance (1) refreshes `lastSeenAt` on the rows whose live socket it
+   * holds — the cross-replica liveness signal — and (2) sweeps to offline
+   * any `online` row not refreshed within the stale threshold, which means
+   * its owning instance died without writing its disconnects. The threshold
+   * (75s) is three heartbeat intervals, so a live owner can miss a tick
+   * without its rows being reaped. Public so tests can drive a tick's DB
+   * half directly; production only calls it from the heartbeat timer.
+   */
+  async syncPresenceRows(): Promise<void> {
+    const now = Date.now();
+    const localIds = [...this.connections.keys()];
+    if (localIds.length > 0) {
+      // Guarded on our own instance id: a last-writer-wins re-register on a
+      // peer replica may have taken over a row this instance still holds a
+      // dying socket for, and we must not refresh the peer's row.
+      await this.db
+        .update(workstations)
+        .set({ lastSeenAt: now })
+        .where(
+          and(
+            inArray(workstations.id, localIds),
+            eq(workstations.connectedInstanceId, this.instanceId),
+          ),
+        );
+    }
+    const staleBefore = now - WORKSTATION_STALE_THRESHOLD_MS;
+    const swept = await this.db
+      .update(workstations)
+      .set({ status: 'offline', connectedAt: null, connectedInstanceId: null })
+      .where(
+        and(
+          eq(workstations.status, 'online'),
+          lt(workstations.lastSeenAt, staleBefore),
+          ...(localIds.length > 0 ? [notInArray(workstations.id, localIds)] : []),
+        ),
+      )
+      .returning();
+    for (const row of swept) {
+      this.log.warn(
+        { workstationId: row.id, organizationId: row.organizationId },
+        'swept stale workstation presence left by a dead instance',
+      );
+      this.broadcastUpdated(this.toPublicWorkstation(row as StoredWorkstationRow));
+    }
   }
 
   stopHeartbeat(): void {

@@ -101,6 +101,7 @@ function makeCtx(db: ReturnType<typeof makeDb>): PluginContext {
   log.child.mockReturnValue(log);
   return {
     db: db as unknown as PluginContext['db'],
+    instanceId: 'test-host#boot',
     log: log as unknown as PluginContext['log'],
     secrets: { get: () => undefined },
     config: { get: () => undefined, set: () => undefined, delete: () => undefined },

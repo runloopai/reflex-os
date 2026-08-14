@@ -15,6 +15,13 @@
       "when": 1783297007074,
       "tag": "0001_workstation_tool_calls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786662592594,
+      "tag": "0002_workstation_connected_instance",
+      "breakpoints": true
     }
   ]
 }

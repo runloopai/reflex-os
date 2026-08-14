@@ -1,0 +1,1 @@
+ALTER TABLE "workstations" ADD COLUMN IF NOT EXISTS "connected_instance_id" text;

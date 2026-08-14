@@ -6,8 +6,11 @@ import { bigint, boolean, index, pgTable, text, uniqueIndex } from 'drizzle-orm/
  * A row is created on first registration and reused across reconnects: the
  * natural key is `(organizationId, userId, hostname, name)` so the same
  * machine keeps a stable `wks_*` id (and stays selectable in saved drafts)
- * across sessions. `status` reflects live socket presence; every row is
- * reset to `offline` at server boot because sockets do not survive restarts.
+ * across sessions. `status` reflects live socket presence; rows are stamped
+ * with the holding instance's boot-scoped id, reset to `offline` at that
+ * instance's boot (sockets do not survive restarts), and swept to `offline`
+ * when their instance stops refreshing `last_seen_at` — so at N>1 a
+ * restarting replica never wipes a peer's live presence.
  */
 export const workstations = pgTable(
   'workstations',
@@ -18,6 +21,13 @@ export const workstations = pgTable(
     platform: text('platform').notNull(),
     toolRoot: text('tool_root'),
     status: text('status').notNull(),
+    /**
+     * Boot-scoped id of the server instance holding the live socket
+     * (`ctx.instanceId`), null while offline. Lets each replica reset or
+     * sweep only presence it can speak for: at N>1 a restarting replica
+     * must not wipe a peer's live rows.
+     */
+    connectedInstanceId: text('connected_instance_id'),
     userId: text('user_id').notNull(),
     organizationId: text('organization_id').notNull(),
     connectedAt: bigint('connected_at', { mode: 'number' }),
