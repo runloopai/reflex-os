@@ -7907,6 +7907,12 @@
                   },
                   "sandboxArtifactMirrors": {
                     "type": "boolean"
+                  },
+                  "allowSessionShareView": {
+                    "type": "boolean"
+                  },
+                  "allowSessionShareEdit": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -12372,6 +12378,25 @@
               "terminated"
             ]
           },
+          "turnState": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "working",
+                  "idle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turnStateVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
           "devboxId": {
             "anyOf": [
               {
@@ -12803,6 +12828,8 @@
           "streamId",
           "agentType",
           "status",
+          "turnState",
+          "turnStateVersion",
           "devboxId",
           "name",
           "prompt",
@@ -13963,6 +13990,25 @@
               "terminated"
             ]
           },
+          "turnState": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "working",
+                  "idle"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turnStateVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
           "devboxId": {
             "anyOf": [
               {
@@ -14400,6 +14446,8 @@
           "streamId",
           "agentType",
           "status",
+          "turnState",
+          "turnStateVersion",
           "devboxId",
           "name",
           "prompt",
@@ -15206,6 +15254,12 @@
             }
           },
           "sandboxArtifactMirrors": {
+            "type": "boolean"
+          },
+          "allowSessionShareView": {
+            "type": "boolean"
+          },
+          "allowSessionShareEdit": {
             "type": "boolean"
           }
         },
