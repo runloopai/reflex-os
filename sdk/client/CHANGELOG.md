@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.9.0...reflex-client-v0.10.0) (2026-08-18)
+
+
+### Features
+
+* **security:** org-level controls over session sharing ([#3656](https://github.com/runloopai/reflex/issues/3656)) ([9b6f8f4](https://github.com/runloopai/reflex/commit/9b6f8f4cd78e5f01a542f45286704c1b1b245b67))
+
 ## [0.9.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.8.0...reflex-client-v0.9.0) (2026-08-14)
 
 
