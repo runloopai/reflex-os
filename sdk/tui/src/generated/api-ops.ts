@@ -864,6 +864,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getIdpConfig",
+    "method": "GET",
+    "path": "/organizations/{organizationId}/idp-config",
+    "summary": "Get the org's enterprise IdP configuration.",
+    "pathParams": [
+      "organizationId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getInviteLanding",
     "method": "GET",
     "path": "/invites/{token}",
@@ -1918,6 +1929,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "rotateScimToken",
+    "method": "POST",
+    "path": "/organizations/{organizationId}/idp-config/scim-token",
+    "summary": "Mint a fresh SCIM bearer token for the org's IdP, replacing any previous one.",
+    "pathParams": [
+      "organizationId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "saveAgentDraft",
     "method": "POST",
     "path": "/agent-drafts",
@@ -2313,6 +2335,17 @@ export const API_OPS: readonly ApiOp[] = [
       "organizationId",
       "teamId",
       "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "upsertIdpConfig",
+    "method": "PUT",
+    "path": "/organizations/{organizationId}/idp-config",
+    "summary": "Create or update the org's enterprise IdP configuration.",
+    "pathParams": [
+      "organizationId"
     ],
     "queryParams": [],
     "hasBody": true

@@ -9216,6 +9216,408 @@
         }
       }
     },
+    "/organizations/{organizationId}/idp-config": {
+      "get": {
+        "operationId": "getIdpConfig",
+        "summary": "Get the org's enterprise IdP configuration.",
+        "tags": [
+          "organizations"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "organizationId": {
+                              "type": "string"
+                            },
+                            "displayName": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "issuer": {
+                              "type": "string"
+                            },
+                            "groupMappings": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "group": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "roleId": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "teamId": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "group"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "oktaOrgUrl": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "oktaSyncEnabled": {
+                              "type": "boolean"
+                            },
+                            "scimTokenSet": {
+                              "type": "boolean"
+                            },
+                            "lastSyncedAt": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "createdAt": {
+                              "type": "number"
+                            },
+                            "updatedAt": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "organizationId",
+                            "displayName",
+                            "issuer",
+                            "groupMappings",
+                            "oktaOrgUrl",
+                            "oktaSyncEnabled",
+                            "scimTokenSet",
+                            "lastSyncedAt",
+                            "createdAt",
+                            "updatedAt"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "config"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "upsertIdpConfig",
+        "summary": "Create or update the org's enterprise IdP configuration.",
+        "tags": [
+          "organizations"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "groupMappings": {
+                    "default": [],
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "group": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "roleId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "teamId": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "group"
+                      ]
+                    }
+                  },
+                  "oktaOrgUrl": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "oktaSyncEnabled": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "issuer"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "organizationId": {
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "issuer": {
+                      "type": "string"
+                    },
+                    "groupMappings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "group": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "roleId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "teamId": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "group"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "oktaOrgUrl": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "oktaSyncEnabled": {
+                      "type": "boolean"
+                    },
+                    "scimTokenSet": {
+                      "type": "boolean"
+                    },
+                    "lastSyncedAt": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    },
+                    "updatedAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "organizationId",
+                    "displayName",
+                    "issuer",
+                    "groupMappings",
+                    "oktaOrgUrl",
+                    "oktaSyncEnabled",
+                    "scimTokenSet",
+                    "lastSyncedAt",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations/{organizationId}/idp-config/scim-token": {
+      "post": {
+        "operationId": "rotateScimToken",
+        "summary": "Mint a fresh SCIM bearer token for the org's IdP, replacing any previous one.",
+        "tags": [
+          "organizations"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^org_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "token"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organizations/{organizationId}/llm-task-assignments": {
       "get": {
         "operationId": "listLlmTaskAssignments",
