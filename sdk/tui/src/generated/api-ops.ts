@@ -703,6 +703,23 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getAgentCommandStatus",
+    "method": "GET",
+    "path": "/agents/{id}/commands/{commandId}",
+    "summary": "Read the delivery status of a command sent to the agent.",
+    "pathParams": [
+      "id",
+      "commandId"
+    ],
+    "queryParams": [
+      {
+        "name": "wait",
+        "required": false
+      }
+    ],
+    "hasBody": false
+  },
+  {
     "id": "getAgentDevboxLogs",
     "method": "GET",
     "path": "/agents/{id}/devbox-logs",

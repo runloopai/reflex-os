@@ -222,8 +222,12 @@ export interface PendingSend {
   error: string | null;
 }
 
-/** Web-parity echo deadline: how long a send may wait for its stream echo. */
-export const SEND_ECHO_TIMEOUT_MS = 20_000;
+/**
+ * Web-parity echo deadline: how long a send may wait for its stream echo.
+ * Sized for a sleeping agent, whose devbox wake and connection rebuild
+ * precede the prompt dispatch and routinely take 15–25s.
+ */
+export const SEND_ECHO_TIMEOUT_MS = 60_000;
 
 // --- Pull requests the agent opened ---
 

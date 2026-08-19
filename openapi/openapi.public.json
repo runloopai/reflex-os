@@ -1943,6 +1943,66 @@
         }
       }
     },
+    "/agents/{id}/commands/{commandId}": {
+      "get": {
+        "operationId": "getAgentCommandStatus",
+        "summary": "Read the delivery status of a command sent to the agent.",
+        "description": "Returns the lifecycle status of a mailbox command (`pending`, `claimed`, `sent`, or `failed` with a failure code). Pass `wait` (ms, capped server-side) to hold the request open until the command reaches `sent` or `failed`; at the bound the current status is returned.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "wait",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 25000
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentCommandStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/complete": {
       "post": {
         "operationId": "completeAgent",
@@ -13295,6 +13355,24 @@
         ],
         "additionalProperties": false
       },
+      "AgentCommandFailureResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "statusCode": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
       "AgentCommandPendingResponse": {
         "type": "object",
         "properties": {
@@ -13309,6 +13387,31 @@
         "required": [
           "status",
           "commandId"
+        ],
+        "additionalProperties": false
+      },
+      "AgentCommandStatusResponse": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "claimed",
+              "sent",
+              "failed"
+            ]
+          },
+          "failure": {
+            "$ref": "#/components/schemas/AgentCommandFailureResponse"
+          }
+        },
+        "required": [
+          "commandId",
+          "status"
         ],
         "additionalProperties": false
       },
