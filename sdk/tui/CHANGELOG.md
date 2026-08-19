@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.7.1...reflex-cli-v0.8.0) (2026-08-19)
+
+
+### Features
+
+* **server:** identity provisioning core with SCIM and Okta sync front doors ([#3764](https://github.com/runloopai/reflex/issues/3764)) ([7392285](https://github.com/runloopai/reflex/commit/7392285e07f927741da81ee123f29b12e2b76b5e))
+
+
+### Bug Fixes
+
+* watch a slow send's delivery outcome and size the echo deadline for a devbox wake ([#3828](https://github.com/runloopai/reflex/issues/3828)) ([4865f31](https://github.com/runloopai/reflex/commit/4865f31a9c5bf1dec88223c8436dabd09e818241))
+
 ## [0.7.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.7.0...reflex-cli-v0.7.1) (2026-08-14)
 
 
