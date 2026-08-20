@@ -1182,7 +1182,7 @@ export const API_OPS: readonly ApiOp[] = [
     "id": "killAgent",
     "method": "DELETE",
     "path": "/agents/{id}",
-    "summary": "Force stop the agent and shut down its devbox.",
+    "summary": "Delete the agent: force stop it, shut down its devbox, and hide the run.",
     "pathParams": [
       "id"
     ],

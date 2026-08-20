@@ -550,7 +550,8 @@
                         "type": "string",
                         "enum": [
                           "implement",
-                          "plan"
+                          "plan",
+                          "review"
                         ]
                       },
                       "labelIds": {
@@ -1707,7 +1708,8 @@
                     "type": "string",
                     "enum": [
                       "implement",
-                      "plan"
+                      "plan",
+                      "review"
                     ]
                   },
                   "labelIds": {
@@ -1864,7 +1866,8 @@
       },
       "delete": {
         "operationId": "killAgent",
-        "summary": "Force stop the agent and shut down its devbox.",
+        "summary": "Delete the agent: force stop it, shut down its devbox, and hide the run.",
+        "description": "Soft-deletes the run so normal reads no longer return it while retaining its durable history. Use `POST /agents/:id/stop` to force stop an agent while keeping it visible.",
         "tags": [
           "agents"
         ],
@@ -13081,6 +13084,21 @@
               }
             ]
           },
+          "promptMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "implement",
+                  "plan",
+                  "review"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "createdAt": {
             "type": "number"
           },
@@ -14730,6 +14748,21 @@
                   }
                 },
                 "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "promptMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "implement",
+                  "plan",
+                  "review"
+                ]
               },
               {
                 "type": "null"
