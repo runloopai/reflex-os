@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.8.1...reflex-cli-v0.9.0) (2026-08-21)
+
+
+### Features
+
+* **personas:** launch a persona as a different agent type through the API ([#3774](https://github.com/runloopai/reflex/issues/3774)) ([cf1a392](https://github.com/runloopai/reflex/commit/cf1a39221ca35a3149a5f437f58ae065ae53fed6))
+
 ## [0.8.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.8.0...reflex-cli-v0.8.1) (2026-08-21)
 
 
