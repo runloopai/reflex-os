@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.8.0...reflex-cli-v0.8.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* **server:** soft-delete agent rows on DELETE /agents/:id ([#3843](https://github.com/runloopai/reflex/issues/3843)) ([a279323](https://github.com/runloopai/reflex/commit/a279323d042e4c9ffdbb43b4119cff861ca51f3f))
+
 ## [0.8.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.7.1...reflex-cli-v0.8.0) (2026-08-19)
 
 

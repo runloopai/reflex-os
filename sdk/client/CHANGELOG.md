@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.11.0...reflex-client-v0.12.0) (2026-08-21)
+
+
+### Features
+
+* add review-only prompt mode for agent personas (REF-142) ([#3842](https://github.com/runloopai/reflex/issues/3842)) ([a08fe3c](https://github.com/runloopai/reflex/commit/a08fe3c76490e18db80fc59ba2836fb8d4d76a61))
+
+
+### Bug Fixes
+
+* **server:** soft-delete agent rows on DELETE /agents/:id ([#3843](https://github.com/runloopai/reflex/issues/3843)) ([a279323](https://github.com/runloopai/reflex/commit/a279323d042e4c9ffdbb43b4119cff861ca51f3f))
+
 ## [0.11.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.10.0...reflex-client-v0.11.0) (2026-08-19)
 
 
