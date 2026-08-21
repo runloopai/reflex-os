@@ -751,6 +751,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getAgentPersona",
+    "method": "GET",
+    "path": "/agent-personas/{id}",
+    "summary": "Get an agent persona by id.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getAgentQueue",
     "method": "GET",
     "path": "/agents/{id}/queue",
@@ -1190,6 +1201,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "launchAgentFromPersona",
+    "method": "POST",
+    "path": "/agent-personas/{id}/launch",
+    "summary": "Launch an agent from a persona.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "listAccessibleModelProviderSecrets",
     "method": "GET",
     "path": "/me/model-provider-secrets/accessible",
@@ -1257,6 +1279,15 @@ export const API_OPS: readonly ApiOp[] = [
     "method": "GET",
     "path": "/agent-labels",
     "summary": "List the agent labels in the active organization.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "listAgentPersonas",
+    "method": "GET",
+    "path": "/agent-personas",
+    "summary": "List the agent personas visible in the active organization.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": false
