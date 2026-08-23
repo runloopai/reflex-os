@@ -8803,6 +8803,40 @@
         }
       }
     },
+    "/organizations/{id}/invites/{inviteId}/resend": {
+      "post": {
+        "operationId": "resendOrgInvite",
+        "summary": "Expire an invite's current link and issue a fresh one.",
+        "description": "The previously shared link stops working immediately. The replacement token and redeem link are returned in plaintext exactly once on this response and cannot be retrieved again.",
+        "tags": [
+          "organizations"
+        ],
+        "x-route-scope": "admin-target-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inviteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/organizations/{id}/members": {
       "get": {
         "operationId": "listOrgMembers",

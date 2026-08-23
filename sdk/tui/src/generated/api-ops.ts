@@ -1909,6 +1909,18 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "resendOrgInvite",
+    "method": "POST",
+    "path": "/organizations/{id}/invites/{inviteId}/resend",
+    "summary": "Expire an invite's current link and issue a fresh one.",
+    "pathParams": [
+      "id",
+      "inviteId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "resumeAgent",
     "method": "POST",
     "path": "/agents/{id}/resume",
