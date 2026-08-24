@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.13.0...reflex-client-v0.14.0) (2026-08-24)
+
+
+### Features
+
+* **onboarding:** add a resend button to pending email invites ([#3902](https://github.com/runloopai/reflex/issues/3902)) ([c93d2b4](https://github.com/runloopai/reflex/commit/c93d2b4edc2da9c3d1762b1e5af8921641502d91))
+
+
+### Bug Fixes
+
+* **costs:** point the sonnet alias at Sonnet 5 and repair Anthropic rates ([#3915](https://github.com/runloopai/reflex/issues/3915)) ([0059efb](https://github.com/runloopai/reflex/commit/0059efb576e6e05f16a3eeb7ecc872dac90ee7db))
+
 ## [0.13.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.12.0...reflex-client-v0.13.0) (2026-08-21)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.9.0...reflex-cli-v0.10.0) (2026-08-24)
+
+
+### Features
+
+* **onboarding:** add a resend button to pending email invites ([#3902](https://github.com/runloopai/reflex/issues/3902)) ([c93d2b4](https://github.com/runloopai/reflex/commit/c93d2b4edc2da9c3d1762b1e5af8921641502d91))
+
 ## [0.9.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.8.1...reflex-cli-v0.9.0) (2026-08-21)
 
 
