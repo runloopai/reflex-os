@@ -15034,6 +15034,7 @@
               "current_mode_update",
               "config_option_update",
               "session_info_update",
+              "usage_update",
               "devbox.running",
               "devbox.suspended",
               "devbox.shutdown",
