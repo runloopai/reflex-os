@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.14.0...reflex-client-v0.15.0) (2026-08-24)
+
+
+### Features
+
+* **slack:** share channel-started sessions with thread participants ([#3898](https://github.com/runloopai/reflex/issues/3898)) ([0a5315c](https://github.com/runloopai/reflex/commit/0a5315c8adf7f512dc86e9a2f16935cef32996cc))
+
+
+### Bug Fixes
+
+* **costs:** price Codex launch models and record ACP session spend ([#3937](https://github.com/runloopai/reflex/issues/3937)) ([365e8da](https://github.com/runloopai/reflex/commit/365e8da020755848cb798ec35ce8ec5c006c492e))
+
 ## [0.14.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.13.0...reflex-client-v0.14.0) (2026-08-24)
 
 

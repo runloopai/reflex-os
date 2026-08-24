@@ -8442,6 +8442,16 @@
                   },
                   "allowSessionShareEdit": {
                     "type": "boolean"
+                  },
+                  "sharingSettings": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*:[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+                    },
+                    "additionalProperties": {
+                      "type": "boolean"
+                    }
                   }
                 }
               }
@@ -14747,9 +14757,6 @@
               }
             ]
           },
-          "isBuiltIn": {
-            "type": "boolean"
-          },
           "organizationId": {
             "anyOf": [
               {
@@ -14795,7 +14802,6 @@
           "description",
           "icon",
           "defaultPrompt",
-          "isBuiltIn",
           "organizationId",
           "ownerId",
           "createdAt",
@@ -16709,6 +16715,16 @@
           },
           "allowSessionShareEdit": {
             "type": "boolean"
+          },
+          "sharingSettings": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*:[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
           }
         },
         "required": [
