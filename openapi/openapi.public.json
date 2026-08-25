@@ -919,7 +919,7 @@
     "/agent-groups/{groupId}/members": {
       "post": {
         "operationId": "addAgentGroupMembers",
-        "summary": "Add agents to a group.",
+        "summary": "File agents into a group, moving them out of any other group.",
         "tags": [
           "agent-groups"
         ],

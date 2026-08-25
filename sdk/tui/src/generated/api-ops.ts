@@ -36,7 +36,7 @@ export const API_OPS: readonly ApiOp[] = [
     "id": "addAgentGroupMembers",
     "method": "POST",
     "path": "/agent-groups/{groupId}/members",
-    "summary": "Add agents to a group.",
+    "summary": "File agents into a group, moving them out of any other group.",
     "pathParams": [
       "groupId"
     ],
