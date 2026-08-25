@@ -1342,6 +1342,22 @@ export const API_OPS: readonly ApiOp[] = [
       {
         "name": "search",
         "required": false
+      },
+      {
+        "name": "status",
+        "required": false
+      },
+      {
+        "name": "mark",
+        "required": false
+      },
+      {
+        "name": "groupId",
+        "required": false
+      },
+      {
+        "name": "labelId",
+        "required": false
       }
     ],
     "hasBody": false
