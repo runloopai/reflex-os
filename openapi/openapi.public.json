@@ -4337,6 +4337,41 @@
         }
       }
     },
+    "/auth/device/acknowledge": {
+      "post": {
+        "operationId": "acknowledgeDeviceAuthToken",
+        "summary": "Acknowledge that a device credential was saved.",
+        "description": "Idempotently erases the encrypted handoff after the client has durably stored the returned API key.",
+        "tags": [
+          "auth"
+        ],
+        "x-route-scope": "public",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceCode": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "deviceCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        }
+      }
+    },
     "/auth/device/start": {
       "post": {
         "operationId": "startDeviceAuth",
@@ -4361,6 +4396,9 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 80
+                  },
+                  "supportsAcknowledgement": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -4392,6 +4430,9 @@
                     },
                     "expiresIn": {
                       "type": "number"
+                    },
+                    "acknowledgementRequired": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -4414,7 +4455,7 @@
       "post": {
         "operationId": "pollDeviceAuthToken",
         "summary": "Poll a device sign-in for its result.",
-        "description": "Responds 202 while approval is pending. On approval the minted API key is returned exactly once and the device code is deleted.",
+        "description": "Responds 202 while approval is pending. On approval the minted API key remains replayable until the client acknowledges durable storage.",
         "tags": [
           "auth"
         ],

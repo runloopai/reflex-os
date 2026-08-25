@@ -13,6 +13,8 @@ export function runLoginWizard(initialBaseUrl?: string): Promise<TuiConfig | nul
         initialBaseUrl,
         onComplete: (config) => {
           result = config;
+          const savedTo = saveConfig(config);
+          console.log(`Saved credentials to ${savedTo}`);
         },
         onCancel: () => {
           result = null;
@@ -20,10 +22,6 @@ export function runLoginWizard(initialBaseUrl?: string): Promise<TuiConfig | nul
       }),
     );
     void instance.waitUntilExit().then(() => {
-      if (result) {
-        const savedTo = saveConfig(result);
-        console.log(`Saved credentials to ${savedTo}`);
-      }
       resolve(result);
     });
   });

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DeviceAuthAbortError,
+  acknowledgeDeviceToken,
   pollDeviceTokenOnce,
   startDeviceAuth,
   waitForDeviceToken,
@@ -38,6 +39,7 @@ describe('startDeviceAuth', () => {
           verificationUriComplete: `${BASE}/connect?code=WXYZ-1234`,
           interval: 2,
           expiresIn: 600,
+          acknowledgementRequired: true,
         },
       },
     ]);
@@ -48,7 +50,10 @@ describe('startDeviceAuth', () => {
 
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe(`${BASE}/api/auth/device/start`);
-    expect(JSON.parse((init as RequestInit).body as string)).toEqual({ hostname: 'my-laptop' });
+    expect(JSON.parse((init as RequestInit).body as string)).toEqual({
+      hostname: 'my-laptop',
+      supportsAcknowledgement: true,
+    });
   });
 
   it('throws when the server rejects the start request', async () => {
@@ -102,6 +107,19 @@ describe('waitForDeviceToken', () => {
     expect(sleep).toHaveBeenCalledTimes(2);
   });
 
+  it('retries transient server failures during a rolling key rotation', async () => {
+    mockFetchSequence([
+      { status: 500, body: {} },
+      { status: 200, body: { status: 'approved', apiKey: 'rfx_k', organizationId: 'org_1' } },
+    ]);
+    const sleep = vi.fn().mockResolvedValue(undefined);
+
+    await expect(waitForDeviceToken(BASE, 'dev', { sleep })).resolves.toMatchObject({
+      status: 'approved',
+    });
+    expect(sleep).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects when the abort signal is already set', async () => {
     mockFetchSequence([]);
     const controller = new AbortController();
@@ -109,5 +127,27 @@ describe('waitForDeviceToken', () => {
     await expect(
       waitForDeviceToken(BASE, 'dev', { signal: controller.signal }),
     ).rejects.toBeInstanceOf(DeviceAuthAbortError);
+  });
+});
+
+describe('acknowledgeDeviceToken', () => {
+  it('posts the device code after durable storage', async () => {
+    const fetchMock = mockFetchSequence([{ status: 204, body: undefined }]);
+    await acknowledgeDeviceToken(BASE, 'dev');
+
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe(`${BASE}/api/auth/device/acknowledge`);
+    expect(JSON.parse((init as RequestInit).body as string)).toEqual({ deviceCode: 'dev' });
+  });
+
+  it('retries a transient acknowledgement response', async () => {
+    mockFetchSequence([
+      { status: 503, body: {} },
+      { status: 204, body: undefined },
+    ]);
+    const sleep = vi.fn().mockResolvedValue(undefined);
+
+    await acknowledgeDeviceToken(BASE, 'dev', { sleep });
+    expect(sleep).toHaveBeenCalledTimes(1);
   });
 });

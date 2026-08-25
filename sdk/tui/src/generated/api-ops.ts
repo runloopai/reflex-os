@@ -24,6 +24,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "acknowledgeDeviceAuthToken",
+    "method": "POST",
+    "path": "/auth/device/acknowledge",
+    "summary": "Acknowledge that a device credential was saved.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "addAgentGroupMembers",
     "method": "POST",
     "path": "/agent-groups/{groupId}/members",

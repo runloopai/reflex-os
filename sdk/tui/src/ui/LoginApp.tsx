@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 import { DEFAULT_BASE_URL, type TuiConfig } from '../config.js';
 import {
   DeviceAuthAbortError,
+  acknowledgeDeviceToken,
   startDeviceAuth,
   waitForDeviceToken,
 } from '../connect/device-auth.js';
@@ -16,8 +17,8 @@ interface LoginAppProps {
    * resolves this as `--url` > `REFLEX_BASE_URL` > the hosted instance.
    */
   initialBaseUrl?: string;
-  /** Called with the validated config; the host saves it and continues. */
-  onComplete: (config: TuiConfig) => void;
+  /** Called with the validated config; resolves only after durable storage. */
+  onComplete: (config: TuiConfig) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -59,8 +60,11 @@ export function LoginApp({ initialBaseUrl, onComplete, onCancel }: LoginAppProps
   const abortRef = useRef<AbortController | null>(null);
 
   const finish = useCallback(
-    (config: TuiConfig) => {
-      onComplete(config);
+    async (config: TuiConfig, deviceCode: string, acknowledgementRequired: boolean) => {
+      await onComplete(config);
+      if (acknowledgementRequired) {
+        await acknowledgeDeviceToken(config.baseUrl, deviceCode);
+      }
       exit();
     },
     [onComplete, exit],
@@ -84,10 +88,15 @@ export function LoginApp({ initialBaseUrl, onComplete, onCancel }: LoginAppProps
         });
         const result = await waitForDeviceToken(url, start.deviceCode, {
           intervalSeconds: start.interval,
+          expiresInSeconds: start.expiresIn,
           signal: controller.signal,
         });
         if (result.status === 'approved') {
-          finish({ baseUrl: url, apiKey: result.apiKey, organizationId: result.organizationId });
+          await finish(
+            { baseUrl: url, apiKey: result.apiKey, organizationId: result.organizationId },
+            start.deviceCode,
+            start.acknowledgementRequired === true,
+          );
           return;
         }
         if (result.status === 'denied') {
