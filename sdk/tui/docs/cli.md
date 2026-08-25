@@ -776,7 +776,7 @@ list invites, pending ones by default
 Options:
 
 - `--json`: print the raw JSON response instead of a table
-- `--status <status>`: filter: pending, consumed, revoked, declined, or all
+- `--status <status>`: filter: pending, active, consumed, revoked, declined, or all
 
 #### orgs invites revoke
 

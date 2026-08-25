@@ -32,6 +32,7 @@ import {
   listAccessibleModelProviderSecrets,
   listFeatureFlags,
   listOrgInvites,
+  type ListOrgInvitesParams,
   listOrgMembers,
   listOrgPlugins,
   listOrgRoles,
@@ -510,14 +511,18 @@ export function adminCommandGroups(): CommandGroup[] {
           options: [
             {
               flags: '--status <status>',
-              description: 'filter: pending, consumed, revoked, declined, or all',
+              description: 'filter: pending, active, consumed, revoked, declined, or all',
             },
           ],
           fetch: async (_args, opts) =>
             (
               await listOrgInvites(
                 await resolveOrgId(),
-                optString(opts.status) ? { status: opts.status as string } : undefined,
+                // The server treats an unrecognised status as `pending`,
+                // so narrowing the free-text flag cannot produce a 400.
+                optString(opts.status)
+                  ? { status: opts.status as ListOrgInvitesParams['status'] }
+                  : undefined,
               )
             ).data,
           render: (data) => {

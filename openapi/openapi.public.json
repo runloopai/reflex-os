@@ -8725,7 +8725,16 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "default": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "active",
+                "consumed",
+                "revoked",
+                "declined",
+                "all"
+              ]
             }
           }
         ],
@@ -8774,8 +8783,15 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Successful response"
+          "201": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOrganizationInviteResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -8842,7 +8858,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOrganizationInviteResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -15912,6 +15935,31 @@
         ],
         "additionalProperties": false
       },
+      "CreateOrganizationInviteResponse": {
+        "type": "object",
+        "properties": {
+          "invite": {
+            "$ref": "#/components/schemas/OrganizationInvite"
+          },
+          "redeemUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "emailSent": {
+            "type": "boolean"
+          },
+          "reissued": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "invite",
+          "redeemUrl",
+          "emailSent",
+          "reissued"
+        ],
+        "additionalProperties": false
+      },
       "CreateResourceGrantRequest": {
         "type": "object",
         "properties": {
@@ -16739,6 +16787,143 @@
           "emailDomains",
           "capabilities",
           "enabledReleaseChannels"
+        ],
+        "additionalProperties": false
+      },
+      "OrganizationInvite": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "invitedByUserId": {
+            "type": "string"
+          },
+          "reissuedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reissuedByUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "consumedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consumedByUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revokedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revokedByUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declinedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declinedByUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "consumed",
+              "revoked",
+              "expired",
+              "declined"
+            ]
+          },
+          "tokenLast4": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organizationId",
+          "email",
+          "invitedByUserId",
+          "reissuedAt",
+          "reissuedByUserId",
+          "createdAt",
+          "expiresAt",
+          "consumedAt",
+          "consumedByUserId",
+          "revokedAt",
+          "revokedByUserId",
+          "declinedAt",
+          "declinedByUserId",
+          "status",
+          "tokenLast4"
         ],
         "additionalProperties": false
       },
