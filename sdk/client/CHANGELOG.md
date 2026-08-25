@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.0...reflex-client-v0.15.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* **plugin-agent-persona:** remove vestigial isBuiltIn plumbing ([#3970](https://github.com/runloopai/reflex/issues/3970)) ([8470efb](https://github.com/runloopai/reflex/commit/8470efb08f53aac4d802882de5e15aa93a37e354))
+
 ## [0.15.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.14.0...reflex-client-v0.15.0) (2026-08-24)
 
 
