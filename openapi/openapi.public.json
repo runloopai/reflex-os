@@ -2776,6 +2776,71 @@
         }
       }
     },
+    "/agents/{id}/mcp-servers": {
+      "post": {
+        "operationId": "attachAgentMcpServers",
+        "summary": "Attach MCP servers to a running agent's devbox.",
+        "description": "Mints live MCP hub tokens for the devbox and registers each server in the agent's native config immediately, then records the ids on the agent's `mcp-servers` attachment. The devbox must be running (409 `agent_devbox_not_running` otherwise); a registration the box reports as failed is a 502 `mcp_registration_failed` with nothing persisted. Already-attached ids are skipped, unknown or disabled ids are dropped (compare the returned agent's attachments to detect a partial drop), and the request 404s `mcp_config_not_found` only when no id resolves. Local (stdio) servers are rejected because their subprocess secrets only exist as create-time devbox params.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mcpServerIds": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "mcpServerIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/message": {
       "post": {
         "operationId": "sendAgentMessage",

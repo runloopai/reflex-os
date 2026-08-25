@@ -206,6 +206,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "attachAgentMcpServers",
+    "method": "POST",
+    "path": "/agents/{id}/mcp-servers",
+    "summary": "Attach MCP servers to a running agent's devbox.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "clearAccountFeatureFlag",
     "method": "DELETE",
     "path": "/flags/account/{key}",

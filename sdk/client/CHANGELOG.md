@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.2](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.1...reflex-client-v0.15.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* **server:** keep CLI device sign-in state in Postgres so it survives two replicas ([#3860](https://github.com/runloopai/reflex/issues/3860)) ([7ce67e2](https://github.com/runloopai/reflex/commit/7ce67e2dc22802f81f46270e0b7486ac4d5a51ba))
+
 ## [0.15.1](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.0...reflex-client-v0.15.1) (2026-08-24)
 
 
