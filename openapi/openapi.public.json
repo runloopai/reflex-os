@@ -2825,7 +2825,7 @@
       "post": {
         "operationId": "attachAgentMcpServers",
         "summary": "Attach MCP servers to a running agent's devbox.",
-        "description": "Mints live MCP hub tokens for the devbox and registers each server in the agent's native config immediately, then records the ids on the agent's `mcp-servers` attachment. The devbox must be running (409 `agent_devbox_not_running` otherwise); a registration the box reports as failed is a 502 `mcp_registration_failed` with nothing persisted. Already-attached ids are skipped, unknown or disabled ids are dropped (compare the returned agent's attachments to detect a partial drop), and the request 404s `mcp_config_not_found` only when no id resolves. Local (stdio) servers are rejected because their subprocess secrets only exist as create-time devbox params.",
+        "description": "Mints live MCP hub tokens for the devbox and registers each server in the agent's native config immediately, then records the ids on the agent's `mcp-servers` attachment. The devbox must be running (409 `agent_devbox_not_running` otherwise); a registration the box reports as failed is a 502 `mcp_registration_failed` with nothing persisted. `activation` reports whether the agent process that is running right now loaded the servers (`active`, usable on its next turn) or whether they wait on disk for its next start (`deferred`) — both are successful attaches. Already-attached ids are skipped, unknown or disabled ids are dropped (compare the returned agent's attachments to detect a partial drop), and the request 404s `mcp_config_not_found` only when no id resolves. Local (stdio) servers are rejected because their subprocess secrets only exist as create-time devbox params.",
         "tags": [
           "agents"
         ],
@@ -2878,7 +2878,62 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Agent"
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "$ref": "#/components/schemas/Agent"
+                    },
+                    "activation": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "active"
+                            },
+                            "serverNames": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "serverNames"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "const": "deferred"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "enum": [
+                                "restart-required",
+                                "agent-unreachable"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "reason"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "agent",
+                    "activation"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -15099,7 +15154,6 @@
           "category": {
             "type": "string",
             "enum": [
-              "integration",
               "custom",
               "user",
               "team"
