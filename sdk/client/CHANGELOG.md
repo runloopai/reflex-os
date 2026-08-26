@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.16.0...reflex-client-v0.17.0) (2026-08-26)
+
+
+### Features
+
+* **users:** adopt ID-JAG for MCP authorization, inbound and outbound ([#3992](https://github.com/runloopai/reflex/issues/3992)) ([4ddd812](https://github.com/runloopai/reflex/commit/4ddd812ed15512fb0d72d61c017a854181647121))
+
 ## [0.16.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.2...reflex-client-v0.16.0) (2026-08-26)
 
 
