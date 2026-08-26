@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.16.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.2...reflex-client-v0.16.0) (2026-08-26)
+
+
+### Features
+
+* attach MCP servers to a running session from the chat composer ([#4032](https://github.com/runloopai/reflex/issues/4032)) ([2ffe221](https://github.com/runloopai/reflex/commit/2ffe22164bac13a312bfbfb47655eff3647c0ecd))
+* make an attached MCP server usable by the running session ([#4068](https://github.com/runloopai/reflex/issues/4068)) ([e47b007](https://github.com/runloopai/reflex/commit/e47b007682f48b0bf0259b03bfb7cadb7f417e5c))
+
+
+### Bug Fixes
+
+* **server:** list only org, team, and user secrets in the env-var picker ([#3650](https://github.com/runloopai/reflex/issues/3650)) ([7de361d](https://github.com/runloopai/reflex/commit/7de361d6ead6053065826883e9f5f553905b9fe2))
+* **web:** make filtered agent lists show every match, not just page one ([#4045](https://github.com/runloopai/reflex/issues/4045)) ([98a0850](https://github.com/runloopai/reflex/commit/98a0850b617a2fd94c1225b9a249699deb18b167))
+* **web:** move a session between groups instead of filing it in several ([#4061](https://github.com/runloopai/reflex/issues/4061)) ([72a1072](https://github.com/runloopai/reflex/commit/72a1072d0e8ab01330a59ed90aca8efaeb57dabb))
+
 ## [0.15.2](https://github.com/runloopai/reflex/compare/reflex-client-v0.15.1...reflex-client-v0.15.2) (2026-08-25)
 
 

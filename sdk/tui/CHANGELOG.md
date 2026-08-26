@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.10.1...reflex-cli-v0.11.0) (2026-08-26)
+
+
+### Features
+
+* attach MCP servers to a running session from the chat composer ([#4032](https://github.com/runloopai/reflex/issues/4032)) ([2ffe221](https://github.com/runloopai/reflex/commit/2ffe22164bac13a312bfbfb47655eff3647c0ecd))
+
+
+### Bug Fixes
+
+* **web:** make filtered agent lists show every match, not just page one ([#4045](https://github.com/runloopai/reflex/issues/4045)) ([98a0850](https://github.com/runloopai/reflex/commit/98a0850b617a2fd94c1225b9a249699deb18b167))
+* **web:** move a session between groups instead of filing it in several ([#4061](https://github.com/runloopai/reflex/issues/4061)) ([72a1072](https://github.com/runloopai/reflex/commit/72a1072d0e8ab01330a59ed90aca8efaeb57dabb))
+
 ## [0.10.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.10.0...reflex-cli-v0.10.1) (2026-08-25)
 
 
