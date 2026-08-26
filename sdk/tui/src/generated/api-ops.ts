@@ -842,6 +842,14 @@ export const API_OPS: readonly ApiOp[] = [
       {
         "name": "before",
         "required": false
+      },
+      {
+        "name": "fromSeq",
+        "required": false
+      },
+      {
+        "name": "toSeq",
+        "required": false
       }
     ],
     "hasBody": false
