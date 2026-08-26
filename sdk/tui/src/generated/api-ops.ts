@@ -816,14 +816,34 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
-    "id": "getAgentStream",
+    "id": "getAgentSessionIndex",
     "method": "GET",
-    "path": "/agents/{id}/stream",
-    "summary": "Get the agent's full event history.",
+    "path": "/agents/{id}/session-index",
+    "summary": "The agent's session index: every prompt and turn boundary, for nav and paging.",
     "pathParams": [
       "id"
     ],
     "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "getAgentStream",
+    "method": "GET",
+    "path": "/agents/{id}/stream",
+    "summary": "Get the agent's event history: a turn-aligned window for indexed agents, the full array for legacy ones.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [
+      {
+        "name": "paged",
+        "required": false
+      },
+      {
+        "name": "before",
+        "required": false
+      }
+    ],
     "hasBody": false
   },
   {

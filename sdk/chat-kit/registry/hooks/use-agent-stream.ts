@@ -39,7 +39,11 @@ export function useAgentStream(
     queryFn: async () => {
       if (!agentId) return [];
       const { data } = await getAgentStream(agentId);
-      return data;
+      // Without query parameters the server returns the full event array;
+      // the envelope arm of the response union only ever answers paged
+      // requests, so unwrapping it here is type-completeness, not a path
+      // this hook takes.
+      return Array.isArray(data) ? data : (data.events as ReflexStreamEvent[]);
     },
     enabled: agentId !== null,
     // Live events keep the cache fresh; no refetch-on-interval needed.

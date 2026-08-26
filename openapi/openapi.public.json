@@ -3967,6 +3967,47 @@
         }
       }
     },
+    "/agents/{id}/session-index": {
+      "get": {
+        "operationId": "getAgentSessionIndex",
+        "summary": "The agent's session index: every prompt and turn boundary, for nav and paging.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentSessionIndexResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/snapshots": {
       "post": {
         "operationId": "createAgentSnapshot",
@@ -4077,7 +4118,7 @@
     "/agents/{id}/stream": {
       "get": {
         "operationId": "getAgentStream",
-        "summary": "Get the agent's full event history.",
+        "summary": "Get the agent's event history: a turn-aligned window for indexed agents, the full array for legacy ones.",
         "tags": [
           "agents"
         ],
@@ -4089,6 +4130,28 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "paged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
             }
           },
           {
@@ -4107,10 +4170,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AxonEvent"
-                  }
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AxonEvent"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/PagedAgentStreamResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -15088,6 +15158,208 @@
         ],
         "additionalProperties": false
       },
+      "AgentSessionIndexEntry": {
+        "type": "object",
+        "properties": {
+          "seqNumber": {
+            "type": "number"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entry": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "prompt"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
+                      "opensTurn": {
+                        "type": "boolean"
+                      },
+                      "protocolType": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "opensTurn",
+                      "protocolType"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "turn.end"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "completed",
+                          "errored",
+                          "interrupted",
+                          "suspended",
+                          "shutdown"
+                        ]
+                      },
+                      "durationMs": {
+                        "type": "number"
+                      },
+                      "tokenUsage": {
+                        "type": "object",
+                        "properties": {
+                          "inputTokens": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "outputTokens": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "cacheReadTokens": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "cacheWriteTokens": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "data"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "seqNumber",
+          "timestamp",
+          "entry"
+        ],
+        "additionalProperties": false
+      },
+      "AgentSessionIndexResponse": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentSessionIndexEntry"
+            }
+          },
+          "sessionIndexFromSeq": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "entries",
+          "sessionIndexFromSeq"
+        ],
+        "additionalProperties": false
+      },
+      "AgentStreamPageInfo": {
+        "type": "object",
+        "properties": {
+          "startSeq": {
+            "type": "number"
+          },
+          "endSeq": {
+            "type": "number"
+          },
+          "prevCursor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "startSeq",
+          "endSeq",
+          "prevCursor",
+          "hasMore"
+        ],
+        "additionalProperties": false
+      },
       "AgentView": {
         "type": "object",
         "properties": {
@@ -17129,6 +17401,25 @@
           "declinedByUserId",
           "status",
           "tokenLast4"
+        ],
+        "additionalProperties": false
+      },
+      "PagedAgentStreamResponse": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AxonEvent"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/AgentStreamPageInfo"
+          }
+        },
+        "required": [
+          "events",
+          "page"
         ],
         "additionalProperties": false
       },
