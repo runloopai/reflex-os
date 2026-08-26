@@ -10148,6 +10148,25 @@
                             "issuer": {
                               "type": "string"
                             },
+                            "idJagEnabled": {
+                              "type": "boolean"
+                            },
+                            "idJagAllowedClientIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "jwksUri": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
                             "groupMappings": {
                               "type": "array",
                               "items": {
@@ -10210,6 +10229,9 @@
                             "organizationId",
                             "displayName",
                             "issuer",
+                            "idJagEnabled",
+                            "idJagAllowedClientIds",
+                            "jwksUri",
                             "groupMappings",
                             "oktaOrgUrl",
                             "oktaSyncEnabled",
@@ -10286,6 +10308,31 @@
                     "type": "string",
                     "format": "uri"
                   },
+                  "idJagEnabled": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "idJagAllowedClientIds": {
+                    "default": [],
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    }
+                  },
+                  "jwksUri": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "groupMappings": {
                     "default": [],
                     "maxItems": 200,
@@ -10325,6 +10372,9 @@
                   "oktaSyncEnabled": {
                     "default": false,
                     "type": "boolean"
+                  },
+                  "expectedUpdatedAt": {
+                    "type": "number"
                   }
                 },
                 "required": [
@@ -10360,6 +10410,25 @@
                     },
                     "issuer": {
                       "type": "string"
+                    },
+                    "idJagEnabled": {
+                      "type": "boolean"
+                    },
+                    "idJagAllowedClientIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "jwksUri": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "groupMappings": {
                       "type": "array",
@@ -10423,6 +10492,9 @@
                     "organizationId",
                     "displayName",
                     "issuer",
+                    "idJagEnabled",
+                    "idJagAllowedClientIds",
+                    "jwksUri",
                     "groupMappings",
                     "oktaOrgUrl",
                     "oktaSyncEnabled",
