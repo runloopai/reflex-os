@@ -85,15 +85,41 @@ describe('blueprint selection', () => {
     blueprint({ name: 'building', status: 'building' }),
   ];
 
-  it('dedupes by name (latest wins) and hides other repos when scoped', () => {
+  it('dedupes by name (latest wins) and ranks the scoped repo first without hiding the rest', () => {
     const available = availableBlueprints(blueprints, 'acme/app');
-    expect(available.map((bp) => bp.name).sort()).toEqual(['app', 'org_base']);
+    // A blueprint built for another repo still launches, so it stays offered
+    // below the repo's own. Matches the web picker (useAvailableBlueprints).
+    expect(available.map((bp) => bp.name)).toEqual(['app', 'org_base', 'other']);
     expect(available.find((bp) => bp.name === 'app')?.createTimeMs).toBe(9);
+  });
+
+  it('offers every blueprint when the scoped repo has none of its own', () => {
+    expect(availableBlueprints(blueprints, 'acme/unbuilt').map((bp) => bp.name)).toEqual([
+      'app',
+      'org_base',
+      'other',
+    ]);
   });
 
   it('auto-picks the repo blueprint, falling back to a base blueprint', () => {
     expect(autoBlueprintName(availableBlueprints(blueprints, 'acme/app'), 'acme/app')).toBe('app');
     expect(autoBlueprintName(availableBlueprints(blueprints), undefined)).toBe('org_base');
+  });
+
+  it('ranks and auto-picks a blueprint whose stored repo is a URL', () => {
+    // `metadata.repo` keeps whatever the create form sent, so a pasted link
+    // stays a URL while the caller passes a bare slug. Both sides normalize.
+    const urlScoped = blueprint({
+      name: 'url_app',
+      metadata: { repo: 'https://github.com/acme/url-app' },
+      createTimeMs: 12,
+    });
+    const withUrl = [...blueprints, urlScoped];
+
+    expect(availableBlueprints(withUrl, 'acme/url-app')[0]?.name).toBe('url_app');
+    expect(autoBlueprintName(availableBlueprints(withUrl, 'acme/url-app'), 'acme/url-app')).toBe(
+      'url_app',
+    );
   });
 });
 

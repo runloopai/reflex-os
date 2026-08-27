@@ -5,9 +5,11 @@ import type {
   CreateAgentBodyEnvVarsItem as AgentEnvVarInput,
 } from '@runloop/reflex-client';
 import {
+  blueprintMatchesRepo,
   buildContentBlocks,
   buildGitRepoAttachment,
   isBaseBlueprint,
+  rankBlueprintsForRepo,
   resolveSandboxOptions,
   type Attachment,
   type PluginAttachmentValue,
@@ -92,20 +94,20 @@ export function modelOptions(
   return [auto, ...options];
 }
 
-/** Build-complete blueprints deduplicated by name (latest wins), repo-scoped ones filtered to the selected repo. Port of `useAvailableBlueprints`. */
+/**
+ * Build-complete blueprints deduplicated by name (latest wins), newest first,
+ * with the ones built for the selected repo ranked to the top. Port of
+ * `useAvailableBlueprints`, sharing its ranking policy.
+ */
 export function availableBlueprints(blueprints: Blueprint[], repoSlug?: string): Blueprint[] {
-  const normalizedRepo = repoSlug?.replace(/^https?:\/\/github\.com\//, '');
   const byName = new Map<string, Blueprint>();
   for (const bp of blueprints) {
     if (bp.status !== 'build_complete') continue;
-    if (normalizedRepo) {
-      const bpRepo = bp.metadata?.repo;
-      if (bpRepo && bpRepo !== repoSlug && bpRepo !== normalizedRepo) continue;
-    }
     const existing = byName.get(bp.name);
     if (!existing || bp.createTimeMs > existing.createTimeMs) byName.set(bp.name, bp);
   }
-  return [...byName.values()].sort((a, b) => b.createTimeMs - a.createTimeMs);
+  const latest = [...byName.values()].sort((a, b) => b.createTimeMs - a.createTimeMs);
+  return repoSlug ? rankBlueprintsForRepo(latest, repoSlug) : latest;
 }
 
 /**
@@ -115,10 +117,9 @@ export function availableBlueprints(blueprints: Blueprint[], repoSlug?: string):
  */
 export function autoBlueprintName(blueprints: Blueprint[], repoSlug?: string): string | null {
   if (repoSlug) {
-    const normalized = repoSlug.replace(/^https?:\/\/github\.com\//, '');
-    const repoMatch = blueprints.find(
-      (bp) => bp.metadata?.repo === repoSlug || bp.metadata?.repo === normalized,
-    );
+    // Same matcher `availableBlueprints` ranks with, so the blueprint the list
+    // puts first is the one selected here.
+    const repoMatch = blueprints.find((bp) => blueprintMatchesRepo(bp, repoSlug));
     if (repoMatch) return repoMatch.name;
   }
   const base = blueprints.find((bp) => bp.name === 'base') ?? blueprints.find(isBaseBlueprint);

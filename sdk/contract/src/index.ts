@@ -58,6 +58,7 @@ export type { ParsedEnvelopeText, ParsedFileEnvelope } from './attachment-envelo
 export * from './agent-queue.js';
 export * from './custom-sandbox-size.js';
 export * from './resource-size.js';
+export * from './repo-slug.js';
 export * from './sandbox-options.js';
 export * from './plugin-attachments.js';
 export * from './ask-user-question.js';

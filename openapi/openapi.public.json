@@ -270,6 +270,10 @@
                       "systemPrompt": {
                         "type": "string"
                       },
+                      "personaId": {
+                        "type": "string",
+                        "maxLength": 64
+                      },
                       "model": {
                         "type": "string"
                       },
@@ -1798,9 +1802,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991
+              "type": "string"
             }
           },
           {
@@ -1940,6 +1942,10 @@
                   },
                   "systemPrompt": {
                     "type": "string"
+                  },
+                  "personaId": {
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "model": {
                     "type": "string"
@@ -6825,6 +6831,9 @@
                           "readOnly": {
                             "type": "boolean"
                           },
+                          "destructive": {
+                            "type": "boolean"
+                          },
                           "inputSchema": {
                             "type": "object",
                             "propertyNames": {
@@ -8594,7 +8603,7 @@
       "patch": {
         "operationId": "updateOrganization",
         "summary": "Update an organization's name, slug, or settings.",
-        "description": "Capability changes are restricted to platform super-admins.",
+        "description": "Capability changes are restricted to platform admins.",
         "tags": [
           "organizations"
         ],
@@ -13800,6 +13809,16 @@
               }
             ]
           },
+          "personaId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "model": {
             "anyOf": [
               {
@@ -14815,6 +14834,10 @@
                 "type": "null"
               }
             ]
+          },
+          "personaId": {
+            "type": "string",
+            "maxLength": 64
           },
           "model": {
             "anyOf": [
@@ -16075,6 +16098,16 @@
               }
             ]
           },
+          "personaId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "model": {
             "anyOf": [
               {
@@ -17196,6 +17229,14 @@
             "items": {
               "type": "string"
             }
+          },
+          "subscriptionTier": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "standard",
+              "enterprise"
+            ]
           },
           "enabledReleaseChannels": {
             "default": [],

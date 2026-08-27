@@ -65,7 +65,7 @@ export function readCommandGroups(): CommandGroup[] {
               ...(opts.pinned ? { pinned: ListAgentsPinned.true } : {}),
               ...(typeof opts.search === 'string' ? { search: opts.search } : {}),
               ...(typeof opts.limit === 'string' ? { limit: Number(opts.limit) } : {}),
-              ...(typeof opts.cursor === 'string' ? { cursor: Number(opts.cursor) } : {}),
+              ...(typeof opts.cursor === 'string' ? { cursor: opts.cursor } : {}),
             };
             return (await listAgents(params)).data;
           },
