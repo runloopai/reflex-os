@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.17.0...reflex-client-v0.18.0) (2026-08-27)
+
+
+### Features
+
+* **web:** continuous turn-precise scroll for paged sessions ([#4179](https://github.com/runloopai/reflex/issues/4179)) ([30432a1](https://github.com/runloopai/reflex/commit/30432a18943306b74ed60af228d841dc58136f7c))
+
 ## [0.17.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.16.0...reflex-client-v0.17.0) (2026-08-26)
 
 
