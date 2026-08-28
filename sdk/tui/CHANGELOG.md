@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.12.1...reflex-cli-v0.13.0) (2026-08-28)
+
+
+### Features
+
+* read blueprint build logs from MCP and the API ([#4313](https://github.com/runloopai/reflex/issues/4313)) ([6667cb5](https://github.com/runloopai/reflex/commit/6667cb5a4b4f31d7724efe9870a26c58c6a7d496))
+
 ## [0.12.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.12.0...reflex-cli-v0.12.1) (2026-08-28)
 
 

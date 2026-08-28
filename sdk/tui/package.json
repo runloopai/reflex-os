@@ -1,6 +1,6 @@
 {
   "name": "@runloop/reflex-cli",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "description": "Terminal client for Reflex: browse and chat with agents, launch new ones, and connect this machine as a workstation agents can work on.",
   "license": "MIT",
   "keywords": [
