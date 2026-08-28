@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.12.0...reflex-cli-v0.12.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* **blueprints:** rank the blueprint picker by repo instead of filtering by it ([#4213](https://github.com/runloopai/reflex/issues/4213)) ([26f565d](https://github.com/runloopai/reflex/commit/26f565d5c3ab7b8d79c684118385e95bac540b28))
+* **server:** bound agent date-range pagination ([#4122](https://github.com/runloopai/reflex/issues/4122)) ([9ed30c2](https://github.com/runloopai/reflex/commit/9ed30c2b842fd3d1910badc18828de6b925583df))
+
 ## [0.12.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.11.0...reflex-cli-v0.12.0) (2026-08-27)
 
 

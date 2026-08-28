@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/runloopai/reflex/compare/reflex-contract-v0.2.1...reflex-contract-v0.2.2) (2026-08-28)
+
+
+### Bug Fixes
+
+* **blueprints:** rank the blueprint picker by repo instead of filtering by it ([#4213](https://github.com/runloopai/reflex/issues/4213)) ([26f565d](https://github.com/runloopai/reflex/commit/26f565d5c3ab7b8d79c684118385e95bac540b28))
+
 ## [0.2.1](https://github.com/runloopai/reflex/compare/reflex-contract-v0.2.0...reflex-contract-v0.2.1) (2026-08-05)
 
 

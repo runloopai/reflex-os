@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.19.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.18.0...reflex-client-v0.19.0) (2026-08-28)
+
+
+### Features
+
+* **agents:** record the launch persona and show it in agent details ([#4254](https://github.com/runloopai/reflex/issues/4254)) ([12eac75](https://github.com/runloopai/reflex/commit/12eac75e0662fa9f6b8495d0cdbcf1fe4944b93c))
+* **product:** gate enterprise identity by subscription tier ([#4215](https://github.com/runloopai/reflex/issues/4215)) ([ddd0ebb](https://github.com/runloopai/reflex/commit/ddd0ebbeff770b3d890080a5efcdbfcffee546de))
+
+
+### Bug Fixes
+
+* **server:** bound agent date-range pagination ([#4122](https://github.com/runloopai/reflex/issues/4122)) ([9ed30c2](https://github.com/runloopai/reflex/commit/9ed30c2b842fd3d1910badc18828de6b925583df))
+
 ## [0.18.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.17.0...reflex-client-v0.18.0) (2026-08-27)
 
 
