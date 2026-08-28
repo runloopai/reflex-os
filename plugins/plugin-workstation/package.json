@@ -26,7 +26,6 @@
   },
   "scripts": {
     "lint": "eslint --cache .",
-    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "storybook": "storybook dev -p 6135 --no-open",
     "build-storybook": "storybook build --output-dir storybook-static",

@@ -15,6 +15,17 @@ export interface ApiOp {
 
 export const API_OPS: readonly ApiOp[] = [
   {
+    "id": "acceptInvite",
+    "method": "POST",
+    "path": "/invites/{inviteId}/accept",
+    "summary": "Accept one organization invite",
+    "pathParams": [
+      "inviteId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "acceptPendingInvites",
     "method": "POST",
     "path": "/invites/accept-pending",

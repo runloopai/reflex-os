@@ -6531,6 +6531,38 @@
         }
       }
     },
+    "/invites/{inviteId}/accept": {
+      "post": {
+        "operationId": "acceptInvite",
+        "summary": "Accept one organization invite",
+        "tags": [
+          "invites"
+        ],
+        "x-route-scope": "user",
+        "parameters": [
+          {
+            "name": "inviteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInviteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/invites/{inviteId}/decline": {
       "post": {
         "operationId": "declineInvite",
@@ -13728,6 +13760,35 @@
   },
   "components": {
     "schemas": {
+      "AcceptInviteResponse": {
+        "type": "object",
+        "properties": {
+          "joined": {
+            "type": "object",
+            "properties": {
+              "organizationId": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              },
+              "organizationSlug": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "organizationId",
+              "organizationName",
+              "organizationSlug"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "joined"
+        ],
+        "additionalProperties": false
+      },
       "Agent": {
         "type": "object",
         "properties": {
