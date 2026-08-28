@@ -5714,6 +5714,162 @@
         }
       }
     },
+    "/blueprints/{id}/build-log": {
+      "get": {
+        "operationId": "getBlueprintBuildLog",
+        "summary": "Get a page of a blueprint's build log, with its build state.",
+        "tags": [
+          "blueprints"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Entries per page (default 200).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Page direction (default asc).",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "provisioning",
+                        "building",
+                        "failed",
+                        "build_complete"
+                      ]
+                    },
+                    "failureReason": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "level": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "timestampMs": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "level",
+                          "message",
+                          "timestampMs"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "totalEntries": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "nextCursor": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "status",
+                    "failureReason",
+                    "entries",
+                    "totalEntries",
+                    "nextCursor"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/blueprints/{id}/logs": {
       "get": {
         "operationId": "getBlueprintLogs",

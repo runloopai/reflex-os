@@ -906,6 +906,30 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getBlueprintBuildLog",
+    "method": "GET",
+    "path": "/blueprints/{id}/build-log",
+    "summary": "Get a page of a blueprint's build log, with its build state.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [
+      {
+        "name": "limit",
+        "required": false
+      },
+      {
+        "name": "cursor",
+        "required": false
+      },
+      {
+        "name": "order",
+        "required": false
+      }
+    ],
+    "hasBody": false
+  },
+  {
     "id": "getBlueprintLogs",
     "method": "GET",
     "path": "/blueprints/{id}/logs",
