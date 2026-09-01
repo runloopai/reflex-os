@@ -66,6 +66,12 @@ export interface GameRow {
   previewAnimArt: string | null;
   /** Bumped whenever either art file changes; cache-busts art URLs. */
   artVersion: number;
+  /**
+   * Version of the standing rules this game's agent has been told
+   * (`GAME_BRIEF_VERSION`). A system prompt is fixed at launch, so games
+   * below the current version get the difference appended to a turn.
+   */
+  briefVersion: number;
   /** What the agent is working on right now (suggestion body or owner prompt). */
   currentTask: string | null;
   currentTaskKind: 'suggestion' | 'prompt' | null;
@@ -184,6 +190,7 @@ const SCHEMA = `
   alter table games add column if not exists preview_anim_art text;
   alter table games add column if not exists current_task text;
   alter table games add column if not exists current_task_kind text;
+  alter table games add column if not exists brief_version integer not null default 0;
   alter table suggestions add column if not exists category text not null default 'improvement';
   alter table suggestions add column if not exists owner_note text;
   alter table suggestions add column if not exists edited_at timestamptz;
@@ -262,6 +269,7 @@ function toGame(row: Row): GameRow {
     iconArt: strOrNull(row, 'icon_art'),
     previewAnimArt: strOrNull(row, 'preview_anim_art'),
     artVersion: Number(row['art_version'] ?? 0),
+    briefVersion: Number(row['brief_version'] ?? 0),
     currentTask: strOrNull(row, 'current_task'),
     currentTaskKind: strOrNull(row, 'current_task_kind') as GameRow['currentTaskKind'],
     createdAt: timestamp(row, 'created_at'),
@@ -564,11 +572,18 @@ export class ArcadeDb {
     model: string | null;
     isPublic: boolean;
     autoApprove: boolean;
+    /**
+     * Rules version the launch system prompt carried (`GAME_BRIEF_VERSION`).
+     * Defaults to the column default, 0 — "briefed on nothing we know of",
+     * which makes the catch-up appendix the safe answer for any game whose
+     * creator did not say.
+     */
+    briefVersion?: number;
   }): Promise<GameRow> {
     const { rows } = await this.pg.query<Row>(
       `insert into games (id, owner_id, key_id, title, prompt, agent_id, agent_stream_id,
-                          agent_type, model, is_public, auto_approve)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) returning *`,
+                          agent_type, model, is_public, auto_approve, brief_version)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning *`,
       [
         newId('game'),
         input.ownerId,
@@ -581,6 +596,7 @@ export class ArcadeDb {
         input.model,
         input.isPublic,
         input.autoApprove,
+        input.briefVersion ?? 0,
       ],
     );
     return toGame(rows[0]!);
@@ -623,6 +639,7 @@ export class ArcadeDb {
         | 'daemonName'
         | 'currentTask'
         | 'currentTaskKind'
+        | 'briefVersion'
       >
     >,
   ): Promise<GameRow | null> {
@@ -640,6 +657,7 @@ export class ArcadeDb {
     if (patch.daemonName !== undefined) add('daemon_name', patch.daemonName);
     if (patch.currentTask !== undefined) add('current_task', patch.currentTask);
     if (patch.currentTaskKind !== undefined) add('current_task_kind', patch.currentTaskKind);
+    if (patch.briefVersion !== undefined) add('brief_version', patch.briefVersion);
     if (sets.length === 0) return this.gameById(id);
     const { rows } = await this.pg.query<Row>(
       `update games set ${sets.join(', ')} where id = $1 returning *`,

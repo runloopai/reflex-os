@@ -33,6 +33,7 @@ import type { ArcadeDb, GameRow, SuggestionStatus } from './db.ts';
 import type { EventHub } from './events.ts';
 import { publicGame } from './events.ts';
 import {
+  GAME_BRIEF_VERSION,
   fetchAgent,
   hostFixPrompt,
   sendMessageToAgent,
@@ -691,22 +692,36 @@ class GameWatcher {
     await db.countSuggestionDispatch(marked.id);
     await this.setTask(game, marked.body, 'suggestion');
     this.stageDispatch();
+    const needsBrief = game.briefVersion < GAME_BRIEF_VERSION;
     try {
       await sendMessageToAgent(
         this.creds,
         game.agentId,
-        suggestionPrompt(
-          marked.authorName,
-          marked.body,
-          !game.previewArt || !game.iconArt || !game.previewAnimArt,
-          marked.ownerNote,
-        ),
+        suggestionPrompt(marked.authorName, marked.body, {
+          needsArt: !game.previewArt || !game.iconArt || !game.previewAnimArt,
+          needsBrief,
+          ownerNote: marked.ownerNote,
+        }),
       );
     } catch (err) {
       console.error(`[arcade] sending suggestion ${next.id} failed, re-queueing:`, err);
       this.awaitingTurnStart = false;
       const reverted = await db.setSuggestionStatus(next.id, 'approved', ['working']);
       if (reverted) hub.suggestionChanged(reverted, game);
+      this.lastAgentStatus = agent.status;
+      return;
+    }
+    // Recorded on the send, not on the turn ending: the brief is a one-shot
+    // catch-up with nothing to re-probe, so a game that got it must not be
+    // told again on every later dispatch. Outside the try above on purpose —
+    // a failed write here is bookkeeping, and treating it as a failed send
+    // would re-queue a suggestion the agent is already working on.
+    if (needsBrief) {
+      try {
+        await db.updateGame(game.id, { briefVersion: GAME_BRIEF_VERSION });
+      } catch (err) {
+        console.error(`[arcade] recording the brief version for game ${this.gameId} failed:`, err);
+      }
     }
     this.lastAgentStatus = agent.status;
   }

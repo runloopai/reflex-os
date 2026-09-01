@@ -761,18 +761,30 @@ app.get('/play/:id', async (req, reply) => {
   const agent = agents.get((req.params as { id: string }).id);
   const title = agent?.name?.replace(/^arcade: /, '') ?? 'mock game';
   const version = (agent?.turns ?? 0) + 1;
+  // Also escapes quotes: some of this lands in attributes, not just text.
   const escapeHtml = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const changelog = (agent?.changelog ?? [])
     .slice(-6)
     .map((entry) => `<li>${escapeHtml(entry)}</li>`)
     .join('');
+  // The arcade hands every game the player in the frame URL so it never has
+  // to ask for a name (see `web/src/lib/game-frame.ts`). The mock game reads
+  // them like a real one would, including the guest fallback for anyone who
+  // opened this URL directly.
+  const query = req.query as Record<string, string | undefined>;
+  const player = (query['arcade_player'] ?? 'Guest').slice(0, 40);
+  const avatar = query['arcade_avatar'];
+  const role = query['arcade_role'] === 'owner' ? ' (owner)' : '';
   return reply.type('text/html').send(`<!doctype html>
 <html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
 <style>
   body { margin:0; font-family:system-ui; background:#0f0f13; color:#eee; overflow:hidden }
   #hud { position:fixed; top:12px; left:16px; font-size:14px; opacity:.85 }
   #log { position:fixed; bottom:12px; left:16px; font-size:11px; opacity:.6; max-width:40ch }
+  #who { position:fixed; top:12px; right:16px; display:flex; align-items:center; gap:8px;
+         font-size:13px; opacity:.85 }
+  #who img { border-radius:50% }
   #log ul { margin:4px 0 0; padding-left:16px }
   #dot { position:absolute; width:36px; height:36px; border-radius:50%;
          background:radial-gradient(circle at 30% 30%, #c4b5fd, #7c3aed);
@@ -780,6 +792,7 @@ app.get('/play/:id', async (req, reply) => {
 </style></head>
 <body>
   <div id="hud">${escapeHtml(title)} · v${version} · score <span id="score">0</span></div>
+  <div id="who">${avatar ? `<img src="${escapeHtml(avatar)}" alt="" width="22" height="22">` : ''}<span>playing as ${escapeHtml(player)}${role}</span></div>
   <div id="dot"></div>
   ${changelog ? `<div id="log">shipped suggestions<ul>${changelog}</ul></div>` : ''}
   <script>

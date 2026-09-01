@@ -83,7 +83,26 @@ record.status)` instead of the raw record — so tiles and banners show
   must resize with its container and stay sharp on a retina screen, and the
   page must not fight the player (`touch-action`, no hover-only). It applies
   to games created from now on — a system prompt is fixed when the agent is
-  created, so existing games need an owner prompt to catch up.
+  created — and games that predate a rule catch up through the brief
+  version below.
+- The player, handed to the game. The arcade already knows who is watching,
+  so the frame URL carries them (`arcade_player`, `arcade_player_id`,
+  `arcade_avatar`, `arcade_role`) and the standing prompt tells agents to
+  read them instead of asking anyone to type a name — with a guest fallback,
+  since a game opened outside the arcade gets none. The avatar is served as
+  an ordinary image (`/api/users/:id/avatar`, CORS-open, drawn from the
+  player's initial when they uploaded nothing) because the data URL the
+  profile carries cannot travel in a URL. It is display data, never a
+  credential: nothing is gated on it.
+- A loading screen instead of the template page. A game gets opened long
+  before it is finished, and whatever `index.html` holds is what the arcade
+  shows — so agents are told to replace the Vite boilerplate with a
+  first-paint loading screen for their own game in the same step they
+  scaffold it, and to remove it once the game is ready.
+- Rules that reach games that already exist. A system prompt is frozen at
+  launch, so each game records the `GAME_BRIEF_VERSION` it was briefed on;
+  when the arcade's rules move ahead, the next dispatched suggestion carries
+  the difference once and the game catches up on its own.
 - Agent daemons: the game-creation prompt instructs the agent to run its dev
   server as a registered daemon; the app embeds `agent.daemons[].url` in an
   iframe the moment it appears on the stream.

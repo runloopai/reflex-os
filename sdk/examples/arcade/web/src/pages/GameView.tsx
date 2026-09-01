@@ -17,6 +17,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ReflexProvider } from '../lib/reflex/reflex-provider.tsx';
 import { ChatPane } from '../components/reflex/chat-pane.tsx';
 import { arcade, gameArtUrl, getToken, type Game } from '../lib/api.ts';
+import { framePlayer, gameFrameUrl } from '../lib/game-frame.ts';
+import { useSession } from '../lib/session.ts';
 import { stageDensity } from '../lib/stage-density.ts';
 import { urlParam, useUrlPatch, useUrlState } from '../lib/useUrlState.ts';
 import { agentChip } from '../lib/agent-status.ts';
@@ -137,6 +139,7 @@ const ICON_BUTTON =
 export function GameView() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
+  const { me } = useSession();
   const [game, setGame] = useState<Game | null>(null);
   const [role, setRole] = useState<'owner' | 'viewer'>('viewer');
   const [error, setError] = useState<string | null>(null);
@@ -323,6 +326,10 @@ export function GameView() {
 
   const isOwner = role === 'owner';
   const token = getToken() ?? '';
+  // The game is told who is playing, so it never has to ask for a name.
+  const frameUrl = game.daemonUrl
+    ? gameFrameUrl(game.daemonUrl, framePlayer(me, window.location.origin, isOwner))
+    : null;
   const agent = agentChip(game.agentStatus);
   const icon = gameArtUrl(game, 'icon');
   const activePanel = PANELS.find((panel) => panel.key === tab)!;
@@ -418,9 +425,9 @@ export function GameView() {
                   </Link>
                 </Tip>
               ) : null}
-              {game.daemonUrl ? (
+              {frameUrl ? (
                 <a
-                  href={game.daemonUrl}
+                  href={frameUrl}
                   target="_blank"
                   rel="noreferrer"
                   className={`items-center rounded-lg border border-white/10 px-2.5 py-1 text-xs text-zinc-300 hover:bg-white/5 pointer-coarse:min-h-10 ${
@@ -445,9 +452,9 @@ export function GameView() {
             </div>
           </header>
           <div className="touch-stage min-h-0 flex-1 bg-black/70">
-            {game.daemonUrl ? (
+            {frameUrl ? (
               <iframe
-                src={game.daemonUrl}
+                src={frameUrl}
                 title={game.title}
                 className="h-full w-full border-0"
                 sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"

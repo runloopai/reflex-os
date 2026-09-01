@@ -20,6 +20,7 @@ import {
   startReflexConnect,
   validateCredentials,
   GAME_AGENT_SYSTEM_PROMPT,
+  GAME_BRIEF_VERSION,
   type ReflexCredentials,
 } from './reflex.ts';
 import { ConnectStore } from './connect.ts';
@@ -27,6 +28,7 @@ import { bearerToken, resolveGameAccess } from './proxy.ts';
 import { gameIdFromUrl, oEmbedFor, originFromRequest } from './share.ts';
 import { gameShareCard } from './share-card.ts';
 import { arcadeShareImage, decodeDataUrl, shareImageFor } from './og-image.ts';
+import { avatarImage } from './avatar.ts';
 // One list of share sources for both sides: the client tags links with it,
 // the join route validates arrivals against it.
 import { SHARE_SOURCES } from '../web/src/lib/share.ts';
@@ -308,6 +310,34 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     });
   });
 
+  /**
+   * A player's avatar as an image. Unauthenticated like the profile above,
+   * and CORS-open on purpose: its audience is the GAME, which runs on the
+   * agent's devbox under a foreign origin and is handed this URL so it can
+   * show who is playing without asking them to type a name.
+   *
+   * Always answers with an image — the drawn initial chip when the player
+   * uploaded nothing — so a game can point an <img> at it unconditionally.
+   * `?v=` is the caller's cache key (the arcade appends a hash of the
+   * profile); without one the answer is only briefly cacheable, since the
+   * player may change their picture at any time.
+   */
+  app.get('/api/users/:userId/avatar', async (req, reply) => {
+    const { userId } = req.params as { userId: string };
+    const target = await db.userById(userId);
+    if (!target) return fail(reply, 404, 'not_found', 'No such player.');
+    const image = avatarImage(target);
+    const versioned = typeof (req.query as { v?: unknown }).v === 'string';
+    return reply
+      .header('content-type', image.contentType)
+      .header('access-control-allow-origin', '*')
+      .header(
+        'cache-control',
+        versioned ? 'public, max-age=31536000, immutable' : 'public, max-age=60',
+      )
+      .send(image.body);
+  });
+
   // -- connect with reflex ------------------------------------------------
   //
   // The way most players get a key: the arcade starts Reflex's device
@@ -569,6 +599,9 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
       model,
       isPublic,
       autoApprove,
+      // Launched with the current rules in its system prompt, so it never
+      // needs the catch-up appendix.
+      briefVersion: GAME_BRIEF_VERSION,
     });
     await engine.ensureWatcher(game);
     hub.gameChanged(publicGame(game, user.name));

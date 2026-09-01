@@ -49,6 +49,13 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   shapes are a contract with `server/reflex.ts` (`suggestionPrompt`,
   `hostFixPrompt`): change one and the timeline mis-files entries, so the
   parsing is pinned in `tests/game-timeline.test.ts`.
+- `web/src/lib/game-frame.ts` - the player the arcade appends to the game's
+  frame URL (`arcade_player`, `arcade_player_id`, `arcade_avatar`,
+  `arcade_role`), so no game has to ask for a name. The parameter names are
+  a contract with `GAME_AGENT_SYSTEM_PROMPT`, pinned in
+  `tests/suggestion-prompt.test.ts`; the avatar is served as an image by
+  `server/avatar.ts` because a 64KB data URL cannot travel in a URL. It is
+  display data, not a credential — never put a token in it.
 - `stories/` + `tests/` - ALL stories and tests live here, outside the src
   dirs. `tests/fixtures.ts` has the shared builders.
 - `.storybook/` - Storybook 10 config; stories run as tests via
@@ -243,3 +250,9 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   captures changes into the database after each turn (`setGameArt`, art
   endpoints in routes.ts). Keep the system prompt, engine `ART_KINDS`,
   and the mock's `/play/:id/arcade/:file` route in sync.
+- A system prompt is frozen when the agent launches, so a rule added to
+  `GAME_AGENT_SYSTEM_PROMPT` reaches only games created after it. Games
+  already running catch up through `GAME_BRIEF_VERSION` + `briefUpdatePrompt`:
+  bump the version, put the new rules in that prompt, and the next dispatched
+  turn carries them once (recorded on the send — there is nothing to
+  re-probe, unlike the art appendix, which repeats while art is missing).

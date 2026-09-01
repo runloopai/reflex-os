@@ -174,6 +174,25 @@ export function gameArtUrl(game: Game, kind: 'preview' | 'icon' | 'preview-anim'
   return has ? `/api/games/${game.id}/art/${kind}?v=${game.artVersion}` : null;
 }
 
+/** Stable short hash, so a changed profile publishes a new avatar URL. */
+function profileHash(name: string, avatar: string): string {
+  let hash = 5381;
+  const input = `${name}\n${avatar}`;
+  for (let i = 0; i < input.length; i++) hash = (hash * 33) ^ input.charCodeAt(i);
+  return (hash >>> 0).toString(36);
+}
+
+/**
+ * A player's avatar as an image URL (see `GET /api/users/:id/avatar`) rather
+ * than the data URL the profile carries. Always resolves to an image — the
+ * server draws the initial chip when the player uploaded nothing — and the
+ * `v` key changes with the profile, so the immutable cache never serves a
+ * picture the player has since replaced.
+ */
+export function avatarPath(user: { id: string; name: string; avatar: string }): string {
+  return `/api/users/${user.id}/avatar?v=${profileHash(user.name, user.avatar)}`;
+}
+
 export type SuggestionStatus = 'pending' | 'approved' | 'working' | 'done' | 'rejected';
 
 export type SuggestionCategory = 'bug' | 'improvement' | 'feature';

@@ -493,6 +493,44 @@ export const GAME_AGENT_SYSTEM_PROMPT = [
   '  server) and make joining instant: no lobbies unless asked, new visitors',
   '  spawn straight into the running world.',
   '',
+  'First paint — always. Players open the game while you are still building',
+  'it, and whatever index.html holds is what they see:',
+  '- Never leave the Vite template page (the "Vite + TypeScript" boilerplate)',
+  '  or an empty body in place. That page is the first impression of the',
+  '  game for everyone who arrives early.',
+  '- In the SAME step as scaffolding, before you register the daemon,',
+  "  replace index.html's body with a loading screen for THIS game: its",
+  '  title, one line of copy, and something moving (a spinner, a pulsing',
+  '  bar). Write it as plain markup with an inline <style> in the document —',
+  '  no imports, no JS, no web fonts — so it paints on the first frame,',
+  '  before any bundle loads, and still shows while the dev server restarts.',
+  "- Dark background in the game's palette: the arcade stage behind the",
+  '  iframe is near-black, and a white flash on every load reads as a bug.',
+  '- The game removes it when it is ready to play: hide or remove the',
+  '  loading element from your entry module after the first frame renders.',
+  '  Do not leave it covering a running game.',
+  '- Verify with the same fetch you use for the host check: the HTML that',
+  '  comes back must be your loading screen, not the template.',
+  '',
+  'Player identity — always. The arcade already knows who is playing, so',
+  'the game must never ask them to type a name:',
+  '- The frame URL carries them as query parameters:',
+  '    arcade_player      display name (already trimmed to 40 chars)',
+  '    arcade_player_id   stable id for this player, good as a scores key',
+  '    arcade_avatar      absolute URL of their picture, always an image',
+  '    arcade_role        "owner" (whose game this is) or "player"',
+  '- Read them once at boot (`new URLSearchParams(location.search)`) and use',
+  '  them wherever the game would have prompted: greetings, scoreboards,',
+  '  multiplayer name tags, chat. If your game has a name field, prefill it',
+  '  and let them edit — do not block the game on it.',
+  '- Every one of them can be missing: signed-out visitors and anyone who',
+  '  opens the daemon URL directly get none. Fall back to "Guest" and art',
+  '  you draw yourself; never render "null" or a broken image.',
+  '- They are display data, NOT a credential — anyone can type them into',
+  '  the URL. Do not gate anything on them. Render the name as text',
+  '  (`textContent`, never `innerHTML`), and if you draw the avatar to a',
+  '  canvas, set `crossOrigin = "anonymous"` (the arcade serves it CORS-open).',
+  '',
   'Arcade art — always:',
   "- Ship two art files, served by the dev server from the game's public",
   '  dir (`public/arcade/` in a Vite project):',
@@ -558,6 +596,14 @@ export function buildGamePrompt(title: string, idea: string): string {
     'arcade art files (/arcade/icon.svg and /arcade/preview.svg), and reply',
     'with a short summary of the game and how to play it.',
     '',
+    "Players will open this before you finish, so replace index.html's body",
+    "with the game's own loading screen in the same step you scaffold it —",
+    'the Vite template page must never be what the arcade shows.',
+    '',
+    'Take the player from the frame URL (arcade_player, arcade_player_id,',
+    'arcade_avatar, arcade_role) instead of asking them for a name, and fall',
+    'back to a guest when those parameters are absent.',
+    '',
     'Make it playable with touch on a phone from the first build — that is',
     'where most players are, and retrofitting an input scheme is worse than',
     'designing one. Say in your summary how it plays on a phone.',
@@ -594,6 +640,60 @@ export function hostFixPrompt(daemonUrl: string): string {
 }
 
 /**
+ * Version of the standing rules in {@link GAME_AGENT_SYSTEM_PROMPT}.
+ *
+ * A system prompt is fixed when the agent is launched, so a rule added here
+ * reaches games that already exist only if someone tells them. Games record
+ * the version they were briefed on; when it lags, the next dispatched turn
+ * carries {@link briefUpdatePrompt} and the game catches up. Bump this and
+ * extend that prompt whenever a new rule matters to games already running.
+ */
+export const GAME_BRIEF_VERSION = 1;
+
+/**
+ * The rules a game launched before {@link GAME_BRIEF_VERSION} never got,
+ * appended to one dispatched turn. Sent once per game: unlike the art
+ * appendix, which repeats while the files are still missing, there is no
+ * signal here to re-check, and re-sending it every turn would be nagging.
+ */
+export function briefUpdatePrompt(): string {
+  return [
+    '',
+    'Arcade update — two new standing rules for every game, including this',
+    'one. Apply both in this turn, after the work above:',
+    '',
+    '1. Loading screen. Whatever index.html holds is what players see while',
+    '   you build and while the dev server restarts, and right now this game',
+    "   probably still ships the Vite template page. Replace index.html's",
+    "   body with the game's own loading screen: its title, a line of copy,",
+    '   and something moving, as plain markup with an inline <style> — no',
+    '   imports, no JS, no web fonts, so it paints before any bundle loads.',
+    "   Use the dark end of the game's palette (the arcade stage behind the",
+    '   iframe is near-black). Remove or hide it from your entry module once',
+    '   the game is ready, so it never covers a running game.',
+    '',
+    '2. Player identity. The arcade now passes the player in the frame URL:',
+    '     arcade_player      display name (max 40 chars)',
+    '     arcade_player_id   stable id, good as a scores key',
+    '     arcade_avatar      absolute image URL, always an image',
+    '     arcade_role        "owner" or "player"',
+    '   Read them at boot (`new URLSearchParams(location.search)`) and use',
+    '   them anywhere the game asks for a name or shows a player — prefill',
+    '   name fields instead of blocking on them. All four can be missing',
+    '   (signed-out visitor, daemon URL opened directly): fall back to',
+    '   "Guest" and your own placeholder art. They are display data, not a',
+    '   credential — anyone can type them into the URL — so gate nothing on',
+    '   them, render the name as text (`textContent`, never `innerHTML`),',
+    '   and set `crossOrigin = "anonymous"` if you draw the avatar to a',
+    '   canvas.',
+    '',
+    'Verify both through the public dev-server URL before ending the turn,',
+    'and say in your summary what the loading screen looks like and where',
+    'the player name now shows up.',
+  ].join('\n');
+}
+
+/**
  * Message for one approved player suggestion. The turn is only marked done
  * when it ends, so the prompt insists the agent verify its own work and
  * keep going until the suggestion demonstrably works.
@@ -601,9 +701,16 @@ export function hostFixPrompt(daemonUrl: string): string {
 export function suggestionPrompt(
   authorName: string,
   body: string,
-  needsArt = false,
-  ownerNote: string | null = null,
+  extras: {
+    /** The arcade holds no cover art for this game yet. */
+    needsArt?: boolean;
+    /** The game predates the current {@link GAME_BRIEF_VERSION}. */
+    needsBrief?: boolean;
+    /** The owner's note, steering how the suggestion should be built. */
+    ownerNote?: string | null;
+  } = {},
 ): string {
+  const { needsArt = false, needsBrief = false, ownerNote = null } = extras;
   // Games built before the art/hosting rules heal themselves: while art is
   // missing, every dispatched turn carries the housekeeping appendix.
   const housekeeping = needsArt
@@ -640,5 +747,6 @@ export function suggestionPrompt(
     'turn with a line starting "BLOCKED:" and the reason. Otherwise end with',
     'a one-paragraph summary of what changed and how you verified it.',
     ...housekeeping,
+    ...(needsBrief ? [briefUpdatePrompt()] : []),
   ].join('\n');
 }

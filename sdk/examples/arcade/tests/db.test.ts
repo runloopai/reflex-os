@@ -204,6 +204,18 @@ describe('game art', () => {
   });
 });
 
+// A game records the rules version its agent was launched with, so the
+// dispatcher can tell which games still owe a catch-up brief.
+describe('brief version', () => {
+  it('starts at zero when the creator did not say, and can be moved up', async () => {
+    const game = await db.gameById(gameId);
+    expect(game?.briefVersion).toBe(0);
+    const updated = await db.updateGame(gameId, { briefVersion: 2 });
+    expect(updated?.briefVersion).toBe(2);
+    expect((await db.gameById(gameId))?.briefVersion).toBe(2);
+  });
+});
+
 describe('owner notes', () => {
   it('stores, edits, and clears the note', async () => {
     const suggestion = await addApproved('note me');
