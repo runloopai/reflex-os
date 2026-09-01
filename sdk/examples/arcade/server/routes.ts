@@ -7,6 +7,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ArcadeDb, GameRow, UserRow } from './db.ts';
 import { CACHE, versioned } from './http-cache.ts';
+import { ART_CSP } from './security.ts';
 import type { EventHub } from './events.ts';
 import { publicGame } from './events.ts';
 import type { GameEngine } from './engine.ts';
@@ -177,6 +178,11 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     // bytes that change under it.
     reply
       .header('content-type', decoded.mediaType)
+      // These bytes were written by an agent and are served from the
+      // arcade's own origin. Navigated to directly, an SVG is a document
+      // that runs its own script — and could read the visitor's login
+      // token out of localStorage. Sandboxed, it cannot (see security.ts).
+      .header('content-security-policy', ART_CSP)
       .header('cache-control', versioned((req.query as { v?: string }).v, game.artVersion));
     return reply.send(decoded.bytes);
   });

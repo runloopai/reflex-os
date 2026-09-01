@@ -17,6 +17,7 @@ import { ArcadeDb } from './db.ts';
 import { EventHub, publicGame } from './events.ts';
 import { registerDiscoveryRoutes } from './discovery.ts';
 import { CACHE, registerCachePolicy, staticCacheHeaders } from './http-cache.ts';
+import { registerSecurityHeaders } from './security.ts';
 import { GameEngine } from './engine.ts';
 import { initReflex } from './reflex.ts';
 import { registerRoutes } from './routes.ts';
@@ -74,6 +75,7 @@ registerRoutes(app, { db, hub, engine, reflexAgentType: config.reflexAgentType }
 // the Vite server proxies them here.
 registerDiscoveryRoutes(app, db);
 registerCachePolicy(app);
+registerSecurityHeaders(app);
 
 const webDist = new URL('../web/dist', import.meta.url).pathname;
 if (config.serveWeb && existsSync(webDist)) {
