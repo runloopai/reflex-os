@@ -15,6 +15,7 @@ import { WebSocketServer } from 'ws';
 import { loadConfig } from './config.ts';
 import { ArcadeDb } from './db.ts';
 import { EventHub, publicGame } from './events.ts';
+import { registerDiscoveryRoutes } from './discovery.ts';
 import { CACHE, registerCachePolicy, staticCacheHeaders } from './http-cache.ts';
 import { GameEngine } from './engine.ts';
 import { initReflex } from './reflex.ts';
@@ -68,6 +69,10 @@ registerReflexProxy(app, db, config.reflexBaseUrl, (game, text) => {
   })().catch((err) => app.log.error({ err }, 'owner prompt task failed'));
 });
 registerRoutes(app, { db, hub, engine, reflexAgentType: config.reflexAgentType });
+// robots.txt, sitemap.xml, and the icons. Registered whether or not this
+// process serves the web app: they answer for the deployment, and in dev
+// the Vite server proxies them here.
+registerDiscoveryRoutes(app, db);
 registerCachePolicy(app);
 
 const webDist = new URL('../web/dist', import.meta.url).pathname;
@@ -89,8 +94,16 @@ if (config.serveWeb && existsSync(webDist)) {
    */
   const sendShell = async (req: FastifyRequest, reply: FastifyReply) => {
     const origin = originFromRequest(req.headers);
-    const card = await cardOrArcade(db, gameIdFromPath(req.raw.url ?? '/'), origin);
+    const path = req.raw.url ?? '/';
+    const gameId = gameIdFromPath(path);
+    const card = await cardOrArcade(db, gameId, origin);
     const oembed = `${origin}/api/oembed?url=${encodeURIComponent(card.url)}`;
+    // A game path that did not produce its own card is private or gone. It
+    // renders the arcade's card, which is right for an unfurl and wrong for
+    // an index: the URL would be listed as if it were the arcade itself.
+    if (gameId && card.url !== `${origin}/g/${gameId}`) {
+      reply.header('x-robots-tag', 'noindex');
+    }
     // Never stored: the shell names this build's fingerprinted assets and
     // carries share tags built from the game's current title and art and
     // from the host that was asked — none of which a shared cache can key
@@ -109,8 +122,16 @@ if (config.serveWeb && existsSync(webDist)) {
   });
 
   app.setNotFoundHandler((req, reply) => {
-    if (req.raw.url?.startsWith('/api') || req.raw.url?.startsWith('/reflex')) {
+    const path = (req.raw.url ?? '/').split(/[?#]/)[0] ?? '/';
+    if (path.startsWith('/api') || path.startsWith('/reflex')) {
       return reply.status(404).send({ error: 'not_found', message: 'No such endpoint.' });
+    }
+    // A path that names a file is a request for that file. Answering the
+    // app shell instead is how `/robots.txt` comes back as 200 text/html —
+    // which reads to a crawler as a site with no rules, and to a browser
+    // as a favicon it cannot draw.
+    if ((path.split('/').pop() ?? '').includes('.')) {
+      return reply.status(404).type('text/plain; charset=utf-8').send('Not found\n');
     }
     return reply.sendFile('index.html');
   });

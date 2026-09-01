@@ -44,6 +44,21 @@ export default defineConfig({
       // The mock's stand-in for Reflex's approval page, for the same reason
       // (relative when the mock runs with MOCK_APP_BASE='').
       '/mock-connect': { target: process.env.ARCADE_MOCK_ORIGIN ?? 'http://localhost:8791' },
+      // The crawler-facing files and the icons: the server draws them
+      // (`server/discovery.ts`), and dev is what a demo tunnel points at.
+      ...Object.fromEntries(
+        [
+          '/robots.txt',
+          '/sitemap.xml',
+          '/favicon.svg',
+          '/icon.svg',
+          '/apple-touch-icon.png',
+          '/site.webmanifest',
+        ].map((path) => [
+          path,
+          { target: process.env.ARCADE_API_ORIGIN ?? 'http://localhost:8790' },
+        ]),
+      ),
     },
   },
   build: { outDir: 'dist', emptyOutDir: true },

@@ -132,6 +132,7 @@ sdk/examples/arcade/
     index.ts     boot: HTTP API, hub socket, Reflex proxy + relay, static web
     sql.ts       the store: Postgres via DATABASE_URL, else embedded PGLite
     http-cache.ts what may be cached: deny by default, opt in per route
+    discovery.ts robots.txt, sitemap.xml, favicon/apple-touch icon, manifest
     db.ts        users / games / suggestions / chat_messages
     routes.ts    join/login, reflex-key, games, suggestions, general chat
     engine.ts    per-game stream watcher + suggestion dispatcher
@@ -255,6 +256,32 @@ so they live on the service itself and are reproduced here:
 
 Only the watch paths make a change here redeploy; a change elsewhere in the
 repo does not rebuild the arcade.
+
+## Being found
+
+A game's link unfurls into a card everywhere it is pasted (see **Sharing**
+above), but that only matters if anything ever finds the link. The shelf is
+rendered by the app, so a crawler that does not run JavaScript sees a landing
+page with no links on it. `server/discovery.ts` is the answer:
+
+| URL                         | What it is                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `/robots.txt`               | Crawl the pages, skip `/api` and `/reflex`; points at the sitemap                 |
+| `/sitemap.xml`              | `/`, `/about`, and every **public** game — the link graph the shelf does not give |
+| `/favicon.svg`, `/icon.svg` | The arcade's mark, drawn in code rather than committed                            |
+| `/apple-touch-icon.png`     | The same mark, rasterized at 180px because iOS will not take an SVG               |
+| `/site.webmanifest`         | Name, colours and icons, so a phone can install the arcade                        |
+
+Two privacy rules ride along: a private game never appears in the sitemap,
+and its page answers `X-Robots-Tag: noindex` — it renders the arcade's own
+card, which is right for an unfurl and wrong for a search index. Game pages
+also carry schema.org JSON-LD (`VideoGame`, with its author), built from the
+same card as the meta tags, so a private game cannot describe itself there
+either.
+
+A path that names a file and does not exist now 404s instead of answering
+with the app shell — a `robots.txt` served as `200 text/html` reads to a
+crawler as a site with no rules at all.
 
 ## Behind a CDN
 

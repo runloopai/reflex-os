@@ -187,6 +187,44 @@ describe('injectShareTags', () => {
     expect(stripped).not.toContain('og:title');
     expect(stripped).toContain('<title>Reflex Arcade</title>');
   });
+
+  it('describes the game to a search engine as a game', () => {
+    // The meta tags are what a chat client draws a card from; this is what
+    // says `/g/:id` is a VideoGame with an author, not one more page.
+    const block = injected.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    expect(block).not.toBeNull();
+    expect(JSON.parse(block![1]!)).toMatchObject({
+      '@type': 'VideoGame',
+      name: 'MMO Snake — built by Reflex Arcade',
+      url: `${ORIGIN}/g/game_1`,
+      author: { '@type': 'Person', name: 'Streamer' },
+    });
+  });
+
+  it('leaves one JSON-LD block when injected over its own output', () => {
+    // The dev plugin and the server both inject; injecting twice must be
+    // the same document, not two blocks a crawler has to choose between.
+    const twice = injectShareTags(
+      injected,
+      shareCardFor(game(), 'Streamer', 2, ORIGIN)!,
+      `${ORIGIN}/api/oembed`,
+    );
+    expect(twice.match(/application\/ld\+json/g)).toHaveLength(1);
+    expect(twice.match(/property="og:title"/g)).toHaveLength(1);
+  });
+
+  it('cannot be broken out of by a title that closes the script', () => {
+    const hostile = shareCardFor(
+      { ...game(), title: '</script><img src=x onerror=alert(1)>' },
+      'Streamer',
+      0,
+      ORIGIN,
+    )!;
+    const html = injectShareTags(SHELL, hostile, `${ORIGIN}/api/oembed`);
+    const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)![1]!;
+    expect(block).not.toContain('</script>');
+    expect(JSON.parse(block).name).toContain('</script>');
+  });
 });
 
 describe('oEmbedFor', () => {

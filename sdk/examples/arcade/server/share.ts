@@ -121,9 +121,46 @@ export function shareCardFor(
 }
 
 /**
+ * Schema.org JSON-LD. The meta tags above are what a chat client reads to
+ * draw a card; this is what a search engine reads to know that `/g/:id` is
+ * a game with an author rather than one more page on a site.
+ *
+ * A game is a `VideoGame`; the arcade itself is a `WebSite`. Both are only
+ * ever built from a card, so a private game — which has no card — cannot
+ * describe itself here either.
+ */
+export function structuredData(card: ShareCard): string {
+  const data = card.author
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'VideoGame',
+        name: card.title,
+        description: card.description,
+        url: card.url,
+        image: card.image,
+        author: { '@type': 'Person', name: card.author },
+        publisher: { '@type': 'Organization', name: SITE_NAME },
+        applicationCategory: 'GameApplication',
+        gamePlatform: 'Web browser',
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        description: card.description,
+        url: card.url,
+      };
+  // `<` cannot appear inside a script element without ending it early; the
+  // values here are titles and prompts people wrote, so escape rather than
+  // trust. JSON.stringify has already handled quotes and newlines.
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+/**
  * The `<head>` tags. Open Graph carries Slack, LinkedIn, Discord and
  * iMessage; X reads the `twitter:` ones; the oEmbed link is discovery for
- * everything that prefers a JSON endpoint (Slack again, Notion, embed.ly).
+ * everything that prefers a JSON endpoint (Slack again, Notion, embed.ly),
+ * and the JSON-LD block is for search engines.
  */
 export function renderShareTags(card: ShareCard, oembedUrl: string): string {
   const tags: [string, string][] = [
@@ -163,6 +200,7 @@ export function renderShareTags(card: ShareCard, oembedUrl: string): string {
     `<link rel="alternate" type="application/json+oembed" href="${escapeHtml(
       oembedUrl,
     )}" title="${escapeHtml(card.title)}" />`,
+    `<script type="application/ld+json">${structuredData(card)}</script>`,
   ].join('\n    ');
 }
 
@@ -179,9 +217,10 @@ export function renderShareTags(card: ShareCard, oembedUrl: string): string {
 const OWNED_TAGS =
   /[ \t]*<meta[^>]*(?:property="og:[^"]*"|name="twitter:[^"]*"|name="description"|name="theme-color")[^>]*>\n?/gi;
 const OWNED_LINKS = /[ \t]*<link[^>]*(?:rel="canonical"|json\+oembed)[^>]*>\n?/gi;
+const OWNED_SCRIPT = /[ \t]*<script type="application\/ld\+json">[\s\S]*?<\/script>\n?/gi;
 
 export function stripShareTags(html: string): string {
-  return html.replace(OWNED_TAGS, '').replace(OWNED_LINKS, '');
+  return html.replace(OWNED_TAGS, '').replace(OWNED_LINKS, '').replace(OWNED_SCRIPT, '');
 }
 
 /**

@@ -202,6 +202,12 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   must have a version in its URL and must hand it back through `versioned()`
   — an immutable answer to a request with no `?v=` pins bytes that change.
   `tests/http-cache.test.ts` is the spec.
+- Crawler-facing files live in `server/discovery.ts` (robots, sitemap, icons,
+  manifest). The sitemap is the ONLY link graph this app has — the shelf is
+  client-rendered — so a new public page belongs in it, and a private game
+  must never be: `tests/discovery.test.ts` pins that. Anything added to the
+  `<head>` by `share.ts` must also be removed by `stripShareTags`, or
+  injecting twice leaves two of them and crawlers take the first.
 
 ### Verifying against agents
 
