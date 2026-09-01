@@ -1,0 +1,29 @@
+# Build context for the arcade image only. BuildKit prefers a
+# `<dockerfile>.dockerignore` over the repo-root `.dockerignore`, so this file
+# REPLACES that one for `sdk/examples/arcade/Dockerfile` — it has to repeat
+# the entries that matter here rather than extend them.
+#
+# The arcade build needs `orval.config.ts`, `openapi/openapi.public.json`,
+# `sdk/client`, and `sdk/examples/arcade`, and nothing else in the repository.
+# The root file deliberately keeps `.git` in the context so the app image can
+# replay turbo's git-hashed cache; this build runs neither, and .git is by far
+# the largest thing in the tree.
+.git
+
+**/node_modules
+**/dist
+**/build
+**/.turbo
+**/.vite
+**/storybook-static
+**/*.tsbuildinfo
+
+# Written locally by `pnpm install`; the sdk-client stage regenerates them.
+sdk/client/src/generated
+sdk/client/src/react
+ui/src/client/generated-internal
+
+# The local PGLite data dir and its backups: player rows and Reflex API keys.
+sdk/examples/arcade/.data
+sdk/examples/arcade/.data.backups
+sdk/examples/arcade/shots

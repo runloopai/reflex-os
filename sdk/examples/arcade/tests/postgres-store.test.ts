@@ -1,13 +1,17 @@
 /**
- * The same helpers `db.test.ts` exercises on PGLite, run against a real
- * Postgres server — the store a hosted arcade actually uses.
+ * A driver conformance check: does `ArcadeDb` behave the same on the store a
+ * hosted arcade uses as it does on the PGLite one every other suite runs?
  *
- * PGLite is Postgres, but it is not the same client: node-postgres decodes
- * types, binds parameters, and pools connections itself, so "the query works
- * embedded" is not evidence it works deployed. This file is the evidence,
- * and it covers the shapes that could plausibly differ — schema application
- * as one multi-statement script, `returning *`, boolean/int/timestamp
- * round-trips, the guarded status transitions, and the aggregate joins.
+ * PGLite is Postgres, but it is not the same client — node-postgres binds
+ * parameters, decodes types, and pools connections itself — so this covers
+ * exactly what the two clients could disagree about, and leaves the queue
+ * semantics to `db.test.ts`, which is their spec:
+ *
+ *   - the schema applied as one multi-statement script through `exec`
+ *   - `returning *` and the row decoding built on it (booleans, `::int`
+ *     aggregates, timestamptz, which node-postgres hands back as a `Date`)
+ *   - a guarded UPDATE, where the guard values are bound parameters
+ *   - the joins and subselects the shelf and suggestion reads are made of
  *
  * Opt-in, because it needs a server:
  *
@@ -20,13 +24,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import pg from 'pg';
 import { ArcadeDb } from '../server/db.ts';
+import { seedArcade } from './seed.ts';
 
 const url = process.env['ARCADE_TEST_DATABASE_URL'];
 
 describe.skipIf(!url)('ArcadeDb on a real Postgres', () => {
   let db: ArcadeDb;
   let ownerId: string;
-  let fanId: string;
+  let fan1: string;
   let gameId: string;
 
   beforeAll(async () => {
@@ -35,103 +40,76 @@ describe.skipIf(!url)('ArcadeDb on a real Postgres', () => {
     await admin.query('drop schema public cascade; create schema public;');
     await admin.end();
 
+    // Opening applies SCHEMA — the multi-statement script — through the
+    // driver's `exec`, so a failure here is the first thing this file checks.
     db = await ArcadeDb.open({ kind: 'postgres', url: url! });
-    ownerId = (await db.createUser('Streamer', 'x')).id;
-    fanId = (await db.createUser('Fan')).id;
-    const key = await db.createReflexKey({
-      userId: ownerId,
-      name: 'test',
-      apiKey: 'rfx_test_not_real',
-      org: 'acme',
-    });
-    gameId = (
-      await db.createGame({
-        ownerId,
-        keyId: key.id,
-        title: 'Test game',
-        prompt: 'test',
-        agentId: 'agent_test',
-        agentStreamId: 'stream_test',
-        agentType: 'claude-code',
-        model: null,
-        isPublic: true,
-        autoApprove: true,
-      })
-    ).id;
+    ({ ownerId, fan1, gameId } = await seedArcade(db));
   });
 
   afterAll(async () => {
     await db?.close();
   });
 
-  it('applies the schema and answers a healthcheck ping', async () => {
+  it('answers a healthcheck ping', async () => {
     await expect(db.ping()).resolves.toBeUndefined();
   });
 
-  it('round-trips a row through node-postgres decoding', async () => {
+  it('decodes a row the same way PGLite does', async () => {
     const game = await db.gameById(gameId);
     expect(game).toMatchObject({ isPublic: true, autoApprove: true, plays: 0, artVersion: 0 });
-    // timestamptz arrives as a Date from node-postgres and a string from
-    // PGLite; the row shape is ISO text either way.
+    // node-postgres returns timestamptz as a Date and PGLite as a string;
+    // the row shape is ISO text either way.
     expect(game?.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  it('serves the public shelf with the owner joined in', async () => {
+  it('joins the owner onto the public shelf', async () => {
     const shelf = await db.listedGamesFor(null);
     expect(shelf).toHaveLength(1);
     expect(shelf[0]?.ownerName).toBe('Streamer');
   });
 
-  it('counts hearts and orders the dispatch queue by them', async () => {
-    const first = await db.createSuggestion({
+  it('counts hearts through its subselects', async () => {
+    const suggestion = await db.createSuggestion({
       gameId,
-      authorId: fanId,
-      body: 'first',
-      category: 'improvement',
-      status: 'approved',
-    });
-    const second = await db.createSuggestion({
-      gameId,
-      authorId: fanId,
-      body: 'second',
+      authorId: fan1,
+      body: 'add a boss',
       category: 'feature',
       status: 'approved',
     });
-    expect(await db.toggleHeart(second.id, ownerId)).toBe(true);
+    expect(await db.toggleHeart(suggestion.id, ownerId)).toBe(true);
 
-    const next = await db.nextApprovedSuggestion(gameId);
-    expect(next?.id).toBe(second.id);
-    expect(next?.hearts).toBe(1);
-    expect((await db.suggestionsForGame(gameId, ownerId)).map((s) => s.heartedByMe)).toEqual([
-      false,
-      true,
-    ]);
+    const read = await db.suggestionById(suggestion.id);
+    expect(read).toMatchObject({ hearts: 1, authorName: 'Fan one' });
+    const forOwner = await db.suggestionsForGame(gameId, ownerId);
+    expect(forOwner[0]?.heartedByMe).toBe(true);
+    expect(await db.shippedCounts([gameId])).toEqual({});
+  });
 
-    // The guarded transition: only from the statuses named.
-    expect(await db.setSuggestionStatus(first.id, 'working', ['approved'])).toMatchObject({
+  it('binds the guard values on a guarded transition', async () => {
+    const suggestion = await db.createSuggestion({
+      gameId,
+      authorId: fan1,
+      body: 'claim me',
+      category: 'bug',
+      status: 'approved',
+    });
+    expect(await db.setSuggestionStatus(suggestion.id, 'working', ['approved'])).toMatchObject({
       status: 'working',
     });
-    expect(await db.setSuggestionStatus(first.id, 'working', ['approved'])).toBeNull();
-    expect(await db.countSuggestionDispatch(first.id)).toBe(1);
-
-    await db.setSuggestionStatus(first.id, 'done');
-    expect(await db.shippedCounts([gameId])).toEqual({ [gameId]: 1 });
+    expect(await db.setSuggestionStatus(suggestion.id, 'working', ['approved'])).toBeNull();
+    expect(await db.countSuggestionDispatch(suggestion.id)).toBe(1);
   });
 
   it('stores art and chat, then deletes a game and its children', async () => {
     const art = await db.setGameArt(gameId, { iconArt: 'data:image/svg+xml,<svg/>' });
     expect(art).toMatchObject({ artVersion: 1, iconArt: 'data:image/svg+xml,<svg/>' });
 
-    await db.createChatMessage(gameId, fanId, 'hello');
+    await db.createChatMessage(gameId, fan1, 'hello');
     expect((await db.recentChatMessages(gameId)).map((m) => m.body)).toEqual(['hello']);
 
     await db.deleteGame(gameId);
     expect(await db.gameById(gameId)).toBeNull();
     expect(await db.suggestionsForGame(gameId)).toEqual([]);
     expect(await db.recentChatMessages(gameId)).toEqual([]);
-  });
-
-  it('reports where players joined from', async () => {
-    expect(await db.joinsBySource()).toEqual([{ source: 'x', joins: 1 }]);
   });
 });

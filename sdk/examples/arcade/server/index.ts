@@ -15,6 +15,7 @@ import { WebSocketServer } from 'ws';
 import { loadConfig } from './config.ts';
 import { ArcadeDb } from './db.ts';
 import { EventHub, publicGame } from './events.ts';
+import { CACHE, registerCachePolicy, staticCacheHeaders } from './http-cache.ts';
 import { GameEngine } from './engine.ts';
 import { initReflex } from './reflex.ts';
 import { registerRoutes } from './routes.ts';
@@ -67,10 +68,17 @@ registerReflexProxy(app, db, config.reflexBaseUrl, (game, text) => {
   })().catch((err) => app.log.error({ err }, 'owner prompt task failed'));
 });
 registerRoutes(app, { db, hub, engine, reflexAgentType: config.reflexAgentType });
+registerCachePolicy(app);
 
 const webDist = new URL('../web/dist', import.meta.url).pathname;
 if (config.serveWeb && existsSync(webDist)) {
-  await app.register(fastifyStatic, { root: webDist });
+  // `cacheControl: false` because @fastify/static writes its own
+  // `public, max-age=0` AFTER setHeaders runs, silently undoing ours.
+  await app.register(fastifyStatic, {
+    root: webDist,
+    cacheControl: false,
+    setHeaders: staticCacheHeaders,
+  });
   const shell = await readFile(`${webDist}/index.html`, 'utf8');
 
   /**
@@ -83,7 +91,14 @@ if (config.serveWeb && existsSync(webDist)) {
     const origin = originFromRequest(req.headers);
     const card = await cardOrArcade(db, gameIdFromPath(req.raw.url ?? '/'), origin);
     const oembed = `${origin}/api/oembed?url=${encodeURIComponent(card.url)}`;
-    return reply.type('text/html; charset=utf-8').send(injectShareTags(shell, card, oembed));
+    // Never stored: the shell names this build's fingerprinted assets and
+    // carries share tags built from the game's current title and art and
+    // from the host that was asked — none of which a shared cache can key
+    // on correctly.
+    return reply
+      .type('text/html; charset=utf-8')
+      .header('cache-control', CACHE.private)
+      .send(injectShareTags(shell, card, oembed));
   };
 
   // A hook rather than a route: `/` is served by fastify-static's own
@@ -139,15 +154,14 @@ app.log.info(
 
 // Snapshot the database every few minutes (and once at boot) so a corrupt
 // data dir — unclean kills can break PGLite's WAL — restores automatically
-// on the next start with at most a few minutes of loss. Only PGLite on disk
-// needs this: a Postgres server has its own backups.
+// on the next start with at most a few minutes of loss. Which stores need
+// that is the driver's call: one with its own backups answers `null` and
+// this loop costs it nothing.
 const BACKUP_INTERVAL_MS = 5 * 60_000;
-if (config.store.kind === 'pglite' && !config.store.dataDir.startsWith('memory:')) {
-  const snapshot = () =>
-    db.snapshot().catch((err) => app.log.warn({ err }, 'database snapshot failed'));
-  void snapshot();
-  setInterval(snapshot, BACKUP_INTERVAL_MS).unref();
-}
+const snapshot = () =>
+  db.snapshot().catch((err) => app.log.warn({ err }, 'database snapshot failed'));
+void snapshot();
+setInterval(snapshot, BACKUP_INTERVAL_MS).unref();
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {

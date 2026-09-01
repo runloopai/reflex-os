@@ -6,6 +6,7 @@
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ArcadeDb, GameRow, UserRow } from './db.ts';
+import { CACHE, versioned } from './http-cache.ts';
 import type { EventHub } from './events.ts';
 import { publicGame } from './events.ts';
 import type { GameEngine } from './engine.ts';
@@ -169,9 +170,12 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
           : game?.iconArt;
     const decoded = art ? decodeDataUrl(art) : null;
     if (!game || !decoded) return reply.code(404).send({ message: 'No art yet.' });
+    // Immutable only for the version that was asked for: art URLs carry
+    // `?v=artVersion` (`web/src/lib/api.ts`), and a bare or stale one names
+    // bytes that change under it.
     reply
       .header('content-type', decoded.mediaType)
-      .header('cache-control', 'public, max-age=31536000, immutable');
+      .header('cache-control', versioned((req.query as { v?: string }).v, game.artVersion));
     return reply.send(decoded.bytes);
   });
 
@@ -190,7 +194,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     const { gameId } = req.params as { gameId: string };
     const card = await gameShareCard(db, gameId, origin);
     if (!card) return fail(reply, 404, 'not_found', 'No shareable game here.');
-    return reply.header('cache-control', 'public, max-age=60').send({ share: card });
+    return reply.header('cache-control', CACHE.short).send({ share: card });
   });
 
   // The card image. Agents draw SVG covers and no unfurl target renders
@@ -199,8 +203,9 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
   app.get('/api/games/:gameId/og-image', async (req, reply) => {
     const { gameId } = req.params as { gameId: string };
     const game = await db.gameById(gameId);
+    const isOwnCard = Boolean(game && game.isPublic);
     const image =
-      game && game.isPublic
+      isOwnCard && game
         ? shareImageFor({
             gameId: game.id,
             artVersion: game.artVersion,
@@ -209,10 +214,20 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
             previewArt: game.previewArt,
           })
         : arcadeShareImage();
-    return reply
-      .header('content-type', image.contentType)
-      .header('cache-control', 'public, max-age=31536000, immutable')
-      .send(image.body);
+    return (
+      reply
+        .header('content-type', image.contentType)
+        // Same rule as the art route, and only for the game's own card: the
+        // stand-in a private game answers with must not outlive it going
+        // public at the same artVersion.
+        .header(
+          'cache-control',
+          isOwnCard && game
+            ? versioned((req.query as { v?: string }).v, game.artVersion)
+            : CACHE.short,
+        )
+        .send(image.body)
+    );
   });
 
   /** The arcade's own card image, for `/` and anything unresolvable. */
@@ -220,7 +235,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     const image = arcadeShareImage();
     return reply
       .header('content-type', image.contentType)
-      .header('cache-control', 'public, max-age=3600')
+      .header('cache-control', CACHE.hour)
       .send(image.body);
   });
 
@@ -243,7 +258,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     if (!card) return fail(reply, 404, 'not_found', 'No shareable game here.');
     const maxWidth = Number(query.maxwidth);
     return reply
-      .header('cache-control', 'public, max-age=60')
+      .header('cache-control', CACHE.short)
       .send(oEmbedFor(card, origin, Number.isFinite(maxWidth) ? maxWidth : undefined));
   });
 

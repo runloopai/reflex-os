@@ -83,12 +83,20 @@ async function openPglite(dataDir: string): Promise<SqlDriver> {
     if (!restored) throw err;
     pg = restored;
   }
+  // An in-memory database has no data dir to snapshot, and nowhere to put a
+  // tarball if it did — same answer as a managed Postgres: nothing to do.
+  const onDisk = !isInMemory(dataDir);
   return {
     query: (sql, params) => pg.query(sql, params),
     exec: (sql) => pg.exec(sql).then(() => undefined),
-    snapshot: (keep = 3) => dumpPglite(pg, dataDir, keep),
+    snapshot: (keep = 3) => (onDisk ? dumpPglite(pg, dataDir, keep) : Promise.resolve(null)),
     close: () => pg.close(),
   };
+}
+
+/** PGLite's sentinel for a database that never touches the filesystem. */
+function isInMemory(dataDir: string): boolean {
+  return dataDir.startsWith('memory:');
 }
 
 async function bootPglite(dataDir: string, loadFrom?: Blob): Promise<PGlite> {
@@ -116,7 +124,7 @@ async function dumpPglite(pg: PGlite, dataDir: string, keep: number): Promise<st
 }
 
 async function restoreFromBackup(dataDir: string, bootErr: unknown): Promise<PGlite | null> {
-  if (dataDir.startsWith('memory:')) return null;
+  if (isInMemory(dataDir)) return null;
   const dir = backupDirFor(dataDir);
   const newest = (await readdir(dir).catch(() => []))
     .filter((f) => f.endsWith('.tgz'))

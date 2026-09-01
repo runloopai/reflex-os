@@ -112,6 +112,7 @@ sdk/examples/arcade/
   server/        Fastify + Postgres + ws (run with tsx, no build step)
     index.ts     boot: HTTP API, hub socket, Reflex proxy + relay, static web
     sql.ts       the store: Postgres via DATABASE_URL, else embedded PGLite
+    http-cache.ts what may be cached: deny by default, opt in per route
     db.ts        users / games / suggestions / chat_messages
     routes.ts    join/login, reflex-key, games, suggestions, general chat
     engine.ts    per-game stream watcher + suggestion dispatcher
@@ -204,6 +205,14 @@ docker build -f sdk/examples/arcade/Dockerfile -t reflex-arcade .
 docker run -p 8790:8790 -e DATABASE_URL=... -e REFLEX_BASE_URL=... reflex-arcade
 ```
 
+Two things the build has to do that a plain `npm run build` here does not:
+generate the SDK client (`sdk/client/src/generated/` is written by orval
+during the repo's `pnpm install` and is not in the checkout) and keep
+`sdk/client/package.json` next to those sources, or Node loads its `.ts`
+files as CommonJS. Both are stages in the Dockerfile. The web bundle is built
+in a stage of its own, so the deployed image carries the runtime dependencies
+only — no Vite, Storybook, or Playwright.
+
 The container sets `HOST=0.0.0.0` and `NODE_ENV=production` itself; a host
 only has to supply `DATABASE_URL`, `REFLEX_BASE_URL`, and `PORT`.
 `GET /api/health` is the healthcheck and queries the database, so a container
@@ -211,23 +220,54 @@ that cannot reach one fails the check instead of serving errors.
 
 It runs on Railway in the `reflex-arcade` project (workspace `runloop.ai`),
 as two services: **Postgres** (official template, volume at
-`/var/lib/postgresql/data`) and **arcade**, built from this repo's `main`
-branch. The arcade service's settings are not in this repo — Railway
-deprecated `railway.json`, so they live on the service itself and are
-reproduced here:
+`/var/lib/postgresql/data`) and **arcade**, built from this repo. The arcade
+service's settings are not in this repo — Railway deprecated `railway.json`,
+so they live on the service itself and are reproduced here:
 
-| Setting               | Value                                            |
-| --------------------- | ------------------------------------------------ |
-| Root directory        | `/` (the repo root, for `sdk/client/src`)        |
-| Dockerfile path       | `sdk/examples/arcade/Dockerfile`                 |
-| Healthcheck           | `/api/health`, 120s timeout                      |
-| Watch paths           | `sdk/examples/arcade/**`, `sdk/client/**`        |
-| `DATABASE_URL`        | `${{Postgres.DATABASE_URL}}`                     |
-| `REFLEX_BASE_URL`     | the Reflex deployment players' agents run on     |
-| `REFLEX_AGENT_TYPE`   | `claude-code`                                    |
+| Setting             | Value                                        |
+| ------------------- | -------------------------------------------- |
+| Root directory      | `/` (the repo root, for `sdk/client/src`)    |
+| Dockerfile path     | `sdk/examples/arcade/Dockerfile`             |
+| Healthcheck         | `/api/health`, 120s timeout                  |
+| Watch paths         | `sdk/examples/arcade/**`, `sdk/client/**`    |
+| `DATABASE_URL`      | `${{Postgres.DATABASE_URL}}`                 |
+| `REFLEX_BASE_URL`   | the Reflex deployment players' agents run on |
+| `REFLEX_AGENT_TYPE` | `claude-code`                                |
 
 Only the watch paths make a change here redeploy; a change elsewhere in the
 repo does not rebuild the arcade.
+
+## Behind a CDN
+
+A CDN is a shared cache, so the arcade's rule is that **nothing is cacheable
+until a route says it is** (`server/http-cache.ts`). Every `/api` and
+`/reflex` response gets `private, no-store` and `Vary: authorization` from
+one hook, because most of this app's JSON depends on who is asking —
+`GET /api/games` answers a stranger the public shelf and a player their own
+games too, on the same URL. A route that wants to be cached opts in:
+
+| Surface                                    | Policy                          |
+| ------------------------------------------ | ------------------------------- |
+| `/assets/*` (Vite fingerprints the names)  | `public, max-age=1y, immutable` |
+| Art and og-images, asked for by `?v=`      | `public, max-age=1y, immutable` |
+| The same, with a missing or stale `?v=`    | `public, max-age=60`            |
+| `/api/games/:id/share`, `/api/oembed`      | `public, max-age=60`            |
+| `/api/share-image` (the arcade's own card) | `public, max-age=3600`          |
+| Everything else under `/api` and `/reflex` | `private, no-store`             |
+| The HTML shell, including `/`              | `private, no-store`             |
+
+The shell is deliberately never stored: it names this build's fingerprinted
+assets and carries share tags built from the game's current title and art —
+and from the host that was asked, which a cache cannot key on.
+
+Two things to set when you put a CDN in front:
+
+- **`ARCADE_PUBLIC_ORIGIN`** — pin the public origin. Share cards, the oEmbed
+  link and `rel=canonical` are absolute URLs, and without this they are
+  derived from `X-Forwarded-Host`, which is the CDN's to set.
+- **WebSocket passthrough** for `/api/ws` and `/reflex/:gameId/api/ws`. They
+  carry every live update in the app; a CDN that does not upgrade them leaves
+  the UI silent until reload.
 
 ## Tests and Storybook
 

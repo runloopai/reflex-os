@@ -188,6 +188,13 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
 - `GET /api/health` is the platform's healthcheck and queries the database on
   purpose: a container that came up without one must fail the check rather
   than serve errors. Keep it unauthenticated and cheap.
+- Caching is deny-by-default (`server/http-cache.ts`): every `/api` and
+  `/reflex` response is `private, no-store` unless its handler names a
+  policy, because most of them vary by bearer token on a fixed URL and this
+  app is meant to sit behind a CDN. A route that opts into `CACHE.immutable`
+  must have a version in its URL and must hand it back through `versioned()`
+  — an immutable answer to a request with no `?v=` pins bytes that change.
+  `tests/http-cache.test.ts` is the spec.
 
 ### Verifying against agents
 

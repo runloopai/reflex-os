@@ -4,9 +4,9 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ArcadeDb } from '../server/db.ts';
+import { seedArcade } from './seed.ts';
 
 let db: ArcadeDb;
-let ownerId: string;
 let fan1: string;
 let fan2: string;
 let gameId: string;
@@ -27,30 +27,7 @@ async function addApproved(body: string) {
 
 beforeAll(async () => {
   db = await ArcadeDb.open({ kind: 'pglite', dataDir: 'memory://' });
-  const owner = await db.createUser('Streamer');
-  ownerId = owner.id;
-  fan1 = (await db.createUser('Fan one')).id;
-  fan2 = (await db.createUser('Fan two')).id;
-  const key = await db.createReflexKey({
-    userId: ownerId,
-    name: 'test',
-    apiKey: 'rfx_test_not_real',
-    org: null,
-  });
-  await db.setActiveKey(ownerId, key.id);
-  const game = await db.createGame({
-    ownerId,
-    keyId: key.id,
-    title: 'Test game',
-    prompt: 'test',
-    agentId: 'agent_test',
-    agentStreamId: 'stream_test',
-    agentType: 'claude-code',
-    model: null,
-    isPublic: true,
-    autoApprove: true,
-  });
-  gameId = game.id;
+  ({ fan1, fan2, gameId } = await seedArcade(db));
 });
 
 afterAll(async () => {
