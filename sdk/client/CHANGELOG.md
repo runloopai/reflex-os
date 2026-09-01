@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.21.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.20.0...reflex-client-v0.21.0) (2026-09-01)
+
+
+### Features
+
+* **web:** let an invite carry the role the invitee joins with ([#4368](https://github.com/runloopai/reflex/issues/4368)) ([7096423](https://github.com/runloopai/reflex/commit/7096423d7c58bafd764a791b190c957ad6285013))
+
+
+### Bug Fixes
+
+* **costs:** price Claude Fable 5.1 at its published rate ([#4371](https://github.com/runloopai/reflex/issues/4371)) ([44b1ef1](https://github.com/runloopai/reflex/commit/44b1ef179b525867533777826df613d0fb21ef20))
+
 ## [0.20.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.19.0...reflex-client-v0.20.0) (2026-08-28)
 
 
