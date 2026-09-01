@@ -26,7 +26,7 @@ async function addApproved(body: string) {
 }
 
 beforeAll(async () => {
-  db = await ArcadeDb.open('memory://');
+  db = await ArcadeDb.open({ kind: 'pglite', dataDir: 'memory://' });
   const owner = await db.createUser('Streamer');
   ownerId = owner.id;
   fan1 = (await db.createUser('Fan one')).id;

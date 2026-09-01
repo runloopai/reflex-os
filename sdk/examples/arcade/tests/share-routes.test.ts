@@ -29,7 +29,7 @@ const engineStub = {
 const HEADERS = { 'x-forwarded-host': 'arcade.example.com', 'x-forwarded-proto': 'https' };
 
 beforeAll(async () => {
-  db = await ArcadeDb.open('memory://');
+  db = await ArcadeDb.open({ kind: 'pglite', dataDir: 'memory://' });
   const owner = await db.createUser('Streamer');
   const key = await db.createReflexKey({
     userId: owner.id,

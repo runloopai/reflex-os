@@ -13,7 +13,7 @@ let publicGameId: string;
 let privateGameId: string;
 
 beforeAll(async () => {
-  db = await ArcadeDb.open('memory://');
+  db = await ArcadeDb.open({ kind: 'pglite', dataDir: 'memory://' });
   const owner = await db.createUser('Streamer');
   ownerId = owner.id;
   strangerId = (await db.createUser('Passer by')).id;

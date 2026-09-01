@@ -1,11 +1,11 @@
 /**
- * PGLite storage for the arcade: users, games, suggestions, and the general
- * chat. One embedded database per server process; all access goes through
- * the typed helpers below so row shapes live in exactly one place.
+ * Postgres storage for the arcade: users, games, suggestions, and the
+ * general chat. All access goes through the typed helpers below so row
+ * shapes live in exactly one place, and all of it runs against `SqlDriver`
+ * (see `sql.ts`) so the same queries serve an embedded PGLite data dir
+ * locally and a real Postgres server when hosted.
  */
-import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { PGlite } from '@electric-sql/pglite';
+import { type ArcadeStore, type Row, type SqlDriver, openDriver } from './sql.ts';
 import { newId, newToken } from './ids.ts';
 
 export interface UserRow {
@@ -196,8 +196,6 @@ const SCHEMA = `
   );
 `;
 
-type Row = Record<string, unknown>;
-
 function str(row: Row, key: string): string {
   return String(row[key]);
 }
@@ -321,70 +319,27 @@ const SUGGESTION_SELECT_FOR = (userParam: string) => `
 `;
 
 export class ArcadeDb {
-  private constructor(private readonly pg: PGlite) {}
+  private constructor(private readonly pg: SqlDriver) {}
 
-  static async open(dataDir: string): Promise<ArcadeDb> {
-    try {
-      return await ArcadeDb.boot(dataDir);
-    } catch (err) {
-      // An unclean kill can corrupt the data dir (WAL checkpoint PANIC on
-      // boot). If we have a backup tarball, restore it instead of dying.
-      const restored = await ArcadeDb.restoreFromBackup(dataDir, err);
-      if (!restored) throw err;
-      return restored;
-    }
-  }
-
-  private static async boot(dataDir: string, loadFrom?: Blob): Promise<ArcadeDb> {
-    const pg = new PGlite(dataDir, loadFrom ? { loadDataDir: loadFrom } : {});
-    await pg.waitReady;
-    await pg.exec(SCHEMA);
-    await ArcadeDb.migrateLegacySingleKey(pg);
-    return new ArcadeDb(pg);
-  }
-
-  /** Where `dumpTo`/auto-restore keep tarballs for this data dir. */
-  static backupDirFor(dataDir: string): string {
-    return `${dataDir.replace(/\/+$/, '')}.backups`;
+  static async open(store: ArcadeStore): Promise<ArcadeDb> {
+    const driver = await openDriver(store);
+    await driver.exec(SCHEMA);
+    await ArcadeDb.migrateLegacySingleKey(driver);
+    return new ArcadeDb(driver);
   }
 
   /**
-   * Snapshot the whole database as a gzip tarball (safe on a live
-   * instance); keeps the newest `keep` snapshots in the backup dir.
+   * Write a backup, for stores that need the arcade to take one; returns
+   * the file written, or null when the store snapshots itself (see
+   * `SqlDriver.snapshot`).
    */
-  async dumpTo(dataDir: string, keep = 3): Promise<string> {
-    const dir = ArcadeDb.backupDirFor(dataDir);
-    await mkdir(dir, { recursive: true });
-    const blob = await this.pg.dumpDataDir('gzip');
-    const name = `arcade-${new Date().toISOString().replace(/[:.]/g, '-')}.tgz`;
-    const path = join(dir, name);
-    await writeFile(path, Buffer.from(await blob.arrayBuffer()));
-    const all = (await readdir(dir)).filter((f) => f.endsWith('.tgz')).sort();
-    for (const stale of all.slice(0, Math.max(0, all.length - keep))) {
-      await rm(join(dir, stale), { force: true });
-    }
-    return path;
+  snapshot(keep?: number): Promise<string | null> {
+    return this.pg.snapshot(keep);
   }
 
-  private static async restoreFromBackup(
-    dataDir: string,
-    bootErr: unknown,
-  ): Promise<ArcadeDb | null> {
-    if (dataDir.startsWith('memory:')) return null;
-    const dir = ArcadeDb.backupDirFor(dataDir);
-    const newest = (await readdir(dir).catch(() => []))
-      .filter((f) => f.endsWith('.tgz'))
-      .sort()
-      .pop();
-    if (!newest) return null;
-    const aside = `${dataDir.replace(/\/+$/, '')}.corrupt-${Date.now()}`;
-    console.error(
-      `[arcade] data dir failed to boot (${String(bootErr).slice(0, 120)}); ` +
-        `restoring ${newest} and moving the corrupt dir to ${aside}`,
-    );
-    await rename(dataDir, aside).catch(() => {});
-    const bytes = await readFile(join(dir, newest));
-    return ArcadeDb.boot(dataDir, new Blob([new Uint8Array(bytes)], { type: 'application/gzip' }));
+  /** Round-trip to the database, for the deployment healthcheck. */
+  async ping(): Promise<void> {
+    await this.pg.query(`select 1`);
   }
 
   /**
@@ -392,7 +347,7 @@ export class ArcadeDb {
    * row. Move those into reflex_keys (attaching existing games to them) and
    * drop the old columns; the column check makes this a one-time step.
    */
-  private static async migrateLegacySingleKey(pg: PGlite): Promise<void> {
+  private static async migrateLegacySingleKey(pg: SqlDriver): Promise<void> {
     const { rows } = await pg.query<Row>(
       `select 1 from information_schema.columns
        where table_name = 'users' and column_name = 'reflex_api_key'`,

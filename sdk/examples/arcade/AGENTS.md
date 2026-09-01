@@ -35,9 +35,11 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
 
 ## Repo Map
 
-- `server/` - Fastify + PGLite: auth, games, suggestions (hearts,
+- `server/` - Fastify + Postgres: auth, games, suggestions (hearts,
   categories, owner notes), chat, the per-game Reflex proxy/relay, and the
   watcher/dispatcher that feeds idle agents the most-hearted suggestion.
+  `server/sql.ts` picks the store — a Postgres server when `DATABASE_URL` is
+  set, else an embedded PGLite data dir.
 - `web/` - React 19 + Vite + Tailwind 4 + performative-ui. The agent chat
   under `web/src/{components,hooks,lib}/reflex/` is scaffolded
   @runloop/reflex-chat-kit output, customized in place.
@@ -58,9 +60,17 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
 
 ### Server and database changes
 
-- PGLite schema lives in `SCHEMA` in `server/db.ts`; it is re-exec'd on
-  boot, so additive DDL only (`if not exists`), plus a one-time migration
-  helper when a column moves.
+- The schema lives in `SCHEMA` in `server/db.ts`; it is re-exec'd on boot,
+  so additive DDL only (`if not exists`), plus a one-time migration helper
+  when a column moves. On a hosted arcade that boot also runs against data
+  someone else is using — an `alter` that rewrites a table blocks every
+  reader while it does.
+- Queries go through `SqlDriver` (`server/sql.ts`) and must work on BOTH
+  drivers: plain Postgres SQL, `$n` parameters, no PGLite-only API. PGLite
+  and node-postgres are different clients, so "it passed on PGLite" is not
+  evidence — run `tests/postgres-store.test.ts` with
+  `ARCADE_TEST_DATABASE_URL` pointed at a throwaway database (see README)
+  before shipping a query change.
 - `tests/db.test.ts` is the spec for dispatch ordering (hearts desc, then
   approval FIFO) and the guarded status transitions (dispatch claims) —
   extend it for any queue/hearts behavior change. `tests/engine-flags.test.ts`
@@ -151,7 +161,7 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   faced with two `og:title`s, crawlers take the first. Covers rasterize to
   PNG because no unfurl target renders SVG, and a private game has no card.
 - Reflex API keys are saved on the USER (active key), never entered per
-  game. Owner `rfx_` keys live only in the server's `.data/` — they must
+  game. Owner `rfx_` keys live only in the arcade's database — they must
   never reach a browser, a fixture, or git. Browsers talk to Reflex only
   through the per-game proxy/relay.
 - "Connect with Reflex" is Reflex's own device flow, not an arcade
@@ -162,6 +172,22 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   browser, and a poll only ever resolves for the player who started it.
   Extend the flow here; only reach into base Reflex if the gap is generic
   (the `clientName` label was), never with an arcade-shaped route.
+
+### Hosting changes
+
+- The deployed arcade is one container (`Dockerfile`) plus a managed
+  Postgres, on Railway; the service settings live on the service, not in this
+  repo (Railway deprecated `railway.json`), and README lists them. The build
+  context is the REPO ROOT, not this directory: the server imports
+  `sdk/client/src` by relative path,
+  and Node needs that package's `package.json` alongside its sources or the
+  `.ts` files load as CommonJS and every named import fails.
+- Nothing in the container's filesystem survives a deploy. Anything new that
+  has to outlive one — art, keys, uploads — goes in the database, not on
+  disk.
+- `GET /api/health` is the platform's healthcheck and queries the database on
+  purpose: a container that came up without one must fail the check rather
+  than serve errors. Keep it unauthenticated and cheap.
 
 ### Verifying against agents
 
@@ -207,6 +233,6 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   `/arcade/{icon,preview}.{svg,png}` and `/arcade/preview-anim.svg` (looping
   animated SVG for tile hover; the engine also accepts `preview.gif`/`.webp`
   as fallbacks agents are not prompted for) from their dev daemon and the watcher
-  captures changes into PGLite after each turn (`setGameArt`, art
+  captures changes into the database after each turn (`setGameArt`, art
   endpoints in routes.ts). Keep the system prompt, engine `ART_KINDS`,
   and the mock's `/play/:id/arcade/:file` route in sync.

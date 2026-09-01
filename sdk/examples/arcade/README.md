@@ -101,7 +101,7 @@ record.status)` instead of the raw record — so tiles and banners show
 - A user-level key model: players save named Reflex personal API keys on
   their account, bind each to an organization picked from the key's own org
   list, and mark one active. Game creation always launches under the saved
-  active key — no key entry at launch time. Keys live server-side (PGLite)
+  active key — no key entry at launch time. Keys live server-side
   and never reach other browsers — viewers stream the agent chat through an
   allowlisted proxy.
 
@@ -109,9 +109,10 @@ record.status)` instead of the raw record — so tiles and banners show
 
 ```
 sdk/examples/arcade/
-  server/        Fastify + PGLite + ws (run with tsx, no build step)
+  server/        Fastify + Postgres + ws (run with tsx, no build step)
     index.ts     boot: HTTP API, hub socket, Reflex proxy + relay, static web
-    db.ts        users / games / suggestions / chat_messages (PGLite)
+    sql.ts       the store: Postgres via DATABASE_URL, else embedded PGLite
+    db.ts        users / games / suggestions / chat_messages
     routes.ts    join/login, reflex-key, games, suggestions, general chat
     engine.ts    per-game stream watcher + suggestion dispatcher
     proxy.ts     /reflex/:gameId/api/* HTTP allowlist proxy
@@ -171,16 +172,77 @@ against the org you pick.
 Production-ish: `npm run build`, then `NODE_ENV=production npm start` serves
 the built web app and the API from :8790.
 
+## Where the data lives
+
+`DATABASE_URL` decides. Set it and the arcade runs on that Postgres server;
+leave it unset and it runs on an embedded PGLite database under `.data/`, so
+`npm install && npm run dev` needs no database of any kind. Both drivers sit
+behind `SqlDriver` in `server/sql.ts` and answer the same SQL, so the store
+is the only thing that changes.
+
+```bash
+DATABASE_URL=postgres://user:pass@host:5432/arcade npm start
+# ARCADE_DATABASE_URL wins over DATABASE_URL, for a process that already
+# has some other one in its environment.
+```
+
+The schema is applied on every boot (additive DDL in `SCHEMA`, `server/db.ts`),
+so there is no migration step to run. PGLite additionally takes a snapshot
+into `<data dir>.backups` every five minutes and restores from it if the data
+dir is ever corrupted by an unclean kill; a Postgres server has its own
+backups and skips that.
+
+## Hosting it
+
+`Dockerfile` builds the deployed arcade: one container serving the API and
+the built web app, alongside a managed Postgres. The build context is the
+**repository root**, because the server imports the client SDK from
+`sdk/client/src`:
+
+```bash
+docker build -f sdk/examples/arcade/Dockerfile -t reflex-arcade .
+docker run -p 8790:8790 -e DATABASE_URL=... -e REFLEX_BASE_URL=... reflex-arcade
+```
+
+The container sets `HOST=0.0.0.0` and `NODE_ENV=production` itself; a host
+only has to supply `DATABASE_URL`, `REFLEX_BASE_URL`, and `PORT`.
+`GET /api/health` is the healthcheck and queries the database, so a container
+that cannot reach one fails the check instead of serving errors.
+
+It runs on Railway in the `reflex-arcade` project (workspace `runloop.ai`),
+as two services: **Postgres** (official template, volume at
+`/var/lib/postgresql/data`) and **arcade**, built from this repo's `main`
+branch. The arcade service's settings are not in this repo — Railway
+deprecated `railway.json`, so they live on the service itself and are
+reproduced here:
+
+| Setting               | Value                                            |
+| --------------------- | ------------------------------------------------ |
+| Root directory        | `/` (the repo root, for `sdk/client/src`)        |
+| Dockerfile path       | `sdk/examples/arcade/Dockerfile`                 |
+| Healthcheck           | `/api/health`, 120s timeout                      |
+| Watch paths           | `sdk/examples/arcade/**`, `sdk/client/**`        |
+| `DATABASE_URL`        | `${{Postgres.DATABASE_URL}}`                     |
+| `REFLEX_BASE_URL`     | the Reflex deployment players' agents run on     |
+| `REFLEX_AGENT_TYPE`   | `claude-code`                                    |
+
+Only the watch paths make a change here redeploy; a change elsewhere in the
+repo does not rebuild the arcade.
+
 ## Tests and Storybook
 
 Stories and tests live in `stories/` and `tests/`, outside the src dirs.
 
 ```sh
 npm test                    # unit tests + storybook play-function tests
-npm run test:unit           # node tests (sorting, PGLite-backed dispatch/hearts)
+npm run test:unit           # node tests (sorting, database-backed dispatch/hearts)
 npm run test:stories        # every story's play function, headless Chromium
 npm run storybook           # storybook dev server on :6106
 npm run shots               # screenshot key screens into shots/ for judging
+# The store tests run on PGLite by default. Point them at a throwaway
+# Postgres to cover the driver a hosted arcade actually uses (it drops and
+# recreates the public schema):
+# ARCADE_TEST_DATABASE_URL=postgres://postgres@localhost:5432/arcade_test npm run test:unit
 npm run lint                # eslint (typescript-eslint, react-hooks, storybook)
 npm run format              # prettier with tailwind class sorting
 ```
@@ -258,7 +320,7 @@ arcade server ── owner's rfx_ key ─┴─> Reflex /api + /api/ws
 
 ## Caveats (it is a demo)
 
-- The arcade trusts its own PGLite data; there is no rate limiting, no email,
+- The arcade trusts its own data; there is no rate limiting, no email,
   and no way to recover a lost `ark_` token.
 - A game whose devbox is later stopped keeps its last daemon URL until the
   watcher notices the status change on reconcile (30s).

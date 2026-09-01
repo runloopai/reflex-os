@@ -3,8 +3,9 @@
  *
  * One process serves the JSON API (`/api/*`), the arcade's live-update
  * WebSocket (`/api/ws`), the per-game Reflex proxy + relay (`/reflex/*`),
- * and — in production — the built web app. Data lives in an embedded
- * PGLite database under `.data/`.
+ * and — in production — the built web app. Data lives in Postgres when
+ * `DATABASE_URL` is set, and otherwise in an embedded PGLite database under
+ * `.data/` (see `config.ts`).
  */
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -25,7 +26,7 @@ import { cardOrArcade } from './share-card.ts';
 const config = loadConfig();
 initReflex(config.reflexBaseUrl);
 
-const db = await ArcadeDb.open(config.dataDir);
+const db = await ArcadeDb.open(config.store);
 const hub = new EventHub();
 const engine = new GameEngine(db, hub, config.reflexBaseUrl);
 
@@ -132,17 +133,18 @@ app.server.on('upgrade', (req, socket, head) => {
 await engine.resumeAll();
 await app.listen({ port: config.port, host: config.host });
 app.log.info(
-  { reflex: config.reflexBaseUrl, agentType: config.reflexAgentType },
+  { reflex: config.reflexBaseUrl, agentType: config.reflexAgentType, store: config.store.kind },
   'reflex arcade up',
 );
 
 // Snapshot the database every few minutes (and once at boot) so a corrupt
 // data dir — unclean kills can break PGLite's WAL — restores automatically
-// on the next start with at most a few minutes of loss.
+// on the next start with at most a few minutes of loss. Only PGLite on disk
+// needs this: a Postgres server has its own backups.
 const BACKUP_INTERVAL_MS = 5 * 60_000;
-if (!config.dataDir.startsWith('memory:')) {
+if (config.store.kind === 'pglite' && !config.store.dataDir.startsWith('memory:')) {
   const snapshot = () =>
-    db.dumpTo(config.dataDir).catch((err) => app.log.warn({ err }, 'database snapshot failed'));
+    db.snapshot().catch((err) => app.log.warn({ err }, 'database snapshot failed'));
   void snapshot();
   setInterval(snapshot, BACKUP_INTERVAL_MS).unref();
 }

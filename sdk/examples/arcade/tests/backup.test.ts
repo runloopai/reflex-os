@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { ArcadeDb } from '../server/db.ts';
+import { backupDirFor } from '../server/sql.ts';
 
 let root: string;
 
@@ -20,17 +21,17 @@ describe('backup and auto-restore', () => {
     root = await mkdtemp(join(tmpdir(), 'arcade-backup-'));
     const dataDir = join(root, 'data');
 
-    const db = await ArcadeDb.open(dataDir);
+    const db = await ArcadeDb.open({ kind: 'pglite', dataDir });
     const user = await db.createUser('Survivor');
-    const backupPath = await db.dumpTo(dataDir);
+    const backupPath = await db.snapshot();
     await db.close();
     expect(backupPath).toContain('.backups');
-    expect(await readdir(ArcadeDb.backupDirFor(dataDir))).toHaveLength(1);
+    expect(await readdir(backupDirFor(dataDir))).toHaveLength(1);
 
     // Wreck the control file the way a SIGKILL mid-write does.
     await writeFile(join(dataDir, 'global', 'pg_control'), 'garbage');
 
-    const reopened = await ArcadeDb.open(dataDir);
+    const reopened = await ArcadeDb.open({ kind: 'pglite', dataDir });
     const survivor = await reopened.userById(user.id);
     expect(survivor?.name).toBe('Survivor');
     await reopened.close();
@@ -42,12 +43,12 @@ describe('backup and auto-restore', () => {
 
   it('keeps only the newest snapshots', { timeout: 30_000 }, async () => {
     const dataDir = join(root, 'data2');
-    const db = await ArcadeDb.open(dataDir);
+    const db = await ArcadeDb.open({ kind: 'pglite', dataDir });
     for (let i = 0; i < 5; i++) {
-      await db.dumpTo(dataDir, 3);
+      await db.snapshot(3);
       await new Promise((r) => setTimeout(r, 20));
     }
     await db.close();
-    expect(await readdir(ArcadeDb.backupDirFor(dataDir))).toHaveLength(3);
+    expect(await readdir(backupDirFor(dataDir))).toHaveLength(3);
   });
 });

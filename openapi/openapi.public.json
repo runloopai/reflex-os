@@ -9266,6 +9266,9 @@
                     "type": "string",
                     "format": "email",
                     "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "roleId": {
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -17734,6 +17737,16 @@
           },
           "tokenLast4": {
             "type": "string"
+          },
+          "roleId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -17752,7 +17765,8 @@
           "declinedAt",
           "declinedByUserId",
           "status",
-          "tokenLast4"
+          "tokenLast4",
+          "roleId"
         ],
         "additionalProperties": false
       },

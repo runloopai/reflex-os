@@ -110,6 +110,22 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     };
   }
 
+  // -- health -----------------------------------------------------------
+
+  // What a platform healthcheck hits before it routes traffic at a new
+  // deployment. It queries the database rather than answering from the
+  // process, so a container that came up without a reachable one fails the
+  // check instead of serving errors to players.
+  app.get('/api/health', async (req, reply) => {
+    try {
+      await db.ping();
+    } catch (err) {
+      req.log.error({ err }, 'healthcheck could not reach the database');
+      return fail(reply, 503, 'database_unavailable', 'The database is not reachable.');
+    }
+    return reply.send({ status: 'ok' });
+  });
+
   // -- auth -------------------------------------------------------------
 
   app.post('/api/join', async (req, reply) => {
