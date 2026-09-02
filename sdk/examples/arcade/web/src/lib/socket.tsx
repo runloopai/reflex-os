@@ -44,6 +44,13 @@ export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
   const handlers = useRef(new Set<FrameHandler>());
   const socketRef = useRef<WebSocket | null>(null);
   const watchingRef = useRef<string | null>(null);
+  /**
+   * The game last announced on the wire — distinct from `watchingRef`, which
+   * is what the VIEW wants announced. A reconnect re-announcing the same game
+   * is a resume; a game the player opened while the socket was down was never
+   * announced anywhere, so its announce is a fresh watch (a play).
+   */
+  const announcedRef = useRef<string | null>(null);
   const connectedBeforeRef = useRef(false);
   // Bumped on every reconnect (not the first connect). Frames are fire and
   // forget — anything the server pushed while the socket was down is gone,
@@ -65,16 +72,18 @@ export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
       socketRef.current = socket;
       socket.onopen = () => {
         // Re-announce presence after reconnects so viewer counts stay right.
-        // `resume` tells the server this is the same viewer coming back, not
-        // a new play — otherwise every deploy inflates the play counts.
+        // `resume` tells the server this is the same viewer coming back to
+        // the same game, not a new play — otherwise every deploy inflates
+        // the play counts.
         if (watchingRef.current) {
           socket.send(
             JSON.stringify({
               type: 'watch',
               gameId: watchingRef.current,
-              resume: connectedBeforeRef.current,
+              resume: watchingRef.current === announcedRef.current,
             }),
           );
+          announcedRef.current = watchingRef.current;
         }
         if (connectedBeforeRef.current) setReconnects((n) => n + 1);
         connectedBeforeRef.current = true;
@@ -132,6 +141,7 @@ export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
     const socket = socketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: 'watch', gameId }));
+      announcedRef.current = gameId;
     }
   }, []);
 

@@ -226,10 +226,33 @@ const SCHEMA = `
     user_code text not null,
     expires_at timestamptz not null
   );
+  -- One dispatch in flight per game, enforced by the database because two
+  -- arcade processes run during a deploy's overlap window. The update first
+  -- re-queues all but the oldest of any duplicate working rows left from
+  -- before this index existed, or creating it would fail the boot.
+  update suggestions set status = 'approved', started_at = null
+    where status = 'working' and id not in (
+      select distinct on (game_id) id from suggestions where status = 'working'
+      order by game_id, started_at asc nulls last, id asc
+    );
+  create unique index if not exists suggestions_one_working_per_game
+    on suggestions (game_id) where status = 'working';
 `;
 
 function str(row: Row, key: string): string {
   return String(row[key]);
+}
+
+/**
+ * A unique-constraint rejection, on either driver: node-postgres exposes
+ * SQLSTATE 23505 as `code`, PGLite only the message text.
+ */
+function isUniqueViolation(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) return false;
+  const { code, message } = err as { code?: unknown; message?: unknown };
+  return (
+    code === '23505' || (typeof message === 'string' && message.includes('duplicate key value'))
+  );
 }
 
 function strOrNull(row: Row, key: string): string | null {
@@ -776,23 +799,33 @@ export class ArcadeDb {
    * what keeps the working slot exclusive ACROSS processes — a deploy's
    * overlap window runs two arcades, and without it each could claim a
    * different approved suggestion and send the agent two turns at once. An
-   * in-process lock cannot see the other container; this row guard can.
-   * (Two concurrent claims always target the same top suggestion, so the
-   * row lock serializes them; the loser re-reads and then sees the winner's
-   * working row.) Returns null when the claim lost — rejected meanwhile, or
-   * a dispatch already in flight.
+   * in-process lock cannot see the other container; the database can.
+   *
+   * Two layers, because the NOT EXISTS alone is not airtight: under read
+   * committed, concurrent claims of two DIFFERENT rows each check the guard
+   * against a snapshot that predates the other's commit, and both would
+   * pass. The `suggestions_one_working_per_game` unique index is the
+   * backstop — the racing loser hits it and reads as an ordinary lost
+   * claim. Returns null when the claim lost — rejected meanwhile, or a
+   * dispatch already in flight.
    */
   async claimSuggestionForDispatch(id: string): Promise<SuggestionRow | null> {
-    const { rows } = await this.pg.query<Row>(
-      `update suggestions set status = 'working', started_at = now()
-       where id = $1 and status = 'approved'
-         and not exists (
-           select 1 from suggestions other
-           where other.game_id = suggestions.game_id and other.status = 'working'
-         )
-       returning id`,
-      [id],
-    );
+    let rows: Row[];
+    try {
+      ({ rows } = await this.pg.query<Row>(
+        `update suggestions set status = 'working', started_at = now()
+         where id = $1 and status = 'approved'
+           and not exists (
+             select 1 from suggestions other
+             where other.game_id = suggestions.game_id and other.status = 'working'
+           )
+         returning id`,
+        [id],
+      ));
+    } catch (err) {
+      if (isUniqueViolation(err)) return null;
+      throw err;
+    }
     if (rows.length === 0) return null;
     return this.suggestionById(id);
   }

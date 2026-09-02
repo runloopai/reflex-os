@@ -119,6 +119,8 @@ describe('editSuggestion', () => {
     );
     expect(edited).toBeNull();
     expect((await db.suggestionById(created.id))?.body).toBe('add a boss');
+    // Free the game's working slot for the suites that follow.
+    await db.setSuggestionStatus(created.id, 'done');
   });
 
   it('refuses on finished and rejected suggestions', async () => {
@@ -258,6 +260,8 @@ describe('guarded status transitions (dispatch claims)', () => {
     expect(claimed?.startedAt).not.toBeNull();
     // A second claim (a would-be double dispatch) finds nothing to claim.
     expect(await db.setSuggestionStatus(suggestion.id, 'working', ['approved'])).toBeNull();
+    // Free the game's working slot for the suites that follow.
+    await db.setSuggestionStatus(suggestion.id, 'done');
   });
 
   it('never claims a rejected suggestion, never rejects a claimed one', async () => {
@@ -275,6 +279,7 @@ describe('guarded status transitions (dispatch claims)', () => {
     await db.setSuggestionStatus(other.id, 'working', ['approved']);
     expect(await db.setSuggestionStatus(other.id, 'rejected', ['pending', 'approved'])).toBeNull();
     expect((await db.suggestionById(other.id))?.status).toBe('working');
+    await db.setSuggestionStatus(other.id, 'done');
   });
 
   it('unguarded transitions still apply (settleWorking)', async () => {
@@ -336,11 +341,11 @@ describe('claimSuggestionForDispatch (per-game working slot)', () => {
   });
 
   it('scopes the slot to the game', async () => {
-    // The seeded game held working suggestions when the claim above
-    // succeeded, so busy slots elsewhere do not block a game — while the
-    // seeded game's own slot stays held against it.
+    // This game's slot is held by the claim above; another game's queue
+    // must not be blocked by it.
     const elsewhere = await approvedOn(gameId, 'other game');
-    expect(await db.claimSuggestionForDispatch(elsewhere.id)).toBeNull();
+    expect((await db.claimSuggestionForDispatch(elsewhere.id))?.status).toBe('working');
+    await db.setSuggestionStatus(elsewhere.id, 'done');
   });
 
   it('frees the slot once the working suggestion settles', async () => {
@@ -358,5 +363,19 @@ describe('claimSuggestionForDispatch (per-game working slot)', () => {
     await db.setSuggestionStatus(rejected.id, 'rejected', ['pending', 'approved']);
     expect(await db.claimSuggestionForDispatch(rejected.id)).toBeNull();
     expect((await db.suggestionById(rejected.id))?.status).toBe('rejected');
+  });
+
+  it('backstops the slot with a unique index when the guard is raced past', async () => {
+    // Under read committed, two processes claiming DIFFERENT rows can both
+    // pass the NOT EXISTS check — neither snapshot has the other's commit.
+    // The partial unique index is what makes the slot exclusive anyway; an
+    // unguarded write into a held slot must be refused by the database.
+    const first = await approvedOn(g2, 'holds the slot');
+    expect((await db.claimSuggestionForDispatch(first.id))?.status).toBe('working');
+    const second = await approvedOn(g2, 'raced past the guard');
+    await expect(db.setSuggestionStatus(second.id, 'working')).rejects.toThrow(
+      /duplicate key value/,
+    );
+    expect((await db.suggestionById(second.id))?.status).toBe('approved');
   });
 });
