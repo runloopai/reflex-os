@@ -6,10 +6,11 @@
  * to the game's visibility server-side).
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Crown } from 'lucide-react';
+import { Crown, MessagesSquare } from 'lucide-react';
 import { arcade, type ChatMessage } from '../lib/api.ts';
 import { useArcadeFrames, useArcadeReconnect } from '../lib/socket.tsx';
 import { useSession } from '../lib/session.ts';
+import { PanelHeader } from './PanelHeader.tsx';
 import { Popcard } from './Popcard.tsx';
 import { ProfileCardContent } from './UserRef.tsx';
 import { Avatar } from './Avatar.tsx';
@@ -73,9 +74,24 @@ export function GameChatPanel({ gameId, ownerId }: { gameId: string; ownerId: st
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
+      {/* The same header card the agent and suggestion panels wear: three
+          tabs in one column only read as one surface if their tops match. */}
+      <PanelHeader title="Room chat" icon={<MessagesSquare size={15} aria-hidden />}>
+        <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+          Everyone watching talks here. The owner wears a crown.
+        </p>
+      </PanelHeader>
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-4">
         {messages.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nothing here yet. Say hi!</p>
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-300"
+            >
+              <MessagesSquare size={18} />
+            </span>
+            <p className="text-sm font-medium text-zinc-300">Nothing here yet. Say hi!</p>
+          </div>
         ) : (
           messages.map((message) => {
             const isOwner = message.authorId === ownerId;
@@ -133,18 +149,20 @@ export function GameChatPanel({ gameId, ownerId }: { gameId: string; ownerId: st
         }}
       >
         {error ? <p className="mb-2 text-xs text-rose-400">{error}</p> : null}
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 rounded-2xl border border-transparent bg-zinc-900/80 p-2 shadow-xl shadow-black/50 backdrop-blur-xl focus-within:border-violet-500">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Message the room"
             maxLength={500}
-            className="min-w-0 flex-1 rounded-2xl border border-transparent bg-zinc-900/80 px-3.5 py-2 text-sm shadow-xl shadow-black/50 backdrop-blur-xl outline-none focus:border-violet-500 pointer-coarse:py-2.5 pointer-coarse:text-base"
+            // text-base on phones: iOS Safari zooms the page when a focused
+            // input is under 16px, which strands the composer off-screen.
+            className="min-w-0 flex-1 bg-transparent px-1.5 text-sm outline-none placeholder:text-zinc-500 pointer-coarse:py-1 pointer-coarse:text-base"
           />
           <button
             type="submit"
             disabled={busy || !draft.trim()}
-            className="rounded-2xl bg-violet-600 px-3.5 py-2 text-sm font-semibold shadow-xl shadow-black/50 hover:bg-violet-500 disabled:opacity-50"
+            className="shrink-0 rounded-xl bg-violet-600 px-3.5 py-1.5 text-sm font-semibold transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-10"
           >
             Send
           </button>

@@ -16,10 +16,12 @@ import {
   Bot,
   Bug,
   CheckCircle2,
+  ChevronDown,
   ChevronsUp,
   Crown,
   Heart,
   Inbox,
+  Lightbulb,
   ListOrdered,
   Loader2,
   MessageSquareText,
@@ -38,6 +40,7 @@ import {
 import { agentChip } from '../lib/agent-status.ts';
 import { useArcadeFrames, useArcadeReconnect } from '../lib/socket.tsx';
 import { useSession } from '../lib/session.ts';
+import { PanelHeader } from './PanelHeader.tsx';
 import { Tip } from './Tip.tsx';
 import { Popcard } from './Popcard.tsx';
 import { UserRef } from './UserRef.tsx';
@@ -91,6 +94,9 @@ function SectionHead({
     >
       <Icon size={12} aria-hidden /> <span>{label}</span>
       {count !== undefined ? <span className="font-normal opacity-70">{count}</span> : null}
+      {/* A rule to the edge: five stacked cards need the sections to read as
+          bands, not as five more chips down the left margin. */}
+      <span aria-hidden className="ml-1 h-px flex-1 bg-current opacity-20" />
     </p>
   );
 }
@@ -126,7 +132,7 @@ function AgentBanner({
       ) : (
         <Bot size={13} aria-hidden className={`shrink-0 ${agent.pulse ? 'animate-pulse' : ''}`} />
       )}
-      <span className="truncate">{text}</span>
+      <span className="line-clamp-2">{text}</span>
     </p>
   );
   if (!activeTask) return banner;
@@ -156,6 +162,23 @@ const STATUS_CHIP: Record<SuggestionStatus, { label: string; className: string }
   done: { label: 'shipped', className: 'bg-emerald-500/15 text-emerald-300' },
   rejected: { label: 'rejected', className: 'bg-zinc-500/15 text-zinc-400' },
 };
+
+/**
+ * The stripe down a card's left edge. Status is the one thing worth
+ * scanning a stacked queue for, and a colour bar answers it before any of
+ * the chips are read.
+ */
+const STATUS_ACCENT: Record<SuggestionStatus, string> = {
+  pending: 'bg-amber-400/70',
+  approved: 'bg-sky-400/70',
+  working: 'bg-violet-400',
+  done: 'bg-emerald-400/70',
+  rejected: 'bg-zinc-600',
+};
+
+/** Shared shape for the small round icon actions in a card's footer. */
+const ICON_ACTION =
+  'flex items-center justify-center rounded-full p-1.5 transition pointer-coarse:min-h-10 pointer-coarse:min-w-10';
 
 const CATEGORY_META: Record<
   SuggestionCategory,
@@ -318,9 +341,9 @@ export function SuggestionsPanel({
     const isShipped = suggestion.status === 'done';
     const openEditor = editor?.id === suggestion.id ? editor : null;
     return (
-      <div
+      <article
         key={suggestion.id}
-        className={`rounded-2xl p-3 shadow-lg shadow-black/40 backdrop-blur-sm transition-colors ${
+        className={`relative overflow-hidden rounded-2xl p-3 pl-4 shadow-lg shadow-black/40 backdrop-blur-sm transition-colors ${
           isShipped
             ? 'bg-emerald-500/[0.07]'
             : suggestion.status === 'working'
@@ -328,8 +351,11 @@ export function SuggestionsPanel({
               : 'bg-zinc-900/60 hover:bg-zinc-900/80'
         }`}
       >
-        <div className="flex items-center gap-2">
-          <CategoryChip category={suggestion.category} />
+        <span
+          aria-hidden
+          className={`absolute inset-y-0 left-0 w-[3px] ${STATUS_ACCENT[suggestion.status]}`}
+        />
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {queueIndex === 0 ? (
             <Tip label="Top of the queue — sent to the agent when it goes idle">
               <span className="flex items-center gap-1 rounded-full border border-violet-500/50 px-2 py-0.5 text-[11px] font-medium text-violet-300">
@@ -337,12 +363,15 @@ export function SuggestionsPanel({
               </span>
             </Tip>
           ) : queueIndex !== undefined ? (
-            <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[11px] font-medium text-zinc-500">
+            <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[11px] font-medium text-zinc-500 tabular-nums">
               #{queueIndex + 1}
             </span>
           ) : null}
+          <CategoryChip category={suggestion.category} />
+          {/* Outlined, not filled: "yours" is a bookmark, and a third solid
+              chip on the row competes with the two that carry meaning. */}
           {mine ? (
-            <span className="rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[11px] font-medium text-fuchsia-300">
+            <span className="rounded-full border border-fuchsia-500/40 px-2 py-0.5 text-[11px] font-medium text-fuchsia-300/90">
               yours
             </span>
           ) : null}
@@ -378,7 +407,7 @@ export function SuggestionsPanel({
             </span>
           ) : null}
         </div>
-        <p className="mt-2 text-sm text-zinc-200">{suggestion.body}</p>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-100">{suggestion.body}</p>
         {suggestion.ownerNote ? (
           <p
             aria-label="Note from the owner"
@@ -408,14 +437,16 @@ export function SuggestionsPanel({
             }
             className="ml-auto"
           >
+            {/* Hearts are the room's steering wheel, so the heart is the one
+                control on the card that always looks like a button. */}
             <button
               type="button"
               aria-label={hearted ? 'Unheart suggestion' : 'Heart suggestion'}
               onClick={() => void heart(suggestion.id)}
-              className={`flex items-center justify-center gap-1 rounded-full px-2 py-1 text-xs font-semibold transition pointer-coarse:min-h-10 pointer-coarse:min-w-11 ${
+              className={`flex items-center justify-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold tabular-nums transition pointer-coarse:min-h-10 pointer-coarse:min-w-12 ${
                 hearted
-                  ? 'bg-rose-500/20 text-rose-300'
-                  : 'text-zinc-500 hover:bg-rose-500/10 hover:text-rose-300'
+                  ? 'border-rose-500/50 bg-rose-500/20 text-rose-300'
+                  : 'border-white/10 text-zinc-400 hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-300'
               }`}
             >
               <Heart size={13} fill={hearted ? 'currentColor' : 'none'} aria-hidden />
@@ -439,7 +470,7 @@ export function SuggestionsPanel({
                 type="button"
                 aria-label={suggestion.ownerNote ? 'Edit the owner note' : 'Add owner note'}
                 onClick={() => toggleEditor(suggestion, 'note')}
-                className={`flex items-center justify-center rounded-full p-1.5 transition pointer-coarse:min-h-10 pointer-coarse:min-w-10 ${
+                className={`${ICON_ACTION} ${
                   openEditor?.kind === 'note'
                     ? 'bg-amber-400/20 text-amber-300'
                     : 'text-zinc-500 hover:bg-amber-400/10 hover:text-amber-300'
@@ -455,7 +486,7 @@ export function SuggestionsPanel({
                 type="button"
                 aria-label="Edit suggestion"
                 onClick={() => toggleEditor(suggestion, 'edit')}
-                className={`flex items-center justify-center rounded-full p-1.5 transition pointer-coarse:min-h-10 pointer-coarse:min-w-10 ${
+                className={`${ICON_ACTION} ${
                   openEditor?.kind === 'edit'
                     ? 'bg-sky-400/20 text-sky-300'
                     : 'text-zinc-500 hover:bg-sky-400/10 hover:text-sky-300'
@@ -465,27 +496,34 @@ export function SuggestionsPanel({
               </button>
             </Tip>
           ) : null}
-          {isOwner && (suggestion.status === 'pending' || suggestion.status === 'approved') ? (
-            <span className="flex gap-1.5">
-              {suggestion.status === 'pending' ? (
-                <button
-                  type="button"
-                  onClick={() => void approve(suggestion.id)}
-                  className="rounded-md bg-emerald-600/80 px-2.5 py-1 text-xs font-semibold hover:bg-emerald-500 pointer-coarse:min-h-10 pointer-coarse:px-3"
-                >
-                  Approve
-                </button>
-              ) : null}
+        </div>
+        {/* The owner's verdict gets a row of its own. Sharing the footer with
+            the author, the heart and two icon actions left it as four
+            elbowing targets on a phone. */}
+        {/* The reject editor carries its own confirm, so the row that opened
+            it stands down; a note or an edit is unrelated and leaves it. */}
+        {isOwner &&
+        openEditor?.kind !== 'reject' &&
+        (suggestion.status === 'pending' || suggestion.status === 'approved') ? (
+          <div className="mt-2.5 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => toggleEditor(suggestion, 'reject')}
+              className="rounded-xl border border-white/10 px-3.5 py-1.5 text-xs font-medium text-zinc-400 transition hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-300 pointer-coarse:min-h-10 pointer-coarse:px-4"
+            >
+              Reject
+            </button>
+            {suggestion.status === 'pending' ? (
               <button
                 type="button"
-                onClick={() => toggleEditor(suggestion, 'reject')}
-                className="rounded-md border border-zinc-700 px-2.5 py-1 text-xs hover:bg-zinc-800 pointer-coarse:min-h-10 pointer-coarse:px-3"
+                onClick={() => void approve(suggestion.id)}
+                className="rounded-xl bg-emerald-600/90 px-3.5 py-1.5 text-xs font-semibold text-emerald-50 transition hover:bg-emerald-500 pointer-coarse:min-h-10 pointer-coarse:px-4"
               >
-                Reject
+                Approve
               </button>
-            </span>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        ) : null}
         {openEditor ? (
           <form
             className="mt-2 flex gap-1.5"
@@ -527,7 +565,7 @@ export function SuggestionsPanel({
             </button>
           </form>
         ) : null}
-      </div>
+      </article>
     );
   };
 
@@ -587,18 +625,23 @@ export function SuggestionsPanel({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="mx-1 mt-1 rounded-2xl bg-zinc-900/70 px-3.5 py-2.5 shadow-xl shadow-black/50 backdrop-blur-xl">
-        <p className="flex items-center gap-2 text-xs text-zinc-500">
-          <span className="min-w-0 truncate">
-            {autoApprove
-              ? 'Auto-approve is on — most-hearted suggestions go to the agent first.'
-              : 'The owner reviews suggestions; the agent works the most-hearted first.'}
-          </span>
-          {shipped.length > 0 ? (
-            <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-300">
+      <PanelHeader
+        title="Suggestions"
+        icon={<Lightbulb size={15} aria-hidden />}
+        right={
+          shipped.length > 0 ? (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-300">
               <PackageCheck size={11} aria-hidden /> {shipped.length} shipped
             </span>
-          ) : null}
+          ) : null
+        }
+      >
+        {/* Wraps rather than truncates: an ellipsised half-sentence is the
+            one thing worse than no explainer at all. */}
+        <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+          {autoApprove
+            ? 'Auto-approve is on — most-hearted suggestions go to the agent first.'
+            : 'The owner reviews suggestions; the agent works the most-hearted first.'}
         </p>
         <AgentBanner
           agentStatus={agentStatus}
@@ -606,13 +649,22 @@ export function SuggestionsPanel({
           task={currentTask}
           taskKind={currentTaskKind}
         />
-      </header>
+      </PanelHeader>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {suggestions.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            No suggestions yet. Tell the agent what the game needs — the room's hearts decide what
-            it builds next.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <span
+              aria-hidden
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-violet-300"
+            >
+              <Lightbulb size={18} />
+            </span>
+            <p className="text-sm font-medium text-zinc-300">No suggestions yet</p>
+            <p className="max-w-[32ch] text-xs leading-relaxed text-zinc-500">
+              Tell the agent what the game needs — the room&rsquo;s hearts decide what it builds
+              next.
+            </p>
+          </div>
         ) : (
           <>
             {working.length > 0 ? (
@@ -666,9 +718,15 @@ export function SuggestionsPanel({
               <section className="space-y-2">
                 <button
                   type="button"
+                  aria-expanded={showRejected}
                   onClick={() => setShowRejected((old) => !old)}
-                  className="mx-auto block text-center text-[11px] text-zinc-600 transition hover:text-zinc-400"
+                  className="mx-auto flex w-fit items-center gap-1.5 rounded-full border border-white/10 px-3 py-1 text-[11px] text-zinc-500 transition hover:border-white/20 hover:text-zinc-300 pointer-coarse:min-h-10"
                 >
+                  <ChevronDown
+                    size={12}
+                    aria-hidden
+                    className={`transition-transform ${showRejected ? 'rotate-180' : ''}`}
+                  />
                   {showRejected
                     ? 'Hide rejected suggestions'
                     : `${rejected.length} rejected suggestion${rejected.length === 1 ? '' : 's'} hidden — show`}
@@ -687,42 +745,47 @@ export function SuggestionsPanel({
         }}
       >
         {error ? <p className="mb-2 text-xs text-rose-400">{error}</p> : null}
-        <div className="mb-2 flex gap-1.5">
-          {(Object.keys(CATEGORY_META) as SuggestionCategory[]).map((key) => {
-            const meta = CATEGORY_META[key];
-            const Icon = meta.icon;
-            const active = category === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setCategory(key)}
-                className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition pointer-coarse:min-h-10 pointer-coarse:px-3 pointer-coarse:text-xs ${
-                  active ? meta.active : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
-                }`}
-              >
-                <Icon size={11} aria-hidden /> {meta.label}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex gap-2">
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Suggest a feature or fix"
-            maxLength={500}
-            // text-base on phones: iOS Safari zooms the page when a focused
-            // input is under 16px, which strands the composer off-screen.
-            className="min-w-0 flex-1 rounded-2xl border border-transparent bg-zinc-900/80 px-3.5 py-2 text-sm shadow-xl shadow-black/50 backdrop-blur-xl outline-none focus:border-violet-500 pointer-coarse:py-2.5 pointer-coarse:text-base"
-          />
-          <button
-            type="submit"
-            disabled={busy || !draft.trim()}
-            className="rounded-2xl bg-violet-600 px-3.5 py-2 text-sm font-semibold shadow-xl shadow-black/50 hover:bg-violet-500 disabled:opacity-50"
-          >
-            Send
-          </button>
+        {/* Type and text are one control, so they live in one card — the
+            same object the agent chat's composer is. */}
+        <div className="rounded-2xl border border-transparent bg-zinc-900/80 p-2 shadow-xl shadow-black/50 backdrop-blur-xl focus-within:border-violet-500">
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {(Object.keys(CATEGORY_META) as SuggestionCategory[]).map((key) => {
+              const meta = CATEGORY_META[key];
+              const Icon = meta.icon;
+              const active = category === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setCategory(key)}
+                  className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition pointer-coarse:min-h-10 pointer-coarse:px-3 pointer-coarse:text-xs ${
+                    active ? meta.active : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'
+                  }`}
+                >
+                  <Icon size={11} aria-hidden /> {meta.label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Suggest a feature or fix"
+              maxLength={500}
+              // text-base on phones: iOS Safari zooms the page when a focused
+              // input is under 16px, which strands the composer off-screen.
+              className="min-w-0 flex-1 bg-transparent px-1.5 text-sm outline-none placeholder:text-zinc-500 pointer-coarse:py-1 pointer-coarse:text-base"
+            />
+            <button
+              type="submit"
+              disabled={busy || !draft.trim()}
+              className="shrink-0 rounded-xl bg-violet-600 px-3.5 py-1.5 text-sm font-semibold transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50 pointer-coarse:min-h-10"
+            >
+              Send
+            </button>
+          </div>
         </div>
       </form>
     </div>

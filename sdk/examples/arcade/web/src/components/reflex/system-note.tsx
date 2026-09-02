@@ -1,7 +1,13 @@
 /**
- * One lifecycle divider (`Devbox running`, `Turn complete`, errors in red):
- * hairline rules around a small icon, sentence-cased label, and the event
- * time — the same shape Reflex's own transcript uses.
+ * One lifecycle note (`Devbox running`, `Turn complete`, errors in red): a
+ * small centered pill with an icon, a sentence-cased label, and the event
+ * time.
+ *
+ * The kit ships these as full-width hairline dividers. The arcade restyles
+ * them as pills because an arcade turn emits four of them back to back
+ * (`turn complete` / `agent needs input` / `agent running` / `turn started`)
+ * and four rules slicing a narrow sidebar read as the transcript's main
+ * event instead of its margin notes.
  *
  * `message-list` composes this; import it directly to annotate your own
  * layouts. Colors come from `--reflex-chat-*` CSS variables. You own this
@@ -68,9 +74,14 @@ export function SystemNote({ children, tone = 'info', kind, at }: SystemNoteProp
         ? 'text-[var(--reflex-chat-accent,#34d399)]'
         : 'text-[var(--reflex-chat-muted-fg,#6b7280)]';
   return (
-    <div className="flex items-center gap-2 px-2 py-1">
-      <span aria-hidden className="h-px flex-1 bg-[var(--reflex-chat-border,#27272a)]" />
-      <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-[var(--reflex-chat-muted-fg,#6b7280)]">
+    <div className="flex justify-center">
+      <span
+        className={`flex max-w-full min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${
+          tone === 'error'
+            ? 'bg-rose-500/10 text-rose-300'
+            : 'bg-white/[0.04] text-[var(--reflex-chat-muted-fg,#6b7280)]'
+        }`}
+      >
         {kind ? (
           <svg
             aria-hidden
@@ -82,21 +93,23 @@ export function SystemNote({ children, tone = 'info', kind, at }: SystemNoteProp
             {ICONS[kind]}
           </svg>
         ) : null}
-        <span
-          className={`truncate first-letter:uppercase ${tone === 'error' ? 'text-rose-400' : ''}`}
-        >
-          {children}
-        </span>
+        <span className="truncate first-letter:uppercase">{children}</span>
         {at ? (
           <time
             dateTime={new Date(at).toISOString()}
-            className="shrink-0 text-[10px] tabular-nums opacity-70"
+            className="shrink-0 tabular-nums opacity-60"
+            // Spelled out rather than left to `toLocaleTimeString`'s default,
+            // which varies by locale — a pill that has to hold the label too
+            // cannot afford a format it did not choose.
           >
-            {new Date(at).toLocaleTimeString()}
+            {new Date(at).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            })}
           </time>
         ) : null}
       </span>
-      <span aria-hidden className="h-px flex-1 bg-[var(--reflex-chat-border,#27272a)]" />
     </div>
   );
 }

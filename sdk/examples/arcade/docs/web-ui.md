@@ -58,6 +58,24 @@ Dark zinc base, neon violet/fuchsia accents, glass borders
 first, fun second, never busy — put a scrim under copy that sits on
 animated backgrounds.
 
+## The three room panels are one surface
+
+Chat, the agent transcript and suggestions are three tabs in one column, so
+they only read as one thing if their edges match. All three open with
+`PanelHeader` (title + trailing slot + an explainer line) and close with the
+same composer card — a rounded glass box that owns its input, not an input
+and a button floating side by side. Add a fourth panel and it wears both.
+
+The header's title row hides below `lg`: there the panel is a sheet whose own
+title bar already names it, and two headings stacked is the sheet saying
+"Suggestions" twice. The trailing slot survives, because a shipped count or
+an agent status is worth the row on a phone.
+
+Lifecycle notes in the transcript are pills, not the kit's full-width
+dividers: an arcade turn emits four back to back (`turn complete` / `agent
+needs input` / `agent running` / `turn started`), and four rules across a
+narrow sidebar read as the transcript's main event instead of its margin.
+
 ## Mobile is a first-class target
 
 People play the games and suggest from phones. Below `lg` the stream view is

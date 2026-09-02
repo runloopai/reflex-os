@@ -19,8 +19,23 @@ export interface ToolCallLineProps {
 
 export function ToolCallLine({ tool }: ToolCallLineProps) {
   return (
-    <div className="mx-1 flex items-baseline gap-2 rounded-lg bg-white/[0.05] px-2.5 py-1.5 font-mono text-xs text-[var(--reflex-chat-muted-fg,#6b7280)] shadow-sm shadow-black/20 backdrop-blur-sm">
-      <span aria-hidden>{tool.done ? '✓' : '⚙'}</span>
+    <div
+      // A sidebar truncates the detail well before `buildAgentTimeline`'s own
+      // 100-char clamp does, so the tooltip is worth having — but it can only
+      // ever show what the timeline kept, not the whole command.
+      title={tool.detail ? `${tool.name} ${tool.detail}` : tool.name}
+      className="mx-1 flex items-center gap-2 rounded-lg bg-white/[0.05] px-2.5 py-1.5 font-mono text-xs text-[var(--reflex-chat-muted-fg,#6b7280)] shadow-sm shadow-black/20 backdrop-blur-sm"
+    >
+      {tool.done ? (
+        <span aria-hidden className="shrink-0 text-emerald-400">
+          ✓
+        </span>
+      ) : (
+        <span
+          aria-hidden
+          className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[var(--reflex-chat-accent,#4f46e5)]"
+        />
+      )}
       <span className="shrink-0 font-semibold text-[var(--reflex-chat-fg,#111827)]">
         {tool.name}
       </span>

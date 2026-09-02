@@ -46,6 +46,7 @@ import { StatusPill } from '../components/StatusPill.tsx';
 import { SuggestionsPanel } from '../components/SuggestionsPanel.tsx';
 import { GameChatPanel } from '../components/GameChatPanel.tsx';
 import { PanelDock } from '../components/PanelDock.tsx';
+import { AgentStatusChip, PanelHeader } from '../components/PanelHeader.tsx';
 import { ShareButton } from '../components/ShareButton.tsx';
 import { GameStage, type GameStageHandle } from '../components/GameStage.tsx';
 import {
@@ -625,14 +626,23 @@ export function GameView() {
                   status={game.agentStatus}
                   renderItem={renderArcadeItem}
                   header={
-                    agent ? (
-                      <div
-                        className={`mx-1 mt-1 flex w-fit items-center gap-1.5 rounded-full bg-zinc-900/70 px-3.5 py-1.5 text-xs shadow-lg shadow-black/40 backdrop-blur-xl ${agent.className}`}
-                      >
-                        <Bot size={13} aria-hidden className={agent.pulse ? 'animate-pulse' : ''} />
-                        Agent {agent.label}
-                      </div>
-                    ) : null
+                    <PanelHeader
+                      title="Agent transcript"
+                      icon={<Bot size={15} aria-hidden />}
+                      right={<AgentStatusChip status={game.agentStatus} />}
+                    >
+                      {/* What it is doing right now, so the answer does not
+                          depend on scrolling to the bottom of the stream. */}
+                      {agent?.pulse && game.currentTask ? (
+                        <p className="mt-2 line-clamp-2 rounded-lg bg-white/5 px-2 py-1.5 text-xs text-violet-200">
+                          Working on: {game.currentTask}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                          Everything the agent thinks, runs and ships, as it happens.
+                        </p>
+                      )}
+                    </PanelHeader>
                   }
                 />
               </ReflexProvider>

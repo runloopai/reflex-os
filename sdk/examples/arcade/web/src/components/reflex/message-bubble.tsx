@@ -27,17 +27,10 @@ export interface MessageBubbleProps {
   message: ChatMessage;
 }
 
-function Timestamp({ message, className }: { message: ChatMessage; className: string }) {
-  return (
-    <p className={`mt-1 text-[10px] ${className}`}>
-      {message.pending
-        ? 'Sending…'
-        : new Date(message.timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-    </p>
-  );
+function stamp(message: ChatMessage): string {
+  return message.pending
+    ? 'Sending…'
+    : new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
@@ -50,19 +43,27 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           }`}
         >
           <p>{message.text}</p>
-          <Timestamp
-            message={message}
-            className="text-right text-[var(--reflex-chat-user-fg,#ffffff)]/60"
-          />
+          <p className="mt-1 text-right text-[10px] text-[var(--reflex-chat-user-fg,#ffffff)]/60">
+            {stamp(message)}
+          </p>
         </div>
       </div>
     );
   }
 
+  // Agent messages lead with a speaker line rather than trailing a bare
+  // timestamp: in a transcript that is mostly tool lines and lifecycle
+  // pills, "who is talking" is the thing worth labelling, and a dangling
+  // time under every block was the transcript's loudest repeated element.
   return (
     <div className="w-full min-w-0 rounded-2xl rounded-bl-md bg-[var(--reflex-chat-agent-bubble,#f3f4f6)] px-4 py-3 text-[var(--reflex-chat-agent-fg,#111827)] shadow-md shadow-black/25 backdrop-blur-md">
+      <p className="mb-1.5 flex items-baseline gap-2 text-[11px] text-[var(--reflex-chat-muted-fg,#6b7280)]">
+        <span className="font-semibold tracking-wide text-[var(--reflex-chat-accent,#4f46e5)]">
+          Agent
+        </span>
+        <span className="tabular-nums opacity-70">{stamp(message)}</span>
+      </p>
       <MarkdownContent>{message.text}</MarkdownContent>
-      <Timestamp message={message} className="text-[var(--reflex-chat-muted-fg,#6b7280)]" />
     </div>
   );
 }
