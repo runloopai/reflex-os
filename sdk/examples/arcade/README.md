@@ -244,18 +244,44 @@ as two services: **Postgres** (official template, volume at
 service's settings are not in this repo — Railway deprecated `railway.json`,
 so they live on the service itself and are reproduced here:
 
-| Setting             | Value                                        |
-| ------------------- | -------------------------------------------- |
-| Root directory      | `/` (the repo root, for `sdk/client/src`)    |
-| Dockerfile path     | `sdk/examples/arcade/Dockerfile`             |
-| Healthcheck         | `/api/health`, 120s timeout                  |
-| Watch paths         | `sdk/examples/arcade/**`, `sdk/client/**`    |
-| `DATABASE_URL`      | `${{Postgres.DATABASE_URL}}`                 |
-| `REFLEX_BASE_URL`   | the Reflex deployment players' agents run on |
-| `REFLEX_AGENT_TYPE` | `claude-code`                                |
+| Setting                | Value                                        |
+| ---------------------- | -------------------------------------------- |
+| Root directory         | `/` (the repo root, for `sdk/client/src`)    |
+| Dockerfile path        | `sdk/examples/arcade/Dockerfile`             |
+| Healthcheck            | `/api/health`, 120s timeout                  |
+| Watch paths            | the list below                               |
+| `DATABASE_URL`         | `${{Postgres.DATABASE_URL}}`                 |
+| `REFLEX_BASE_URL`      | the Reflex deployment players' agents run on |
+| `REFLEX_AGENT_TYPE`    | `claude-code`                                |
+| `ARCADE_PUBLIC_ORIGIN` | the public origin, when behind a CDN         |
 
-Only the watch paths make a change here redeploy; a change elsewhere in the
-repo does not rebuild the arcade.
+### Watch paths
+
+Without them the arcade rebuilds on **every** push to `main`, which for this
+repo is most of the day. They are the image's inputs, and nothing else — one
+line per `COPY` in the Dockerfile, so a change that cannot affect the
+container cannot redeploy it:
+
+```
+sdk/examples/arcade/**
+sdk/client/src/**
+sdk/client/package.json
+sdk/client/scripts/**
+orval.config.ts
+openapi/openapi.public.json
+```
+
+Two of those are easy to miss and both would ship a stale image if dropped:
+the arcade generates its SDK client during the build, so the spec it
+generates from (`openapi/openapi.public.json`) and the config that drives it
+(`orval.config.ts`) are as much an input as the arcade's own source. The
+root `package.json` is deliberately absent — the build reads only the orval
+version from it, and it changes far too often to be worth a rebuild.
+
+Keep this list in step with the Dockerfile: a new `COPY` from outside
+`sdk/examples/arcade/` needs a line here, or the deployed image silently
+stops matching `main`. Railway matches them gitignore-style, from the repo
+root.
 
 ## Being found
 
@@ -305,6 +331,25 @@ games too, on the same URL. A route that wants to be cached opts in:
 The shell is deliberately never stored: it names this build's fingerprinted
 assets and carries share tags built from the game's current title and art —
 and from the host that was asked, which a cache cannot key on.
+
+### What the browser is allowed to do
+
+`server/security.ts` holds two policies, because the arcade serves two very
+different kinds of bytes:
+
+- **The app** gets a real CSP: `default-src 'self'`, no `unsafe-inline` for
+  script (Vite emits one external module and the JSON-LD block is data),
+  `frame-src https:` so a game's iframe can be its agent's dev server on any
+  devbox host, and `frame-ancestors 'none'` — an oEmbed embeds the game,
+  never this app. Running against the bundled mock adds that one http origin
+  by name, because the fake games are served over plain http.
+- **Agent-authored art** gets `sandbox`. Every cover and icon is written by
+  an agent and served from this origin; an SVG viewed directly is a document
+  that would otherwise run its own script next to the player's login token.
+  Sandboxed it cannot, and the SMIL/CSS animation the agents use still runs.
+
+Everything also carries `nosniff` and a referrer policy — a game id **is**
+the capability to view an unlisted game — plus HSTS on TLS requests.
 
 Two things to set when you put a CDN in front:
 

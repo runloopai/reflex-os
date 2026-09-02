@@ -77,7 +77,7 @@ registerRoutes(app, { db, hub, engine, reflexAgentType: config.reflexAgentType }
 // the Vite server proxies them here.
 registerDiscoveryRoutes(app, db);
 registerCachePolicy(app);
-registerSecurityHeaders(app);
+registerSecurityHeaders(app, config.reflexBaseUrl);
 
 const webDist = new URL('../web/dist', import.meta.url).pathname;
 if (config.serveWeb && existsSync(webDist)) {

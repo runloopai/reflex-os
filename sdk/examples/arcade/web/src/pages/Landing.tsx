@@ -127,7 +127,7 @@ export function Landing() {
               text={arcadeShareText()}
               label="Share the arcade"
               cta="Share"
-              hint="The link unfurls into the arcade's card wherever you paste it."
+              hint="Unfurls into the arcade's card when pasted."
               className="ml-auto"
             />
             <label className="flex items-center gap-2 text-xs text-zinc-500">

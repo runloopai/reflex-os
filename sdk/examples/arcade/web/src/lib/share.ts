@@ -89,10 +89,42 @@ function tagged(url: string, source: string): string {
   return taggedShareUrl(url, source);
 }
 
+/**
+ * How a link reads once the protocol and the tracking are stripped off it:
+ * the part a person recognises. The menu shows this while the clipboard
+ * gets the tagged URL — nobody wants to read `utm_medium=social`, and a
+ * wrapped 90-character string tells you less about where you are going
+ * than `arcade.reflex.run/g/mmo-snake` does.
+ */
+export function displayShareUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return trimmed;
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed, 'https://arcade.invalid');
+  } catch {
+    return trimmed;
+  }
+  const host = parsed.host.replace(/^www\./, '');
+  const path = parsed.pathname === '/' ? '' : parsed.pathname.replace(/\/$/, '');
+  return `${parsed.origin === 'https://arcade.invalid' ? '' : host}${path}` || host;
+}
+
 export interface ShareTarget {
   /** Stable id; also the `utm_source` a visitor arrives with. */
   id: string;
   label: string;
+  /**
+   * The network's colour. Its official brand value where that reads on the
+   * zinc-950 menu, and a lightened cast of it where it does not — the two
+   * marks whose brand colour is pure black (X, Threads) are drawn light,
+   * the way both brands draw them on a dark ground themselves. Each entry
+   * records the official value it came from. Used as a tint and a ring,
+   * never as a fill behind body text.
+   *
+   * The logo itself is keyed by `id` in `brand-marks.ts`.
+   */
+  accent: string;
   /** Intent URL for this network, with the link already tagged. */
   href: (subject: ShareSubject) => string;
 }
@@ -111,11 +143,13 @@ export const SHARE_TARGETS: ShareTarget[] = [
   {
     id: 'x',
     label: 'X',
+    accent: '#e7e9ea', // official: 000000, drawn light for a dark ground
     href: ({ url, text }) => `https://x.com/intent/post?text=${q(text)}&url=${q(tagged(url, 'x'))}`,
   },
   {
     id: 'bluesky',
     label: 'Bluesky',
+    accent: '#4c9eff', // official: 1185FE
     href: ({ url, text }) =>
       `https://bsky.app/intent/compose?text=${q(`${text}\n\n${tagged(url, 'bluesky')}`)}`,
   },
@@ -124,41 +158,50 @@ export const SHARE_TARGETS: ShareTarget[] = [
     // so it gets the pitch, not the bare game name.
     id: 'reddit',
     label: 'Reddit',
+    accent: '#ff5c33', // official: FF4500
     href: ({ url, text }) =>
       `https://www.reddit.com/submit?url=${q(tagged(url, 'reddit'))}&title=${q(text)}`,
   },
   {
     id: 'linkedin',
     label: 'LinkedIn',
+    accent: '#4aa3e8', // official: 0A66C2
     href: ({ url }) =>
       `https://www.linkedin.com/sharing/share-offsite/?url=${q(tagged(url, 'linkedin'))}`,
   },
   {
     id: 'threads',
     label: 'Threads',
+    accent: '#b8bcc4', // official: 000000, drawn light for a dark ground
     href: ({ url, text }) =>
       `https://www.threads.net/intent/post?text=${q(`${text}\n\n${tagged(url, 'threads')}`)}`,
   },
   {
     id: 'facebook',
     label: 'Facebook',
+    accent: '#5b8def', // official: 0866FF
     href: ({ url }) => `https://www.facebook.com/sharer/sharer.php?u=${q(tagged(url, 'facebook'))}`,
   },
   {
     id: 'whatsapp',
     label: 'WhatsApp',
+    accent: '#34d97a', // official: 25D366
     href: ({ url, text }) =>
       `https://api.whatsapp.com/send?text=${q(`${text} ${tagged(url, 'whatsapp')}`)}`,
   },
   {
     id: 'telegram',
     label: 'Telegram',
+    accent: '#41b0e8', // official: 26A5E4
     href: ({ url, text }) =>
       `https://t.me/share/url?url=${q(tagged(url, 'telegram'))}&text=${q(text)}`,
   },
   {
+    // The one target with no brand behind it, so it gets the app's own
+    // violet and an envelope drawn to match the eight logos beside it.
     id: 'email',
     label: 'Email',
+    accent: '#a78bfa', // official: no brand — the app’s own violet
     href: ({ url, title, text }) =>
       `mailto:?subject=${q(title)}&body=${q(`${text}\n\n${tagged(url, 'email')}`)}`,
   },

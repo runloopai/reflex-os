@@ -108,6 +108,19 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   written (`urlParam` owns that rule), so URLs stay clean, and unknown values
   fall back instead of rendering nothing. Two params that move together go
   through `useUrlPatch`; two setters in one handler drop the first write.
+- These are keyboard games, and an iframe gets no key events until it holds
+  focus. `GameStage` claims the keyboard when a game's daemon URL appears —
+  once per URL, and only while `document.activeElement` is still `body`. Both
+  halves matter: this view re-renders on every socket frame, and the URL
+  usually lands minutes in, while someone is mid-sentence in chat. Anything
+  that closes the room sheet hands focus back through the stage's handle,
+  before the state flush, because the control that closed it is unmounting.
+- Popovers portal to `document.body` and position against the trigger's rect
+  (`Tip`, `ShareButton`). An absolutely-positioned one is clipped: the
+  suggestions panel is a scroller and the hero is `overflow-hidden`. Measure
+  the height of anything taller than a couple of rows against a 342px
+  landscape phone and spend `short:` on it — the story runner's viewport is
+  fixed, so no play function will catch this for you.
 - Fullscreen is two features, not one (`web/src/lib/fullscreen.ts`,
   `hooks/useFullscreen.ts`): the Fullscreen API removes the BROWSER's chrome
   and only it can, while the nav, sidebar and dock are removed by the
@@ -219,6 +232,14 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   must have a version in its URL and must hand it back through `versioned()`
   — an immutable answer to a request with no `?v=` pins bytes that change.
   `tests/http-cache.test.ts` is the spec.
+- Two CSPs in `server/security.ts`, and they are not interchangeable: the
+  app's (`appCsp`) and the `sandbox` one every agent-authored byte is served
+  under. Art is written by an AGENT and served from this origin, so an SVG
+  navigated to directly would run script next to the player's token —
+  sandbox is what stops it, and filtering the markup is not an acceptable
+  substitute. Changing either means re-driving the app in a browser and
+  reading the console; `tests/security.test.ts` pins the headers, not what
+  the app needs in order to render.
 - Crawler-facing files live in `server/discovery.ts` (robots, sitemap, icons,
   manifest). The sitemap is the ONLY link graph this app has — the shelf is
   client-rendered — so a new public page belongs in it, and a private game
@@ -259,6 +280,9 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
 ## Gotchas Worth Knowing
 
 - `StatCounter` needs `key={target}` or it won't re-animate when data loads.
+- A component with an entrance animation breaks `toBeVisible()` in a play
+  function: jest-dom reads the frame-zero `opacity: 0` as hidden. Wait for it
+  (`waitFor`) once when it opens rather than dropping the animation.
 - The sticky nav must stay near-opaque (`bg-zinc-950/95 backdrop-blur-xl`);
   translucent bars ghost scrolled content through them.
 - Entity ids come from `newId('<kind>')` in `server/ids.ts` (crypto-backed);

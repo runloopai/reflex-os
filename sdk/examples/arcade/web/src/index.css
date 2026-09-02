@@ -66,3 +66,24 @@ body {
   touch-action: manipulation;
   overscroll-behavior: contain;
 }
+
+/* The share menu arrives rather than appears. It is positioned in JS
+   against the trigger, so the entrance only scales and lifts — a transform
+   origin would need to know which way the menu flipped, and 4px of travel
+   reads the same either way. */
+@keyframes share-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+
+.share-menu {
+  animation: share-menu-in 120ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-menu {
+    animation: none;
+  }
+}

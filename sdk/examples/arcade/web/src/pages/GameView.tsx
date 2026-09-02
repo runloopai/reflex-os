@@ -47,6 +47,7 @@ import { SuggestionsPanel } from '../components/SuggestionsPanel.tsx';
 import { GameChatPanel } from '../components/GameChatPanel.tsx';
 import { PanelDock } from '../components/PanelDock.tsx';
 import { ShareButton } from '../components/ShareButton.tsx';
+import { GameStage, type GameStageHandle } from '../components/GameStage.tsx';
 import {
   DEFAULT_PANEL,
   DEFAULT_ROOM,
@@ -211,6 +212,14 @@ export function GameView() {
   const fullscreen = useFullscreen(stageEl);
 
   /**
+   * Leaving the room hands the keyboard back to the game. Focus is moved
+   * before the state flush on purpose: the control that closed the sheet is
+   * about to unmount, and an element that loses focus by being removed
+   * drops it to `body`, leaving the game deaf to the arrow keys again.
+   */
+  const stage = useRef<GameStageHandle>(null);
+
+  /**
    * Open a panel over the game; tapping the open one hands the game back.
    * Panel and room move in one navigation — two `useUrlState` setters in one
    * handler would leave the second one's write on top of a stale URL.
@@ -218,13 +227,17 @@ export function GameView() {
   const patchUrl = useUrlPatch();
   const selectPanel = (panel: PanelKey) => {
     const open = !(sheetOpen && tab === panel);
+    if (!open) stage.current?.focus();
     patchUrl({
       tab: urlParam(panel, DEFAULT_PANEL),
       room: urlParam<RoomMode>(open ? 'open' : 'closed', DEFAULT_ROOM),
     });
     setUnread((old) => ({ room: gameId, counts: { ...countsForRoom(old), [panel]: 0 } }));
   };
-  const closeSheet = useCallback(() => setRoom('closed'), [setRoom]);
+  const closeSheet = useCallback(() => {
+    stage.current?.focus();
+    setRoom('closed');
+  }, [setRoom]);
 
   /**
    * The room sheet is a sibling of the stage, so the browser does not paint
@@ -498,18 +511,16 @@ export function GameView() {
               ) : null}
             </div>
           </header>
-          <div className="touch-stage min-h-0 flex-1 bg-black/70">
-            {frameUrl ? (
-              <iframe
-                src={frameUrl}
-                title={game.title}
-                className="h-full w-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
-              />
-            ) : (
-              <BuildingPlaceholder game={game} />
-            )}
-          </div>
+          {/* The frame URL, not the bare daemon URL: it carries who is
+              playing (`lib/game-frame.ts`). It is also what the stage keys
+              its one-shot focus off, which is right — the player arriving
+              reloads the game, and a reloaded game wants the keyboard. */}
+          <GameStage
+            ref={stage}
+            src={frameUrl}
+            title={game.title}
+            fallback={<BuildingPlaceholder game={game} />}
+          />
         </section>
 
         {/* Drag to resize the sidebar / stage split. */}

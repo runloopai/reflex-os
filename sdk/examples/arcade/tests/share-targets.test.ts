@@ -7,11 +7,13 @@
  * attribution on it, and that the text survives encoding.
  */
 import { describe, expect, it } from 'vitest';
+import { BRAND_MARKS } from '../web/src/lib/brand-marks.ts';
 import {
   SHARE_SOURCES,
   SHARE_TARGETS,
   arcadeShareText,
   copyShareUrl,
+  displayShareUrl,
   shareText,
   shippedShareText,
   taggedShareUrl,
@@ -62,6 +64,18 @@ describe('SHARE_TARGETS', () => {
       'telegram',
       'email',
     ]);
+  });
+
+  it('gives every target a logo and a colour to find it by', () => {
+    for (const t of SHARE_TARGETS) {
+      // A target with no mark renders an empty circle, which looks like a
+      // broken image rather than a missing feature.
+      expect(BRAND_MARKS[t.id], t.id).toBeTruthy();
+      expect(t.accent, t.id).toMatch(/^#[0-9a-f]{6}$/);
+    }
+    // Two brands sharing a colour would defeat the point of having one.
+    const accents = SHARE_TARGETS.map((t) => t.accent);
+    expect(new Set(accents).size).toBe(accents.length);
   });
 
   it('carries the shared link, tagged with the target it went to', () => {
@@ -154,6 +168,61 @@ describe('SHARE_SOURCES', () => {
 describe('copyShareUrl', () => {
   it('tags a copied link too — most shares are a paste', () => {
     expect(copyShareUrl(LINK)).toContain('utm_source=link');
+  });
+});
+
+describe('BRAND_MARKS', () => {
+  it('is exactly the targets, with nothing orphaned', () => {
+    expect(Object.keys(BRAND_MARKS).sort()).toEqual(SHARE_TARGETS.map((t) => t.id).sort());
+  });
+
+  it('is bare path data, so every mark can be drawn the same way', () => {
+    for (const [id, d] of Object.entries(BRAND_MARKS)) {
+      // Markup here would mean a brand shipped its own <svg>/<title> or a
+      // background <rect>, and the mark would not take the menu's colour.
+      expect(d, id).not.toContain('<');
+      expect(d.startsWith('M'), id).toBe(true);
+    }
+  });
+
+  it('draws every mark on the same 24 grid', () => {
+    for (const [id, d] of Object.entries(BRAND_MARKS)) {
+      // Coordinates only mean anything against a shared viewBox: a mark
+      // authored on a 1024 grid (the usual size elsewhere) renders as a
+      // giant fragment of itself inside a `0 0 24 24` one.
+      //
+      // A loose bound on purpose. Not every number in path data is a
+      // coordinate — an arc's radii are not, and Facebook's mark legally
+      // carries a 26.805 radius for a nearly-flat curve — so this catches
+      // the wrong grid, which is off by a factor of tens, and does not try
+      // to be a bounds check on the drawing.
+      //
+      // Numbers are written compactly: `-.929` and `1.56.5` are both legal,
+      // so a naive \d+ pattern reads `-.929` as 929.
+      const numbers = d.match(/-?(?:\d+(?:\.\d+)?|\.\d+)/g)?.map(Number) ?? [];
+      expect(numbers.length, id).toBeGreaterThan(0);
+      expect(Math.max(...numbers.map(Math.abs)), id).toBeLessThan(100);
+    }
+  });
+});
+
+describe('displayShareUrl', () => {
+  it('shows the part a person recognises, not the tracking', () => {
+    expect(displayShareUrl(copyShareUrl(LINK))).toBe('arcade.example.com/g/game_1');
+  });
+
+  it('keeps the host when there is no path to show', () => {
+    expect(displayShareUrl('https://arcade.example.com/')).toBe('arcade.example.com');
+    expect(displayShareUrl('https://www.arcade.example.com')).toBe('arcade.example.com');
+  });
+
+  it('leaves a relative link as its path', () => {
+    expect(displayShareUrl('/g/game_1')).toBe('/g/game_1');
+  });
+
+  it('passes through anything it cannot parse', () => {
+    expect(displayShareUrl('')).toBe('');
+    expect(displayShareUrl('   ')).toBe('');
   });
 });
 

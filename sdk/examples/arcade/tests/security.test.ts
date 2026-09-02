@@ -19,7 +19,7 @@ import { ArcadeDb, type GameRow } from '../server/db.ts';
 import { EventHub } from '../server/events.ts';
 import type { GameEngine } from '../server/engine.ts';
 import { registerRoutes } from '../server/routes.ts';
-import { ART_CSP, registerSecurityHeaders } from '../server/security.ts';
+import { appCsp, ART_CSP, registerSecurityHeaders } from '../server/security.ts';
 import { seedArcade } from './seed.ts';
 
 let app: FastifyInstance;
@@ -47,6 +47,9 @@ beforeAll(async () => {
   game = (await db.gameById(seeded.gameId))!;
 
   app = Fastify();
+  // Stands in for the app shell: the CSP is applied to HTML by content
+  // type, so anything that answers HTML is covered, not just one route.
+  app.get('/fake-shell', async (_req, reply) => reply.type('text/html').send('<!doctype html>'));
   registerRoutes(app, {
     db,
     hub: new EventHub(),
@@ -116,5 +119,41 @@ describe('every response', () => {
       headers: { 'x-forwarded-proto': 'https, http' },
     });
     expect(chained.headers['strict-transport-security']).toContain('max-age=');
+  });
+});
+
+describe('the app policy', () => {
+  it('covers every HTML answer, and never overrides the art sandbox', async () => {
+    const shell = await app.inject({ method: 'GET', url: '/fake-shell' });
+    const csp = String(shell.headers['content-security-policy']);
+    expect(csp).toContain("default-src 'self'");
+    // No `unsafe-inline` for script: Vite emits one external module, and
+    // the only inline block is JSON-LD, which a browser never executes.
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).not.toContain("script-src 'self' 'unsafe-inline'");
+    // Nothing legitimately frames the arcade — an oEmbed embeds the GAME.
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toContain("base-uri 'none'");
+
+    // Agent-authored bytes keep the far stricter sandbox policy.
+    const art = await app.inject({
+      method: 'GET',
+      url: `/api/games/${game.id}/art/icon?v=${game.artVersion}`,
+    });
+    expect(art.headers['content-security-policy']).toBe(ART_CSP);
+  });
+
+  it('frames any https game, and the mock only when Reflex itself is local', () => {
+    // A game's iframe is its agent's dev server on a devbox nobody can
+    // enumerate ahead of time, so the scheme is the only thing to pin.
+    expect(appCsp('https://reflex.runloop.ai')).toContain('frame-src https:;');
+
+    // Offline runs put the fake games on plain http; that origin is added
+    // by name — never a bare `http:`, which would let any plaintext page
+    // in the world into a game frame.
+    const offline = appCsp('http://localhost:8791');
+    expect(offline).toContain('frame-src https: http://localhost:8791;');
+    expect(offline).not.toContain('frame-src https: http:;');
   });
 });
