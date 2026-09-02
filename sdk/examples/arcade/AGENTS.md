@@ -62,6 +62,9 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   @storybook/addon-vitest in headless Chromium.
 - `scripts/shots.mjs` - screenshots the key screens into `shots/`
   (gitignored) for visual judging.
+- `docs/` - the depth behind the workflows below: [`web-ui`](docs/web-ui.md),
+  [`sdk-consumption`](docs/sdk-consumption.md), [`hosting`](docs/hosting.md),
+  [`gotchas`](docs/gotchas.md).
 
 ## Workflows
 
@@ -95,186 +98,31 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
 ### Web and UI changes
 
 - Components get a story in `stories/` with a `play` function — Storybook
-  tests are the component test surface. Connected components (socket/api
-  wired) are covered by the smoke test instead; keep new components
-  presentational where possible so they stay storyable.
+  tests are the component test surface; connected components are covered by
+  the smoke test instead.
 - Check: `npm test` (unit + stories), then `npm run shots` against a running
-  stack and READ the images. A change isn't "looking good" until you've seen
-  it; compare against the previous shots when in doubt.
-- View state that says WHERE you are — the game view's panel, whether the
-  phone's room sheet is over the game, a shelf's sort — belongs in the query
-  string via `useUrlState`, not in `useState`. Otherwise a refresh silently
-  moves you and a shared link opens on a different screen. Defaults are never
-  written (`urlParam` owns that rule), so URLs stay clean, and unknown values
-  fall back instead of rendering nothing. Two params that move together go
-  through `useUrlPatch`; two setters in one handler drop the first write.
-- These are keyboard games, and an iframe gets no key events until it holds
-  focus. `GameStage` claims the keyboard when a game's daemon URL appears —
-  once per URL, and only while `document.activeElement` is still `body`. Both
-  halves matter: this view re-renders on every socket frame, and the URL
-  usually lands minutes in, while someone is mid-sentence in chat. Anything
-  that closes the room sheet hands focus back through the stage's handle,
-  before the state flush, because the control that closed it is unmounting.
-- Popovers portal to `document.body` and position against the trigger's rect
-  (`Tip`, `ShareButton`). An absolutely-positioned one is clipped: the
-  suggestions panel is a scroller and the hero is `overflow-hidden`. Measure
-  the height of anything taller than a couple of rows against a 342px
-  landscape phone and spend `short:` on it — the story runner's viewport is
-  fixed, so no play function will catch this for you.
-- Fullscreen is two features, not one (`web/src/lib/fullscreen.ts`,
-  `hooks/useFullscreen.ts`): the Fullscreen API removes the BROWSER's chrome
-  and only it can, while the nav, sidebar and dock are removed by the
-  `.stage-immersive` CSS. iPhone Safari has no element fullscreen at all, so
-  the CSS half must stand alone — and the mode stays out of the URL because a
-  request needs a user gesture, so a restored `?fullscreen=1` cannot be
-  honoured on load.
-- Look: dark zinc base, neon violet/fuchsia accents, glass borders
-  (`border-white/10 bg-zinc-900/50`), performative-ui for the pizzazz
-  (Aurora, AsciiHero, GradientText, WordRoll, StatCounter, BigBack). Sleek
-  first, fun second, never busy — put a scrim under copy that sits on
-  animated backgrounds.
-- Mobile is a first-class target: people play the games and suggest from
-  phones. Below `lg` the stream view is the game, full screen — the app nav
-  hides itself, and chat / agent / suggestions open over the game as sheets
-  from `PanelDock`. Five rules the layout depends on — (1) one React tree at
-  both breakpoints (the sheet and the sidebar are the same `aside` under
-  `max-lg:`/`lg:`), so rotating a phone never remounts a live transcript;
-  (2) size touch targets with `pointer-coarse:`, never viewport width,
-  because a landscape phone is 750px wide and still a thumb; (3) composers
-  are 16px on coarse pointers or iOS zooms the page on focus and strands
-  them behind the keyboard; (4) the game view's header density comes from
-  the STAGE's measured width (`stageDensity`), not the viewport — a dragged
-  sidebar can leave the stage under 300px on a laptop; (5) collapsing the
-  sidebar is a desktop preference applied in CSS, so a phone that inherited
-  it from localStorage still gets the room; (6) viewport heights are `dvh`,
-  never `vh` — on iOS `100vh` is the LARGE viewport, so a `vh` box around a
-  `dvh` one is taller than the screen by the browser toolbars and leaves a
-  strip of background below the dock that scrolls into view. Rows that touch
-  a screen edge wear `safe-x`. Check phone portrait AND landscape before
-  calling it done — and on a real iPhone, where Chromium cannot help you:
-  headless `dvh` and `vh` are the same number.
-- Tailwind v4 trap: performative-ui ships UNLAYERED CSS, which beats
-  Tailwind's layered utilities. Positional overrides on pui components
-  (`position`, `inset`) must be inline `style={{...}}`, or they silently
-  no-op (collapsed AsciiHero canvas, aurora stretching the page).
+  stack and READ the images.
+- Deep detail — URL-owned view state, iframe focus, popovers, fullscreen, the
+  look, the six mobile rules, Tailwind v4: [`docs/web-ui.md`](docs/web-ui.md).
 
 ### SDK-consumption changes
 
-- The agent chat pane is chat-kit output: improvements to chat behavior go
-  into `sdk/chat-kit/registry/` FIRST (then `pnpm --filter
-@runloop/reflex-ui sync`), never forked locally here.
-- Agent/model/org pickers are driven by real client routes
-  (`getAgentModelSupport`, `getOrganizations`,
-  `listAccessibleModelProviderSecrets`) — if data is missing, add it to the
-  public API + client, don't hardcode. Provider-key display mirrors Reflex's
-  `ModelProviderSecretPicker`: resolution lives in `web/src/lib/provider-keys.ts`,
-  rendering in `ProviderKeyList`, and only key metadata (never secret
-  material) crosses into the arcade.
-- The shop window is public: `/` and `/about` render with no account, and
-  the routes that need one gate themselves (`gate(...)` in `App.tsx`) rather
-  than the shell replacing the whole app. Anything a signed-out browser can
-  reach — `GET /api/games`, hover-card profiles, the hub socket — filters to
-  public data on the SERVER; the hub pushes such a client public frames only,
-  because a null user id can never match an owner id
-  (`tests/hub-anonymous.test.ts`). A token the server rejects is dropped, not
-  kept: a stale one left in localStorage makes the socket reconnect forever.
-- Share cards are SERVER-rendered, and they are the only part of this app a
-  crawler ever sees: Slack, X and LinkedIn fetch the URL, read the `<head>`,
-  and leave without running the SPA. `server/share.ts` is the single
-  definition — production splices it in `server/index.ts`, dev in
-  `web/og-dev-plugin.ts` (dev is what a demo tunnel points at, so it cannot
-  be skipped). Adding a default tag to `web/index.html` means teaching
-  `stripShareTags` to remove it, or every game unfurls as the generic card:
-  faced with two `og:title`s, crawlers take the first. Covers rasterize to
-  PNG because no unfurl target renders SVG, and a private game has no card.
-- Reflex API keys are saved on the USER (active key), never entered per
-  game. Owner `rfx_` keys live only in the arcade's database — they must
-  never reach a browser, a fixture, or git. Browsers talk to Reflex only
-  through the per-game proxy/relay.
-- "Connect with Reflex" is Reflex's own device flow, not an arcade
-  endpoint: `server/reflex.ts` starts it with `clientName`, `server/connect.ts`
-  holds the pending device codes (server-side only, per player, TTL'd), and
-  the browser drives it through `web/src/lib/connect.ts`. Two rules the
-  design rests on — the device code and the minted key never reach a
-  browser, and a poll only ever resolves for the player who started it.
-  Extend the flow here; only reach into base Reflex if the gap is generic
-  (the `clientName` label was), never with an arcade-shaped route.
+- Chat behavior is fixed upstream in `sdk/chat-kit/registry/`, never forked
+  here; pickers are driven by real client routes, not hardcoded data.
+- Reflex API keys live on the USER and only in the arcade's database —
+  browsers talk to Reflex through the per-game proxy/relay.
+- Deep detail — the public shop window, server-rendered share cards, and the
+  "Connect with Reflex" device flow:
+  [`docs/sdk-consumption.md`](docs/sdk-consumption.md).
 
 ### Hosting changes
 
-- The deployed arcade is one container (`Dockerfile`) plus a managed
-  Postgres, on Railway; the service settings live on the service, not in this
-  repo (Railway deprecated `railway.json`), and README lists them. The build
-  context is the REPO ROOT, not this directory: the server imports
-  `sdk/client/src` by relative path,
-  and Node needs that package's `package.json` alongside its sources or the
-  `.ts` files load as CommonJS and every named import fails.
-- Nothing in the container's filesystem survives a deploy. Anything new that
-  has to outlive one — art, keys, uploads, pending connect flows — goes in
-  the database, not on disk or in process memory. `DATABASE_URL` is
-  refused-at-boot required in production for exactly that reason: the disk
-  fallback does not fail, it just loses everything at the next release.
-- Deploys overlap: the new container must pass the healthcheck before the
-  old one gets SIGTERM, so two arcades briefly run against one database.
-  State that coordinates work must coordinate through rows, not process
-  memory — the dispatcher's working slot is claimed per game in SQL
-  (`claimSuggestionForDispatch`), and a watcher that finds a dispatch it
-  never staged adopts it instead of settling it. On SIGTERM every hub and
-  relay socket gets an orderly 1001 close so browsers reconnect immediately
-  onto the replacement; a reconnect's re-announced watch carries
-  `resume: true` so a deploy does not count as plays
-  (`tests/hub-watch.test.ts`).
-- `server/limits.ts` is the whole abuse policy, keyed by `METHOD <route
-pattern>` — a typo there is a limit that silently never applies, which is
-  why `tests/limits.test.ts` checks every key against the routes Fastify
-  actually registered and lists the write routes deliberately left out. The
-  key is `req.ip`, which is only the caller's address when `trustProxy` is
-  set to the right hop COUNT (`config.ts`); `true` would let anyone mint an
-  identity per request with an `X-Forwarded-For` of their own. The counters
-  are per-process, so the deploy overlap above means both containers grant a
-  full budget for the minute they coexist — acceptable for a limit sized to
-  stop scripts, and the first thing to move into a row if it ever is not.
-- Body size is Fastify's `bodyLimit`, never a `Content-Length` check: a
-  chunked request declares no length, and the caller picks the encoding.
-  The small limit is the server default and `/reflex/*` raises it per-route
-  (a route's limit beats a content-type parser's — the parser option there
-  applied to nothing for a while). Anything that authorizes inside its
-  handler rather than in front of it needs a rate-limit rule, because by
-  the time it says no the body is already read.
-- The hub socket sits in front of no HTTP hook at all, so a client frame
-  that costs a database write or a site-wide fan-out has to be metered in
-  `events.ts` itself — `watch` is budgeted per socket and counts a play once
-  per game. Any new client frame with a cost behind it needs the same.
-- Bytes the arcade did not author are served under `UNTRUSTED_MEDIA_CSP`
-  (`server/security.ts`), whoever wrote them: agent art and player avatars
-  are the same "SVG is a document, on our origin, where the `ark_` token
-  lives" hazard, and a new route serving stored media is the same hazard
-  again. Uploads are also narrowed to raster types at the boundary — the
-  header is what covers rows written before that rule.
-- `GET /api/health` is the platform's healthcheck and queries the database on
-  purpose: a container that came up without one must fail the check rather
-  than serve errors. Keep it unauthenticated and cheap.
-- Caching is deny-by-default (`server/http-cache.ts`): every `/api` and
-  `/reflex` response is `private, no-store` unless its handler names a
-  policy, because most of them vary by bearer token on a fixed URL and this
-  app is meant to sit behind a CDN. A route that opts into `CACHE.immutable`
-  must have a version in its URL and must hand it back through `versioned()`
-  — an immutable answer to a request with no `?v=` pins bytes that change.
-  `tests/http-cache.test.ts` is the spec.
-- Two CSPs in `server/security.ts`, and they are not interchangeable: the
-  app's (`appCsp`) and the `sandbox` one every agent-authored byte is served
-  under. Art is written by an AGENT and served from this origin, so an SVG
-  navigated to directly would run script next to the player's token —
-  sandbox is what stops it, and filtering the markup is not an acceptable
-  substitute. Changing either means re-driving the app in a browser and
-  reading the console; `tests/security.test.ts` pins the headers, not what
-  the app needs in order to render.
-- Crawler-facing files live in `server/discovery.ts` (robots, sitemap, icons,
-  manifest). The sitemap is the ONLY link graph this app has — the shelf is
-  client-rendered — so a new public page belongs in it, and a private game
-  must never be: `tests/discovery.test.ts` pins that. Anything added to the
-  `<head>` by `share.ts` must also be removed by `stripShareTags`, or
-  injecting twice leaves two of them and crawlers take the first.
+- One container (`Dockerfile`) plus a managed Postgres on Railway, built from
+  the REPO ROOT. Nothing on disk survives a deploy, and deploys overlap: state
+  that coordinates work coordinates through rows, never process memory.
+- Deep detail — rate limits and body size, untrusted-media and app CSPs,
+  health, deny-by-default caching, and crawler files:
+  [`docs/hosting.md`](docs/hosting.md).
 
 ### Verifying against agents
 
@@ -308,27 +156,5 @@ pattern>` — a typo there is a limit that silently never applies, which is
 
 ## Gotchas Worth Knowing
 
-- `StatCounter` needs `key={target}` or it won't re-animate when data loads.
-- A component with an entrance animation breaks `toBeVisible()` in a play
-  function: jest-dom reads the frame-zero `opacity: 0` as hidden. Wait for it
-  (`waitFor`) once when it opens rather than dropping the animation.
-- The sticky nav must stay near-opaque (`bg-zinc-950/95 backdrop-blur-xl`);
-  translucent bars ghost scrolled content through them.
-- Entity ids come from `newId('<kind>')` in `server/ids.ts` (crypto-backed);
-  don't reach for `Math.random`/`crypto.randomUUID`.
-- Real agent streams speak three dialects (flat, ACP, native Claude Code);
-  parsing lives in the scaffolded kit's `event-utils` — fix dialect bugs
-  upstream in the chat-kit registry.
-- Game art is a file contract, not an API: agents serve
-  `/arcade/{icon,preview}.{svg,png}` and `/arcade/preview-anim.svg` (looping
-  animated SVG for tile hover; the engine also accepts `preview.gif`/`.webp`
-  as fallbacks agents are not prompted for) from their dev daemon and the watcher
-  captures changes into the database after each turn (`setGameArt`, art
-  endpoints in routes.ts). Keep the system prompt, engine `ART_KINDS`,
-  and the mock's `/play/:id/arcade/:file` route in sync.
-- A system prompt is frozen when the agent launches, so a rule added to
-  `GAME_AGENT_SYSTEM_PROMPT` reaches only games created after it. Games
-  already running catch up through `GAME_BRIEF_VERSION` + `briefUpdatePrompt`:
-  bump the version, put the new rules in that prompt, and the next dispatched
-  turn carries them once (recorded on the send — there is nothing to
-  re-probe, unlike the art appendix, which repeats while art is missing).
+Animation-vs-`toBeVisible()`, the art file contract, frozen system prompts,
+and the rest: [`docs/gotchas.md`](docs/gotchas.md).
