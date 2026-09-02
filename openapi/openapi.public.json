@@ -13757,6 +13757,117 @@
         }
       }
     },
+    "/user/preferences": {
+      "get": {
+        "operationId": "getMyPreferences",
+        "summary": "Get the current user's UI preferences.",
+        "tags": [
+          "user"
+        ],
+        "x-route-scope": "user",
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferences"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMyPreferences",
+        "summary": "Update the current user's UI preferences.",
+        "tags": [
+          "user"
+        ],
+        "x-route-scope": "user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "navigation": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "drill",
+                          "expand",
+                          "flat",
+                          "flyout",
+                          "sessions"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sessionOrder": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "activity",
+                          "created"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "colorTheme": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "appearanceMode": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "light",
+                          "dark",
+                          "system"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPreferences"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user/providers": {
       "get": {
         "operationId": "getMyProviders",
@@ -18372,6 +18483,75 @@
           "name",
           "avatarUrl",
           "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "UserPreferences": {
+        "type": "object",
+        "properties": {
+          "navigation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "drill",
+                  "expand",
+                  "flat",
+                  "flyout",
+                  "sessions"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sessionOrder": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "activity",
+                  "created"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "colorTheme": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appearanceMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "light",
+                  "dark",
+                  "system"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "navigation",
+          "sessionOrder",
+          "colorTheme",
+          "appearanceMode"
         ],
         "additionalProperties": false
       }

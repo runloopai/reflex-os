@@ -1013,6 +1013,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getMyPreferences",
+    "method": "GET",
+    "path": "/user/preferences",
+    "summary": "Get the current user's UI preferences.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getMyProviders",
     "method": "GET",
     "path": "/user/providers",
@@ -2389,6 +2398,15 @@ export const API_OPS: readonly ApiOp[] = [
     "pathParams": [
       "id"
     ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "updateMyPreferences",
+    "method": "PATCH",
+    "path": "/user/preferences",
+    "summary": "Update the current user's UI preferences.",
+    "pathParams": [],
     "queryParams": [],
     "hasBody": true
   },
