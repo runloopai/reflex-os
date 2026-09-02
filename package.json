@@ -16,7 +16,7 @@
     "check": "pnpm build && pnpm typecheck && pnpm test && pnpm lint:packages"
   },
   "devDependencies": {
-    "orval": "8.18.0",
+    "orval": "8.22.0",
     "publint": "^0.3.18"
   }
 }
