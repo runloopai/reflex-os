@@ -5,6 +5,7 @@
  */
 import { EyebrowPill, GlassCard, GradientText, Sparkle, TokenStream } from 'performative-ui';
 import { Blocks, Bot, Cloud, Heart, Joystick, MonitorPlay, Radio, Wrench } from 'lucide-react';
+import { REFLEX_LINK, REPO_LINK, RUNLOOP_LINK } from '../lib/external-links.ts';
 
 const STEPS: Array<{ icon: typeof Bot; title: string; body: string }> = [
   {
@@ -50,28 +51,28 @@ const STACK: Array<{
     icon: Bot,
     title: 'Reflex',
     body: 'The agent platform. It runs the coding agents, streams every step they take, and exposes it all through a typed public API.',
-    href: 'https://reflex.runloop.ai',
-    link: 'reflex.runloop.ai',
+    href: REFLEX_LINK.href,
+    link: REFLEX_LINK.host,
   },
   {
     icon: Cloud,
     title: 'Runloop',
     body: 'The infrastructure. Each agent gets a devbox with real compute, and daemon tunnels turn a dev server inside it into a URL anyone can load.',
-    href: 'https://runloop.ai',
-    link: 'runloop.ai',
+    href: RUNLOOP_LINK.href,
+    link: RUNLOOP_LINK.host,
   },
   {
     icon: Blocks,
     title: 'The Reflex SDK',
     body: 'This app is an SDK consumer. @runloop/reflex-client is the typed client and socket; @runloop/reflex-chat-kit generated the agent chat pane, shadcn-style, into this codebase.',
-    href: 'https://github.com/runloopai/reflex',
-    link: 'github.com/runloopai/reflex',
+    href: REPO_LINK.href,
+    link: REPO_LINK.host,
   },
   {
     icon: Joystick,
     title: 'The arcade itself',
     body: 'A Fastify + PGLite server that keeps owner keys server-side behind a per-game proxy, and a React 19 + Vite + Tailwind 4 front end dressed in performative-ui.',
-    href: 'https://github.com/runloopai/reflex',
+    href: REPO_LINK.href,
     link: 'sdk/examples/arcade',
   },
 ];

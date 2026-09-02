@@ -76,6 +76,36 @@ dividers: an arcade turn emits four back to back (`turn complete` / `agent
 needs input` / `agent running` / `turn started`), and four rules across a
 narrow sidebar read as the transcript's main event instead of its margin.
 
+## Say the same word for the same thing
+
+A row shown in two places must read the same in both. A suggestion's status
+comes from `lib/suggestion-status.ts` — label, chip colour, and the stripe
+colour — so the sidebar and the timeline cannot end up calling one row
+"shipped" and "done". Agent state comes from `lib/agent-status.ts` the same
+way, and off-arcade URLs from `lib/external-links.ts`.
+
+The corollary is that a heading must not contradict what is under it. The
+shelf was headed "Live now" over a count of every public game, so it read
+"LIVE NOW 2" above two OFFLINE tiles; the live count is its own chip and
+appears only when it is not zero. On the timeline, `not sent` is suppressed
+for a row the server already moved to working or done — dispatch there is
+inferred from stream text a sleeping devbox cannot supply, and the row's own
+status is the better witness.
+
+## The shelf leads with live
+
+`sortGames` puts live games first under every sort, then applies the chosen
+order within each group. This is a Twitch-style shelf: a stream happening
+right now is the whole offer, and burying it under a finished game with more
+plays is the shelf failing at its job. Every page-level shelf shares
+`ShelfStates` (tile-shaped skeletons, one empty card) and `SortSelect`, which
+stays a real `<select>` — the phone picker, keyboard type-ahead, and the
+smoke test's `getByLabel('Sort').selectOption(...)` all depend on it.
+
+`SiteFooter` is mounted app-level in `App.tsx`, not per page, so no page ends
+in bare aurora. The stream view opts out: it is a theater sized to the
+viewport with no bottom to reach.
+
 ## Mobile is a first-class target
 
 People play the games and suggest from phones. Below `lg` the stream view is

@@ -9,6 +9,8 @@ import { useUrlState } from '../lib/useUrlState.ts';
 import { sortGames, useGames, type GameSort, GAME_SORTS } from '../lib/useGames.ts';
 import { useSession } from '../lib/session.ts';
 import { GameCard } from '../components/GameCard.tsx';
+import { SortSelect } from '../components/SortSelect.tsx';
+import { EmptyShelf, GameCardSkeletons } from '../components/ShelfStates.tsx';
 
 export function MyGames() {
   const { me } = useSession();
@@ -24,41 +26,27 @@ export function MyGames() {
 
   return (
     <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My games</h1>
           <p className="mt-1 text-sm text-zinc-400">Everything you own, public and private.</p>
         </div>
-        <label className="flex items-center gap-2 text-xs text-zinc-500">
-          Sort
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as GameSort)}
-            className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 outline-none focus:border-violet-500"
-          >
-            <option value="newest">Newest</option>
-            <option value="plays-desc">Most played</option>
-            <option value="plays-asc">Least played</option>
-          </select>
-        </label>
+        <SortSelect value={sort} onChange={setSort} />
       </div>
 
       {games === null ? (
-        <p className="text-sm text-zinc-500">Loading games...</p>
+        <GameCardSkeletons count={3} />
       ) : mine.length === 0 ? (
-        <div className="mt-10 flex flex-col items-center gap-3 rounded-3xl border border-dashed border-white/15 bg-zinc-900/30 px-8 py-16 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/25 to-fuchsia-500/25 text-violet-300">
-            <Gamepad2 size={22} aria-hidden />
-          </span>
-          <p className="font-semibold">No games yet</p>
-          <p className="max-w-sm text-sm text-zinc-500">
-            Describe a game and a Reflex agent starts building it live — you watch, the room
-            suggests, hearts steer.
-          </p>
-          <Button as={Link} to="/games/new" variant="glow" sparkle className="mt-2">
-            Create a game
-          </Button>
-        </div>
+        <EmptyShelf
+          icon={<Gamepad2 size={22} aria-hidden />}
+          title="No games yet"
+          body="Describe a game and a Reflex agent starts building it live — you watch, the room suggests, hearts steer."
+          action={
+            <Button as={Link} to="/games/new" variant="glow" sparkle className="mt-2">
+              Create a game
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mine.map((game) => (

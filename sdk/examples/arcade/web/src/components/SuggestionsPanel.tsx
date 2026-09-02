@@ -31,12 +31,8 @@ import {
   StickyNote,
   Wrench,
 } from 'lucide-react';
-import {
-  arcade,
-  type Suggestion,
-  type SuggestionCategory,
-  type SuggestionStatus,
-} from '../lib/api.ts';
+import { arcade, type Suggestion, type SuggestionCategory } from '../lib/api.ts';
+import { SUGGESTION_STATUS } from '../lib/suggestion-status.ts';
 import { agentChip } from '../lib/agent-status.ts';
 import { useArcadeFrames, useArcadeReconnect } from '../lib/socket.tsx';
 import { useSession } from '../lib/session.ts';
@@ -154,27 +150,6 @@ function AgentBanner({
     </Popcard>
   );
 }
-
-const STATUS_CHIP: Record<SuggestionStatus, { label: string; className: string }> = {
-  pending: { label: 'pending review', className: 'bg-amber-500/15 text-amber-300' },
-  approved: { label: 'queued', className: 'bg-sky-500/15 text-sky-300' },
-  working: { label: 'agent working', className: 'bg-violet-500/20 text-violet-300 animate-pulse' },
-  done: { label: 'shipped', className: 'bg-emerald-500/15 text-emerald-300' },
-  rejected: { label: 'rejected', className: 'bg-zinc-500/15 text-zinc-400' },
-};
-
-/**
- * The stripe down a card's left edge. Status is the one thing worth
- * scanning a stacked queue for, and a colour bar answers it before any of
- * the chips are read.
- */
-const STATUS_ACCENT: Record<SuggestionStatus, string> = {
-  pending: 'bg-amber-400/70',
-  approved: 'bg-sky-400/70',
-  working: 'bg-violet-400',
-  done: 'bg-emerald-400/70',
-  rejected: 'bg-zinc-600',
-};
 
 /** Shared shape for the small round icon actions in a card's footer. */
 const ICON_ACTION =
@@ -335,7 +310,7 @@ export function SuggestionsPanel({
   };
 
   const renderCard = (suggestion: Suggestion, queueIndex?: number) => {
-    const chip = STATUS_CHIP[suggestion.status];
+    const chip = SUGGESTION_STATUS[suggestion.status];
     const hearted = myHearts.has(suggestion.id);
     const mine = suggestion.authorId === me.id;
     const isShipped = suggestion.status === 'done';
@@ -353,7 +328,7 @@ export function SuggestionsPanel({
       >
         <span
           aria-hidden
-          className={`absolute inset-y-0 left-0 w-[3px] ${STATUS_ACCENT[suggestion.status]}`}
+          className={`absolute inset-y-0 left-0 w-[3px] ${SUGGESTION_STATUS[suggestion.status].accent}`}
         />
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {queueIndex === 0 ? (

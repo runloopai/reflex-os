@@ -99,11 +99,14 @@ export function GameTimeline() {
       <h1 className="mt-4 text-3xl font-extrabold tracking-tight">
         {game ? game.title : 'Game'} <GradientText>timeline</GradientText>
       </h1>
+      {/* "shipped turns", not "shipped": this counts the agent's finished
+          turns, and next to a card whose own chip reads "shipped" the bare
+          word made the two look like the same number disagreeing. */}
       <p className="mt-2 flex flex-wrap items-center gap-3 text-sm text-zinc-400">
         {game ? <StatusPill status={game.status} /> : null}
         <span>{counts.suggestions} suggestions</span>
         <span>{counts.prompts} owner prompts</span>
-        <span>{counts.shipped} shipped</span>
+        <span>{counts.shipped} shipped turns</span>
       </p>
 
       {loading && entries.length === 0 ? (

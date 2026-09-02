@@ -5,6 +5,7 @@
  */
 import { Crown, Heart, Lightbulb, PackageCheck, Sparkles, Wrench } from 'lucide-react';
 import type { TimelineEntry } from '../lib/game-timeline.ts';
+import { SUGGESTION_STATUS, statusProvesDispatch } from '../lib/suggestion-status.ts';
 import { UserRef } from './UserRef.tsx';
 import { Tip } from './Tip.tsx';
 
@@ -77,16 +78,26 @@ function EntryCard({ entry }: { entry: TimelineEntry }) {
         >
           <Icon size={11} aria-hidden /> {meta.label}
         </span>
-        {entry.kind === 'suggestion' && entry.dispatched === false ? (
+        {/* `dispatched` is inferred by matching prompt text in the agent's
+            stream, which a sleeping devbox cannot supply — so a row the
+            server already moved to working/done overrules it. Otherwise a
+            shipped suggestion sat here wearing "not sent". */}
+        {entry.kind === 'suggestion' &&
+        entry.dispatched === false &&
+        !(entry.status && statusProvesDispatch(entry.status)) ? (
           <Tip label="Never reached the agent">
             <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-[11px] text-zinc-500">
               not sent
             </span>
           </Tip>
         ) : null}
+        {/* The panel's words and colours, not the raw enum: the same row
+            must not read "shipped" in the sidebar and "done" here. */}
         {entry.status ? (
-          <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-400">
-            {entry.status}
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${SUGGESTION_STATUS[entry.status].className}`}
+          >
+            {SUGGESTION_STATUS[entry.status].label}
           </span>
         ) : null}
         {typeof entry.hearts === 'number' && entry.hearts > 0 ? (

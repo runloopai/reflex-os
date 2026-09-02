@@ -11,19 +11,27 @@ export const GAME_SORTS = ['newest', 'plays-desc', 'plays-asc'] as const;
 
 export type GameSort = (typeof GAME_SORTS)[number];
 
+/**
+ * Sort a shelf. Live games come first under every sort — this is a
+ * Twitch-style shelf, and a stream happening right now is the whole offer;
+ * burying it under a finished game because that one is newer or has more
+ * plays is the shelf failing at its one job. The chosen sort then orders
+ * within each group.
+ */
 export function sortGames(games: Game[], sort: GameSort): Game[] {
-  const sorted = [...games];
-  switch (sort) {
-    case 'plays-desc':
-      sorted.sort((a, b) => b.plays - a.plays);
-      break;
-    case 'plays-asc':
-      sorted.sort((a, b) => a.plays - b.plays);
-      break;
-    default:
-      sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-  return sorted;
+  const within = (a: Game, b: Game) => {
+    switch (sort) {
+      case 'plays-desc':
+        return b.plays - a.plays;
+      case 'plays-asc':
+        return a.plays - b.plays;
+      default:
+        return b.createdAt.localeCompare(a.createdAt);
+    }
+  };
+  return [...games].sort(
+    (a, b) => Number(b.status === 'live') - Number(a.status === 'live') || within(a, b),
+  );
 }
 
 export function useGames(): Game[] | null {

@@ -26,6 +26,7 @@ import { Gamepad2, Info, Library, Plus } from 'lucide-react';
 import { ProfileModal } from './components/ProfileModal.tsx';
 import { Avatar } from './components/Avatar.tsx';
 import { Tip } from './components/Tip.tsx';
+import { SiteFooter } from './components/SiteFooter.tsx';
 
 function JoinScreen({ onJoined, reason }: { onJoined: (me: Me) => void; reason?: string }) {
   const [name, setName] = useState('');
@@ -322,6 +323,9 @@ export default function App() {
               element={gate("Pick a name to read this game's story.", <GameTimeline />)}
             />
           </Routes>
+          {/* Every page but the theater gets a bottom edge. The stream view
+              is sized to the viewport and has nothing to scroll past. */}
+          {theater ? null : <SiteFooter />}
           {editingProfile ? <ProfileModal onClose={() => setEditingProfile(false)} /> : null}
         </div>
       </ArcadeSocketProvider>
