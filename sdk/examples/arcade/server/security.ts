@@ -2,29 +2,36 @@
  * The response headers that decide what a browser is allowed to do with
  * what the arcade hands it.
  *
- * The sharp edge is the art. Every game's cover, icon and animated preview
- * is authored by an AGENT, fetched off its dev server, and served back from
- * the arcade's own origin (`/api/games/:id/art/:kind`). SVG is not a picture
- * — it is a document, and a document served as `image/svg+xml` runs its own
- * `<script>` when someone navigates straight to it. On this origin that
- * script can read `localStorage`, where the player's `ark_` login token
- * lives: an agent that writes a hostile icon takes over the account of
- * anyone who opens it. Confirmed in a browser before this file existed.
+ * The sharp edge is the media somebody else authored. Every game's cover,
+ * icon and animated preview is written by an AGENT, fetched off its dev
+ * server, and served back from the arcade's own origin
+ * (`/api/games/:id/art/:kind`); every player's avatar is uploaded by that
+ * player and served back the same way (`/api/users/:id/avatar`). SVG is not
+ * a picture — it is a document, and a document served as `image/svg+xml`
+ * runs its own `<script>` when someone navigates straight to it. On this
+ * origin that script can read `localStorage`, where the player's `ark_`
+ * login token lives: a hostile icon takes over the account of anyone who
+ * opens it. Confirmed in a browser before this file existed.
  *
  * The fix is `sandbox`, not filtering. Stripping `<script>` from a hostile
  * SVG is a regex arms race; a sandboxed document simply cannot execute one,
  * and the declarative animation the agents actually use — SMIL and CSS —
  * keeps working, as does every `<img>` that embeds the art on a tile.
+ *
+ * The rule that follows from that: bytes the arcade did not write are
+ * served under {@link UNTRUSTED_MEDIA_CSP}, whoever wrote them. An agent is
+ * the obvious hostile author; a player with a text field and a `data:` URL
+ * is the same problem wearing a smaller upload.
  */
 import type { FastifyInstance } from 'fastify';
 
 /**
- * For agent-authored bytes. `sandbox` with no `allow-scripts` is the whole
- * point; `default-src 'none'` stops the document reaching back out for
- * anything, and inline style stays because that is how SVG carries its own
- * animation.
+ * For bytes the arcade did not author — agent art and player avatars alike.
+ * `sandbox` with no `allow-scripts` is the whole point; `default-src 'none'`
+ * stops the document reaching back out for anything, and inline style stays
+ * because that is how SVG carries its own animation.
  */
-export const ART_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+export const UNTRUSTED_MEDIA_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
 
 /**
  * The app's own policy, for the HTML shell.
@@ -82,6 +89,10 @@ const HSTS_MAX_AGE = 31_536_000;
  *   URL to every host a game links out to would hand it away.
  * - HSTS only when the request actually arrived over TLS, so a local
  *   `http://localhost` run does not pin itself to https for a year.
+ * - `appCsp` on HTML only, and never over a policy a route already named:
+ *   the art and avatar routes have set the stricter
+ *   {@link UNTRUSTED_MEDIA_CSP} on themselves by the time this runs, and
+ *   replacing it would un-sandbox exactly the bytes it exists for.
  */
 export function registerSecurityHeaders(app: FastifyInstance, reflexBaseUrl = ''): void {
   const csp = appCsp(reflexBaseUrl);

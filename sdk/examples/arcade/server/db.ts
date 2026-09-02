@@ -237,6 +237,14 @@ const SCHEMA = `
     );
   create unique index if not exists suggestions_one_working_per_game
     on suggestions (game_id) where status = 'working';
+  -- The shelf: every public game newest first, which is the one query a
+  -- signed-out visitor makes and the only one whose cost grows with the
+  -- whole table rather than with one game.
+  create index if not exists games_public_created_idx on games (is_public, created_at desc);
+  -- "My games", and the check that a key is not still running one.
+  create index if not exists games_owner_idx on games (owner_id);
+  create index if not exists games_key_idx on games (key_id);
+  create index if not exists reflex_keys_user_idx on reflex_keys (user_id);
 `;
 
 function str(row: Row, key: string): string {

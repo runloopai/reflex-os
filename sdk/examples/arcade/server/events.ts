@@ -20,7 +20,33 @@ interface ArcadeClient {
   userId: string | null;
   /** The game view this socket currently has open, for viewer counts. */
   watching: string | null;
+  /** Games this socket has already been counted as playing; see below. */
+  counted: Set<string>;
+  /** Remaining watch changes this socket may announce in the current window. */
+  watchBudget: number;
+  watchWindowEndsAt: number;
 }
+
+/**
+ * A socket may change which game it is watching this often before the
+ * arcade stops listening to it.
+ *
+ * Nothing else on this socket is expensive, but a watch change is: it
+ * broadcasts a viewer count to every connected client and touches the
+ * database. The socket is also the one surface with no HTTP hook in front
+ * of it, so a client alternating between two game ids is an unmetered
+ * amplifier — one frame in, a write and a fan-out to the whole site out.
+ * A person opening game after game does not come close to this.
+ */
+const WATCH_CHANGES_PER_WINDOW = 30;
+const WATCH_WINDOW_MS = 10_000;
+
+/**
+ * How many distinct games one socket can be counted as playing. A real
+ * session does not reach it; a script inventing ids would otherwise grow
+ * this set for as long as it stayed connected.
+ */
+const MAX_COUNTED_GAMES = 200;
 
 export interface PublicGame {
   id: string;
@@ -92,14 +118,25 @@ export function publicGame(
 }
 
 /**
- * `resumed` marks a watch that re-announces presence on a reconnect rather
- * than a viewer newly opening the game — the split that keeps a deploy
- * (every socket drops and re-announces at once) from counting as plays.
+ * Called when a socket moves between game views. `countPlay` says whether
+ * this arrival is a new play, which two separate things can veto:
+ *
+ * - The client marked the watch `resume: true`, so it is a reconnect
+ *   re-announcing where it already was. Without that split, a deploy —
+ *   every socket dropping and re-announcing at once — reads as a rush of
+ *   plays across the whole shelf.
+ * - This socket has already been counted on this game. Opening a game is a
+ *   play; flicking back and forth between two of them is one visit to each,
+ *   not a counter to hold down.
+ *
+ * Neither subsumes the other: a reconnect arrives on a brand-new socket
+ * that has counted nothing, and a flip-flopping client marks nothing as
+ * resumed.
  */
 type WatchListener = (
   prevGameId: string | null,
   nextGameId: string | null,
-  resumed: boolean,
+  countPlay: boolean,
 ) => void;
 
 /** Close code for "server going away" — clients reconnect immediately on it. */
@@ -121,8 +158,15 @@ export class EventHub {
     return count;
   }
 
-  add(socket: WebSocket, userId: string | null): void {
-    const client: ArcadeClient = { socket, userId, watching: null };
+  add(socket: WebSocket, userId: string | null, now = Date.now()): void {
+    const client: ArcadeClient = {
+      socket,
+      userId,
+      watching: null,
+      counted: new Set(),
+      watchBudget: WATCH_CHANGES_PER_WINDOW,
+      watchWindowEndsAt: now + WATCH_WINDOW_MS,
+    };
     this.clients.add(client);
     const drop = () => {
       this.clients.delete(client);
@@ -147,8 +191,17 @@ export class EventHub {
           const next = typeof parsed.gameId === 'string' ? parsed.gameId : null;
           const prev = client.watching;
           if (prev === next) return;
+          // The move itself is free and always applied, so this socket's own
+          // view of where it is stays honest. What is budgeted is telling
+          // everybody else about it.
           client.watching = next;
-          this.watchListener?.(prev, next, parsed.resume === true);
+          if (!this.spendWatchBudget(client)) return;
+          // Marked as counted either way: a resumed watch means this player
+          // was already counted on the socket this one replaced, so coming
+          // back to the same game later is still not a second play.
+          const seen = next !== null && client.counted.has(next);
+          if (next !== null && client.counted.size < MAX_COUNTED_GAMES) client.counted.add(next);
+          this.watchListener?.(prev, next, next !== null && !seen && parsed.resume !== true);
         }
       } catch {
         // Ignore malformed frames.
@@ -164,6 +217,17 @@ export class EventHub {
    */
   closeAll(): void {
     for (const client of this.clients) client.socket.close(GOING_AWAY, 'arcade restarting');
+  }
+
+  /** Whether this socket may announce another watch change right now. */
+  private spendWatchBudget(client: ArcadeClient, now = Date.now()): boolean {
+    if (now >= client.watchWindowEndsAt) {
+      client.watchBudget = WATCH_CHANGES_PER_WINDOW;
+      client.watchWindowEndsAt = now + WATCH_WINDOW_MS;
+    }
+    if (client.watchBudget <= 0) return false;
+    client.watchBudget -= 1;
+    return true;
   }
 
   private send(client: ArcadeClient, frame: Record<string, unknown>): void {

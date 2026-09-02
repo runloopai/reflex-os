@@ -4,7 +4,7 @@
  * disk that the next deploy throws away — so it is pinned here.
  */
 import { describe, expect, it } from 'vitest';
-import { loadConfig, resolveStore } from '../server/config.ts';
+import { loadConfig, resolveStore, resolveTrustProxy } from '../server/config.ts';
 
 describe('resolveStore', () => {
   it('uses Postgres when DATABASE_URL is set', () => {
@@ -29,6 +29,47 @@ describe('resolveStore', () => {
       dataDir: '/tmp/arcade',
     });
     expect(resolveStore({}).kind).toBe('pglite');
+  });
+
+  // The fallback is a convenience for a laptop and a data-loss bug on a
+  // container whose disk goes away with the deploy.
+  it('refuses the disk fallback in production when nothing was chosen', () => {
+    expect(() => resolveStore({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL is required/);
+  });
+
+  // What is refused is the accident, not the deliberate local run: the
+  // README's `NODE_ENV=production npm start` preview and the smoke-test
+  // stack both name a data dir on purpose.
+  it('allows a production-mode run that names its data dir', () => {
+    expect(resolveStore({ NODE_ENV: 'production', ARCADE_DATA_DIR: '/tmp/arcade' })).toEqual({
+      kind: 'pglite',
+      dataDir: '/tmp/arcade',
+    });
+  });
+});
+
+describe('resolveTrustProxy', () => {
+  // Hosted, every request comes from the load balancer, so without this the
+  // per-IP rate limits put the whole internet in one bucket.
+  it('trusts one hop in production and none locally', () => {
+    expect(resolveTrustProxy({ NODE_ENV: 'production' })).toBe(1);
+    expect(resolveTrustProxy({})).toBe(false);
+  });
+
+  it('takes a hop count for a deployment with a CDN in front', () => {
+    expect(resolveTrustProxy({ ARCADE_TRUST_PROXY: '2' })).toBe(2);
+    expect(resolveTrustProxy({ ARCADE_TRUST_PROXY: '0' })).toBe(0);
+  });
+
+  // A count, never `true`: X-Forwarded-For is a list anyone may prepend to,
+  // so trusting it wholesale hands out one fresh identity per request. And
+  // a typo has to be loud — degrading to "trust nothing" would put every
+  // caller behind the balancer in one bucket and lock the site out of
+  // joining within a minute of traffic.
+  it('refuses anything that is not a hop count', () => {
+    expect(() => resolveTrustProxy({ ARCADE_TRUST_PROXY: 'true' })).toThrow(/hop count/);
+    expect(() => resolveTrustProxy({ ARCADE_TRUST_PROXY: '-1' })).toThrow(/hop count/);
+    expect(() => resolveTrustProxy({ ARCADE_TRUST_PROXY: '1.5' })).toThrow(/hop count/);
   });
 });
 

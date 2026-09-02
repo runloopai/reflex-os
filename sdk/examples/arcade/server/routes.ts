@@ -7,7 +7,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ArcadeDb, GameRow, UserRow } from './db.ts';
 import { CACHE, versioned } from './http-cache.ts';
-import { ART_CSP } from './security.ts';
+import { UNTRUSTED_MEDIA_CSP } from './security.ts';
 import type { EventHub } from './events.ts';
 import { publicGame } from './events.ts';
 import type { GameEngine } from './engine.ts';
@@ -53,6 +53,23 @@ function text(body: unknown, field: string, maxLength: number): string | null {
   const trimmed = value.trim();
   if (trimmed.length === 0 || trimmed.length > maxLength) return null;
   return trimmed;
+}
+
+/**
+ * Raster formats only for an uploaded avatar — no SVG.
+ *
+ * An avatar is served back from this origin under its own content type
+ * (`GET /api/users/:id/avatar`), and an SVG served that way is a document
+ * that runs its own script. That route sandboxes what it serves, which is
+ * the control that actually holds; this is the other half of it, because an
+ * avatar has no use for a scriptable format in the first place. A picture of
+ * a person is a raster, so accepting only rasters costs nobody anything and
+ * means a hostile upload never reaches the database.
+ */
+const AVATAR_MEDIA_TYPES = /^data:image\/(png|jpeg|gif|webp);base64,/;
+
+export function isAllowedAvatar(dataUrl: string): boolean {
+  return AVATAR_MEDIA_TYPES.test(dataUrl);
 }
 
 function flag(body: unknown, field: string): boolean | undefined {
@@ -182,7 +199,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
       // arcade's own origin. Navigated to directly, an SVG is a document
       // that runs its own script — and could read the visitor's login
       // token out of localStorage. Sandboxed, it cannot (see security.ts).
-      .header('content-security-policy', ART_CSP)
+      .header('content-security-policy', UNTRUSTED_MEDIA_CSP)
       .header('cache-control', versioned((req.query as { v?: string }).v, game.artVersion));
     return reply.send(decoded.bytes);
   });
@@ -292,8 +309,14 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     }
     if (typeof body?.avatar === 'string') {
       const avatar = body.avatar.trim();
-      if (avatar && !avatar.startsWith('data:image/')) {
-        return fail(reply, 400, 'invalid_avatar', 'Avatars must be an image.');
+      // Only a NEW picture is checked. The profile form submits every field
+      // it holds, including the avatar it loaded, so validating
+      // unconditionally would lock anyone whose stored picture predates this
+      // rule out of editing their own name — rejecting them for a value they
+      // did not touch and cannot see. Keeping what is already there costs
+      // nothing: the serve side sandboxes it either way.
+      if (avatar && avatar !== user.avatar && !isAllowedAvatar(avatar)) {
+        return fail(reply, 400, 'invalid_avatar', 'Avatars must be a PNG, JPEG, GIF or WebP.');
       }
       if (avatar.length > 96 * 1024) {
         return fail(reply, 400, 'avatar_too_large', 'Keep the avatar under ~64KB.');
@@ -327,6 +350,13 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
    * `?v=` is the caller's cache key (the arcade appends a hash of the
    * profile); without one the answer is only briefly cacheable, since the
    * player may change their picture at any time.
+   *
+   * Sandboxed for the same reason the art route is: these bytes came from a
+   * player, they are served from the arcade's own origin, and an SVG among
+   * them navigated to directly is a document that could read the visitor's
+   * login token out of localStorage. Uploads have been raster-only since
+   * `isAllowedAvatar`, but rows written before that rule are still in the
+   * database, and the header is what covers them (see security.ts).
    */
   app.get('/api/users/:userId/avatar', async (req, reply) => {
     const { userId } = req.params as { userId: string };
@@ -336,6 +366,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     const versioned = typeof (req.query as { v?: unknown }).v === 'string';
     return reply
       .header('content-type', image.contentType)
+      .header('content-security-policy', UNTRUSTED_MEDIA_CSP)
       .header('access-control-allow-origin', '*')
       .header(
         'cache-control',

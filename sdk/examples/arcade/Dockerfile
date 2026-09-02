@@ -69,5 +69,11 @@ COPY sdk/examples/arcade/server ./server
 COPY sdk/examples/arcade/web ./web
 COPY --from=web /app/sdk/examples/arcade/web/dist ./web/dist
 
+# Not root. The process runs code it does not control the inputs to — agent
+# art it fetches and rasterizes, JSON from every visitor — and the image has
+# nothing in it this user needs to write to: rows live in Postgres and the
+# web bundle is baked in. `node` ships with the base image.
+USER node
+
 EXPOSE 8790
 CMD ["npm", "start"]

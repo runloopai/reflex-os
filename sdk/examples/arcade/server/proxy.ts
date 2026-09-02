@@ -18,6 +18,7 @@
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ArcadeDb, GameRow, UserRow } from './db.ts';
+import { MAX_PROXY_BODY_BYTES } from './limits.ts';
 
 export interface GameAccess {
   user: UserRow;
@@ -95,8 +96,18 @@ export function registerReflexProxy(
   onOwnerPrompt?: (game: GameRow, text: string) => void,
 ): void {
   app.route({
-    method: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    // Exactly the methods `ALLOWED` can answer. The others used to be
+    // registered and then refused inside the handler, which meant a
+    // `DELETE /reflex/<anything>/api/<anything>` was a route entitled to a
+    // 32MB body and metered by nothing, for the privilege of being told no.
+    method: ['GET', 'POST'],
     url: '/reflex/:gameId/api/*',
+    // The one route whose bodies are legitimately huge: an agent message may
+    // carry base64 image and file blocks. Everything else is held to
+    // `MAX_API_BODY_BYTES` by the server-wide default, so this is the only
+    // place that has to ask (and a per-route limit is what Fastify actually
+    // honours — see `limits.ts`).
+    bodyLimit: MAX_PROXY_BODY_BYTES,
     handler: async (req: FastifyRequest, reply: FastifyReply) => {
       const { gameId } = req.params as { gameId: string };
       const wildcard = (req.params as Record<string, string>)['*'] ?? '';
@@ -160,21 +171,19 @@ export function registerReflexProxy(
   });
 
   // Body parsing is skipped for proxied requests: register a passthrough
-  // parser so Fastify hands us the raw text to forward.
-  app.addContentTypeParser(
-    'application/json',
-    // Generous limit: agent messages may carry base64 image/file blocks.
-    { parseAs: 'string', bodyLimit: 32 * 1024 * 1024 },
-    (req, payload, done) => {
-      if (req.url.startsWith('/reflex/')) {
-        done(null, payload);
-        return;
-      }
-      try {
-        done(null, payload === '' ? undefined : JSON.parse(payload as string));
-      } catch (err) {
-        done(err as Error, undefined);
-      }
-    },
-  );
+  // parser so Fastify hands us the raw text to forward. No `bodyLimit` here
+  // — a route's limit takes precedence over a parser's, so one set here
+  // would apply to nothing while reading as though it did. Size is settled
+  // by the server default and the route option above.
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, payload, done) => {
+    if (req.url.startsWith('/reflex/')) {
+      done(null, payload);
+      return;
+    }
+    try {
+      done(null, payload === '' ? undefined : JSON.parse(payload as string));
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  });
 }

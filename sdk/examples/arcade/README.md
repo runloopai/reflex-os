@@ -190,8 +190,15 @@ Offline, the mock stands in for Reflex's approval page too: the connect
 button opens its `/mock-connect` screen, where Approve mints a fake key
 against the org you pick.
 
-Production-ish: `npm run build`, then `NODE_ENV=production npm start` serves
-the built web app and the API from :8790.
+Production-ish: `npm run build`, then
+
+```bash
+ARCADE_DATA_DIR=.data NODE_ENV=production npm start
+```
+
+serves the built web app and the API from :8790. The data dir is named
+explicitly because production mode otherwise refuses to start without a
+`DATABASE_URL` — see **Where the data lives**.
 
 ## Where the data lives
 
@@ -236,7 +243,23 @@ only — no Vite, Storybook, or Playwright.
 The container sets `HOST=0.0.0.0` and `NODE_ENV=production` itself; a host
 only has to supply `DATABASE_URL`, `REFLEX_BASE_URL`, and `PORT`.
 `GET /api/health` is the healthcheck and queries the database, so a container
-that cannot reach one fails the check instead of serving errors.
+that cannot reach one fails the check instead of serving errors. It runs as
+the image's `node` user, not root.
+
+`DATABASE_URL` is **required** in production, and the server refuses to boot
+without one. The PGLite fallback is a convenience for a laptop; on a
+container it works perfectly right up to the next deploy, and then every
+player, game and saved key is gone. What is refused is the accident — a
+production-mode run that names an `ARCADE_DATA_DIR` has chosen the disk on
+purpose and is allowed, which is how the local preview above and the
+smoke-test stack both run.
+
+`ARCADE_TRUST_PROXY` is how many proxy hops sit in front (default `1` in
+production — a single load balancer; `2` with a CDN as well). It is what
+makes `req.ip` the caller rather than the balancer, and the per-IP rate
+limits below are keyed on that. It is a count rather than a boolean on
+purpose: `X-Forwarded-For` is a list anyone may prepend to, so trusting it
+wholesale hands every caller a fresh identity per request.
 
 It runs on Railway in the `reflex-arcade` project (workspace `runloop.ai`),
 as two services: **Postgres** (official template, volume at
@@ -254,6 +277,7 @@ so they live on the service itself and are reproduced here:
 | `REFLEX_BASE_URL`      | the Reflex deployment players' agents run on |
 | `REFLEX_AGENT_TYPE`    | `claude-code`                                |
 | `ARCADE_PUBLIC_ORIGIN` | the public origin, when behind a CDN         |
+| `ARCADE_TRUST_PROXY`   | `1`, or `2` behind a CDN as well             |
 
 ### Watch paths
 
@@ -449,10 +473,43 @@ arcade server ── owner's rfx_ key ─┴─> Reflex /api + /api/ws
   `POST .../message` is owner-only; the WS relay forwards only
   `subscribe`/`unsubscribe` for the game's stream id).
 
+## What the front door refuses
+
+A demo on a laptop needs none of this; an arcade on the public internet
+does. Every write here is unauthenticated or one free `POST /api/join` away
+from it, and the expensive ones are expensive on someone else's bill —
+creating a game launches a real agent under the owner's Reflex key.
+`server/limits.ts` is the whole policy, in one table:
+
+- **Per-IP rate limits** on everything that writes a row, spends an upstream
+  call, or mints a credential. Keyed by address rather than by token,
+  because a token is free: `POST /api/join` hands one out with no email, no
+  password and no captcha, so limiting by token limits nobody. The counters
+  are in-process, which is correct for one container and the first thing to
+  move if the arcade is ever run at two.
+- **A 256KB cap on API bodies**, as Fastify's own `bodyLimit` rather than a
+  header check of our own: a chunked request declares no `Content-Length`,
+  and the caller picks the encoding. The small limit is the default and the
+  Reflex proxy raises it for itself, so a route added later is capped
+  without anyone remembering — and the one route that legitimately carries
+  32MB (agent messages with base64 attachments) is also the one route that
+  authorizes inside its handler, which is why it is rate limited too.
+
+Untrusted bytes served from this origin — agent art and player avatars alike
+— are sandboxed by `server/security.ts`, and avatars are raster-only going
+in. An SVG served as `image/svg+xml` is a document, not a picture: navigate
+to one and it runs its own script, on the origin where the visitor's `ark_`
+token lives. The app's own HTML answers `frame-ancestors 'none'`, since
+every destructive action is one click behind a session that never expires.
+
 ## Caveats (it is a demo)
 
-- The arcade trusts its own data; there is no rate limiting, no email,
-  and no way to recover a lost `ark_` token.
+- Reflex API keys are stored in the arcade's database in the clear. They are
+  never served to a browser, but anyone with the database has them — so
+  treat it as a credential store, and prefer keys scoped to an organization
+  that can afford to be spent.
+- There is no email, no password, and no way to recover — or revoke — a lost
+  `ark_` token. The token is the account.
 - A game whose devbox is later stopped keeps its last daemon URL until the
   watcher notices the status change on reconcile (30s).
 - Turning a public game private does not retroactively push a removal frame

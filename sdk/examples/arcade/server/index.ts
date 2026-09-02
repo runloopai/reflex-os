@@ -17,6 +17,7 @@ import { ArcadeDb } from './db.ts';
 import { EventHub, publicGame } from './events.ts';
 import { registerDiscoveryRoutes } from './discovery.ts';
 import { CACHE, registerCachePolicy, staticCacheHeaders } from './http-cache.ts';
+import { MAX_API_BODY_BYTES, registerLimits } from './limits.ts';
 import { registerSecurityHeaders } from './security.ts';
 import { GameEngine } from './engine.ts';
 import { initReflex } from './reflex.ts';
@@ -33,18 +34,20 @@ const db = await ArcadeDb.open(config.store);
 const hub = new EventHub();
 const engine = new GameEngine(db, hub, config.reflexBaseUrl);
 
-// Presence: viewer counts fan out on every watch change, and opening a
-// game view counts as a play (which also refreshes the game tiles). A
-// resumed watch — a reconnect re-announcing presence — is not a play, or
-// every deploy would bump the count for everyone mid-game.
-hub.setWatchListener((prevGameId, nextGameId, resumed) => {
+// Presence: viewer counts fan out on every watch change, and the first time
+// a socket opens a game view it counts as a play (which also refreshes the
+// game tiles). Whether an arrival is a play is the hub's call — a reconnect
+// re-announcing presence is not one, or every deploy would bump the count
+// for everyone mid-game, and neither is a socket returning to a game it has
+// already been counted on. See `events.ts`.
+hub.setWatchListener((prevGameId, nextGameId, countPlay) => {
   void (async () => {
     for (const gameId of new Set([prevGameId, nextGameId])) {
       if (!gameId) continue;
       const game = await db.gameById(gameId);
       if (game) hub.broadcastViewers(game);
     }
-    if (nextGameId && nextGameId !== prevGameId && !resumed) {
+    if (countPlay && nextGameId) {
       await db.incrementPlays(nextGameId);
       const game = await db.gameById(nextGameId);
       if (game) {
@@ -55,8 +58,19 @@ hub.setWatchListener((prevGameId, nextGameId, resumed) => {
   })().catch((err) => app.log.error({ err }, 'watch listener failed'));
 });
 
-// Body limit sized for agent messages carrying base64 attachment blocks.
-const app = Fastify({ logger: { level: 'info' }, bodyLimit: 32 * 1024 * 1024 });
+// The small body limit is the default and the Reflex proxy raises it for
+// itself, so a route added later is capped without anyone remembering.
+// `trustProxy` is what makes `req.ip` the caller rather than the load
+// balancer, which is what the per-IP rate limits are keyed on.
+const app = Fastify({
+  logger: { level: 'info' },
+  bodyLimit: MAX_API_BODY_BYTES,
+  trustProxy: config.trustProxy,
+});
+
+// First hook registered, so a request that is refused for being too big or
+// too frequent is refused before anything else looks at it.
+registerLimits(app);
 
 registerReflexProxy(app, db, config.reflexBaseUrl, (game, text) => {
   void (async () => {
