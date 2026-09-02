@@ -93,7 +93,10 @@ export function Tip({
             >
               {label}
             </span>,
-            document.body,
+            // While an element is fullscreen the browser paints only that
+            // subtree, so a bubble portalled to the body is invisible — and
+            // the stage's own header is full of these.
+            document.fullscreenElement ?? document.body,
           )
         : null}
     </span>

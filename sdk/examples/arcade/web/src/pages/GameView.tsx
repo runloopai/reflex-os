@@ -35,6 +35,9 @@ import {
   X,
 } from 'lucide-react';
 import { WibblingSpinner } from 'performative-ui';
+import { useFullscreen } from '../hooks/useFullscreen.ts';
+import { isTypingTarget } from '../lib/fullscreen.ts';
+import { FullscreenButton } from '../components/FullscreenButton.tsx';
 import type { AgentTimelineDisplayItem } from '../lib/reflex/event-utils.ts';
 import { useArcadeFrames, useArcadeReconnect, useWatchGame } from '../lib/socket.tsx';
 import { Tip } from '../components/Tip.tsx';
@@ -188,7 +191,11 @@ export function GameView() {
   // effect would run, and an observer attached then would watch nothing.
   const [stageWidth, setStageWidth] = useState(0);
   const observerRef = useRef<ResizeObserver | null>(null);
+  // The same node the observer watches, kept as an object ref because
+  // fullscreen is requested on an element rather than measured from one.
+  const stageEl = useRef<HTMLElement | null>(null);
   const stageRef = useCallback((node: HTMLElement | null) => {
+    stageEl.current = node;
     observerRef.current?.disconnect();
     if (!node) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -198,7 +205,10 @@ export function GameView() {
     observerRef.current = observer;
   }, []);
   useEffect(() => () => observerRef.current?.disconnect(), []);
+  // Fullscreen measures itself: the stage becomes the viewport, so the
+  // observer hands the header its full density with nothing to special-case.
   const density = stageDensity(stageWidth);
+  const fullscreen = useFullscreen(stageEl);
 
   /**
    * Open a panel over the game; tapping the open one hands the game back.
@@ -216,15 +226,45 @@ export function GameView() {
   };
   const closeSheet = useCallback(() => setRoom('closed'), [setRoom]);
 
-  // Escape leaves the sheet, the same way it leaves every other overlay here.
+  /**
+   * The room sheet is a sibling of the stage, so the browser does not paint
+   * it while the stage is natively fullscreen. Closing it on the way in keeps
+   * the URL honest about what is on screen, rather than claiming a room the
+   * player cannot see is open.
+   */
+  const { immersive, exit: exitFullscreen, toggle: toggleFullscreenMode } = fullscreen;
+  const toggleFullscreen = useCallback(() => {
+    if (!immersive) closeSheet();
+    toggleFullscreenMode();
+  }, [immersive, closeSheet, toggleFullscreenMode]);
+
   useEffect(() => {
-    if (!sheetOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeSheet();
+      // Escape unwinds one layer at a time — the outermost first. Real
+      // fullscreen never gets here (the browser eats Escape and leaves it
+      // itself, which the change event tells us about); this is the way out
+      // of the CSS stage a phone gets.
+      if (event.key === 'Escape') {
+        if (immersive) exitFullscreen();
+        else if (sheetOpen) closeSheet();
+        return;
+      }
+      // `f` is the arcade shortcut everywhere but inside a text box — and
+      // never with a modifier, where it belongs to the browser (⌘F, Ctrl+F).
+      if (
+        (event.key === 'f' || event.key === 'F') &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !isTypingTarget(event.target)
+      ) {
+        event.preventDefault();
+        toggleFullscreen();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [sheetOpen, closeSheet]);
+  }, [immersive, sheetOpen, closeSheet, exitFullscreen, toggleFullscreen]);
 
   // Announce presence for the viewer count (and the play counter).
   useWatchGame(gameId ?? null);
@@ -355,7 +395,9 @@ export function GameView() {
         {/* Stage: full-bleed on a phone, a floating card on desktop. */}
         <section
           ref={stageRef}
-          className="flex min-w-0 flex-1 flex-col overflow-hidden border-white/10 bg-zinc-950/70 backdrop-blur-sm lg:rounded-2xl lg:border"
+          className={`flex min-w-0 flex-1 flex-col overflow-hidden border-white/10 bg-zinc-950/70 backdrop-blur-sm lg:rounded-2xl lg:border ${
+            immersive ? 'stage-immersive' : ''
+          }`}
         >
           {/* The phone runs this view edge to edge under the notch, so the
               row that touches it pads itself back out with the real insets;
@@ -437,6 +479,11 @@ export function GameView() {
                   Open game ↗
                 </a>
               ) : null}
+              {/* Never density-gated: a stage too narrow for the rest of this
+                  row is precisely when a player wants the whole screen. */}
+              <Tip label={immersive ? 'Exit fullscreen (Esc)' : 'Fullscreen (F)'}>
+                <FullscreenButton active={immersive} onToggle={toggleFullscreen} />
+              </Tip>
               {collapsed ? (
                 <Tip label="Show the panel">
                   <button

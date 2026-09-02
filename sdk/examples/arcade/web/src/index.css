@@ -45,6 +45,21 @@ body {
   padding-right: max(0.5rem, env(safe-area-inset-right));
 }
 
+/* Fullscreen mode: the stage over everything the arcade paints.
+   Native fullscreen removes the BROWSER's chrome and nothing else — the app
+   nav, the sidebar and the phone dock are ours to remove, and on iPhone
+   Safari, which has no element fullscreen, this is the whole feature. Plain
+   CSS rather than utilities on purpose: unlayered rules beat Tailwind's
+   layered ones, so this reliably wins over the stage's own `lg:rounded-2xl`
+   and `lg:border` without an `!important` chain. */
+.stage-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  border-width: 0;
+  border-radius: 0;
+}
+
 /* Tapping a game must never bounce the page or fire a double-tap zoom: the
    iframe owns its gestures, the app around it stays put. */
 .touch-stage {

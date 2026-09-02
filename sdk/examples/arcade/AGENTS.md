@@ -108,6 +108,13 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   written (`urlParam` owns that rule), so URLs stay clean, and unknown values
   fall back instead of rendering nothing. Two params that move together go
   through `useUrlPatch`; two setters in one handler drop the first write.
+- Fullscreen is two features, not one (`web/src/lib/fullscreen.ts`,
+  `hooks/useFullscreen.ts`): the Fullscreen API removes the BROWSER's chrome
+  and only it can, while the nav, sidebar and dock are removed by the
+  `.stage-immersive` CSS. iPhone Safari has no element fullscreen at all, so
+  the CSS half must stand alone — and the mode stays out of the URL because a
+  request needs a user gesture, so a restored `?fullscreen=1` cannot be
+  honoured on load.
 - Look: dark zinc base, neon violet/fuchsia accents, glass borders
   (`border-white/10 bg-zinc-900/50`), performative-ui for the pizzazz
   (Aurora, AsciiHero, GradientText, WordRoll, StatCounter, BigBack). Sleek
