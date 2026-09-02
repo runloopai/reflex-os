@@ -91,7 +91,19 @@ export function publicGame(
   };
 }
 
-type WatchListener = (prevGameId: string | null, nextGameId: string | null) => void;
+/**
+ * `resumed` marks a watch that re-announces presence on a reconnect rather
+ * than a viewer newly opening the game — the split that keeps a deploy
+ * (every socket drops and re-announces at once) from counting as plays.
+ */
+type WatchListener = (
+  prevGameId: string | null,
+  nextGameId: string | null,
+  resumed: boolean,
+) => void;
+
+/** Close code for "server going away" — clients reconnect immediately on it. */
+export const GOING_AWAY = 1001;
 
 export class EventHub {
   private readonly clients = new Set<ArcadeClient>();
@@ -117,7 +129,7 @@ export class EventHub {
       if (client.watching) {
         const prev = client.watching;
         client.watching = null;
-        this.watchListener?.(prev, null);
+        this.watchListener?.(prev, null, false);
       }
     };
     socket.on('close', drop);
@@ -125,19 +137,33 @@ export class EventHub {
     socket.on('message', (raw) => {
       // Client->server frames: keepalive pings and view presence.
       try {
-        const parsed = JSON.parse(String(raw)) as { type?: string; gameId?: string | null };
+        const parsed = JSON.parse(String(raw)) as {
+          type?: string;
+          gameId?: string | null;
+          resume?: boolean;
+        };
         if (parsed.type === 'ping') socket.send(JSON.stringify({ type: 'pong' }));
         if (parsed.type === 'watch') {
           const next = typeof parsed.gameId === 'string' ? parsed.gameId : null;
           const prev = client.watching;
           if (prev === next) return;
           client.watching = next;
-          this.watchListener?.(prev, next);
+          this.watchListener?.(prev, next, parsed.resume === true);
         }
       } catch {
         // Ignore malformed frames.
       }
     });
+  }
+
+  /**
+   * Deploy handoff: tell every browser to reconnect NOW instead of finding
+   * out when the process dies. A 1001 close reaches the client as an orderly
+   * frame it reconnects on immediately — straight onto the replacement
+   * container — where an abrupt kill costs it the reconnect delay on top.
+   */
+  closeAll(): void {
+    for (const client of this.clients) client.socket.close(GOING_AWAY, 'arcade restarting');
   }
 
   private send(client: ArcadeClient, frame: Record<string, unknown>): void {

@@ -24,6 +24,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import pg from 'pg';
 import { ArcadeDb } from '../server/db.ts';
+import { ConnectStore } from '../server/connect.ts';
 import { seedArcade } from './seed.ts';
 
 const url = process.env['ARCADE_TEST_DATABASE_URL'];
@@ -98,6 +99,39 @@ describe.skipIf(!url)('ArcadeDb on a real Postgres', () => {
     });
     expect(await db.setSuggestionStatus(suggestion.id, 'working', ['approved'])).toBeNull();
     expect(await db.countSuggestionDispatch(suggestion.id)).toBe(1);
+  });
+
+  it('claims the per-game working slot through its correlated guard', async () => {
+    // 'claim me' from the guarded-transition test above still holds the
+    // game's working slot, so a new claim must lose to it — and win once it
+    // settles. This is the UPDATE with a correlated NOT EXISTS, the query
+    // shape most worth checking on both clients.
+    const queued = await db.createSuggestion({
+      gameId,
+      authorId: fan1,
+      body: 'wait your turn',
+      category: 'improvement',
+      status: 'approved',
+    });
+    expect(await db.claimSuggestionForDispatch(queued.id)).toBeNull();
+
+    const [held] = await db.workingSuggestions(gameId);
+    await db.setSuggestionStatus(held!.id, 'done');
+    expect(await db.claimSuggestionForDispatch(queued.id)).toMatchObject({ status: 'working' });
+  });
+
+  it('round-trips a pending connect through to_timestamp', async () => {
+    const store = new ConnectStore(db);
+    const now = 1_900_000_000_000;
+    const entry = await store.start(
+      { userId: fan1, deviceCode: 'dev_conformance', userCode: 'AAAA-1111', expiresIn: 600 },
+      now,
+    );
+    // Epoch ms in, epoch ms out — through a bound to_timestamp on the way
+    // in and node-postgres's Date decoding on the way back.
+    expect((await store.get(entry.id, fan1, now + 1_000))?.expiresAt).toBe(now + 600_000);
+    await store.sweep(now + 600_000);
+    expect(await store.count()).toBe(0);
   });
 
   it('stores art and chat, then deletes a game and its children', async () => {

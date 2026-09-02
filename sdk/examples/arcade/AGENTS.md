@@ -190,8 +190,18 @@ adds a fixture, neither file conflicts. After main moves under you, re-run
   and Node needs that package's `package.json` alongside its sources or the
   `.ts` files load as CommonJS and every named import fails.
 - Nothing in the container's filesystem survives a deploy. Anything new that
-  has to outlive one — art, keys, uploads — goes in the database, not on
-  disk.
+  has to outlive one — art, keys, uploads, pending connect flows — goes in
+  the database, not on disk or in process memory.
+- Deploys overlap: the new container must pass the healthcheck before the
+  old one gets SIGTERM, so two arcades briefly run against one database.
+  State that coordinates work must coordinate through rows, not process
+  memory — the dispatcher's working slot is claimed per game in SQL
+  (`claimSuggestionForDispatch`), and a watcher that finds a dispatch it
+  never staged adopts it instead of settling it. On SIGTERM every hub and
+  relay socket gets an orderly 1001 close so browsers reconnect immediately
+  onto the replacement; a reconnect's re-announced watch carries
+  `resume: true` so a deploy does not count as plays
+  (`tests/hub-watch.test.ts`).
 - `GET /api/health` is the platform's healthcheck and queries the database on
   purpose: a container that came up without one must fail the check rather
   than serve errors. Keep it unauthenticated and cheap.

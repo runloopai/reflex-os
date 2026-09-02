@@ -14,6 +14,7 @@ import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { ArcadeDb } from './db.ts';
+import { GOING_AWAY } from './events.ts';
 import { resolveGameAccess } from './proxy.ts';
 
 const RELAY_PATH = /^\/reflex\/([^/]+)\/api\/ws$/;
@@ -90,5 +91,15 @@ export function createReflexRelay(db: ArcadeDb, reflexBaseUrl: string) {
     return true;
   }
 
-  return { handleUpgrade };
+  return {
+    handleUpgrade,
+    /**
+     * Deploy handoff: close every relay client (each close also tears down
+     * its upstream socket). The browser side is the SDK's `ReflexSocket`,
+     * which reconnects and replays its subscriptions on its own.
+     */
+    closeAll() {
+      for (const client of wss.clients) client.close(GOING_AWAY, 'arcade restarting');
+    },
+  };
 }

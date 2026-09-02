@@ -641,13 +641,23 @@ class GameWatcher {
       console.warn(`[arcade] turn for game ${this.gameId} never started; re-queueing suggestion`);
       await this.settleWorking(game, 'approved');
       this.awaitingTurnStart = false;
-    } else {
-      // Turn over (or a working suggestion left from before a restart):
-      // done if it ran to completion, back to approved if it was cut short.
-      const finished = this.awaitingTurnStart && this.turnStarted && !this.turnCancelled;
+    } else if (this.awaitingTurnStart) {
+      // Turn over: done if it ran to completion, back to approved if it was
+      // cut short.
+      const finished = this.turnStarted && !this.turnCancelled;
       await this.settleWorking(game, this.turnCancelled ? 'approved' : 'done');
       // A finished turn may have redrawn the art files.
       if (finished) await this.captureArt(game, true);
+    } else if ((await db.workingSuggestions(game.id)).length > 0) {
+      // A dispatch this process never staged is in flight — another arcade
+      // process claimed it during a deploy's overlap window. Settling it
+      // here would call work done (or failed) on a turn the record simply
+      // has not caught up with, so adopt it under the same staging rules as
+      // an orphan and let the stream's evidence decide.
+      console.warn(`[arcade] adopting a dispatch another process made for game ${this.gameId}`);
+      this.stageDispatch();
+      this.lastAgentStatus = agent.status;
+      return;
     }
     this.clearDispatch();
 
@@ -680,9 +690,12 @@ class GameWatcher {
     }
     this.idleAdvancesWithTask = 0;
 
-    // Claim the suggestion: the owner may have rejected it between the
-    // read above and now. A failed claim just means look again.
-    const marked = await db.setSuggestionStatus(next.id, 'working', ['approved']);
+    // Claim the suggestion: the owner may have rejected it between the read
+    // above and now, and during a deploy's overlap window another arcade
+    // process may already have a dispatch in flight for this game — the
+    // claim's per-game working-slot guard refuses both. A failed claim just
+    // means look again.
+    const marked = await db.claimSuggestionForDispatch(next.id);
     if (!marked) {
       this.requestAdvance('claim-lost');
       this.lastAgentStatus = agent.status;

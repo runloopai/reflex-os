@@ -37,6 +37,8 @@ const ArcadeSocketContext = createContext<ArcadeSocketValue | null>(null);
 
 const RECONNECT_DELAY_MS = 2_000;
 const PING_INTERVAL_MS = 25_000;
+/** The server closed with "going away": it is restarting for a deploy and its replacement is already serving, so reconnect without the usual delay. */
+const GOING_AWAY = 1001;
 
 export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
   const handlers = useRef(new Set<FrameHandler>());
@@ -63,8 +65,16 @@ export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
       socketRef.current = socket;
       socket.onopen = () => {
         // Re-announce presence after reconnects so viewer counts stay right.
+        // `resume` tells the server this is the same viewer coming back, not
+        // a new play — otherwise every deploy inflates the play counts.
         if (watchingRef.current) {
-          socket.send(JSON.stringify({ type: 'watch', gameId: watchingRef.current }));
+          socket.send(
+            JSON.stringify({
+              type: 'watch',
+              gameId: watchingRef.current,
+              resume: connectedBeforeRef.current,
+            }),
+          );
         }
         if (connectedBeforeRef.current) setReconnects((n) => n + 1);
         connectedBeforeRef.current = true;
@@ -88,9 +98,11 @@ export function ArcadeSocketProvider({ children }: { children: ReactNode }) {
           for (const handler of handlers.current) handler(frame);
         }
       };
-      socket.onclose = () => {
+      socket.onclose = (event?: CloseEvent) => {
         if (socketRef.current === socket) socketRef.current = null;
-        if (!closed) reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+        if (closed) return;
+        const delay = event?.code === GOING_AWAY ? 0 : RECONNECT_DELAY_MS;
+        reconnectTimer = setTimeout(connect, delay);
       };
     };
     connect();

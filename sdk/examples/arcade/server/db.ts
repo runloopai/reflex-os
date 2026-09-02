@@ -114,6 +114,24 @@ export interface SuggestionRow {
   dispatches: number;
 }
 
+/**
+ * A "Connect with Reflex" device flow waiting on a player's approval.
+ * Durable on purpose: the poll loop outlives a deploy, and a flow held in
+ * process memory forced the player to start over whenever one landed.
+ */
+export interface PendingConnectRow {
+  /** Opaque id the browser polls with. */
+  id: string;
+  /** Arcade player this flow belongs to; nobody else may poll it. */
+  userId: string;
+  /** Reflex's poll secret. Never sent to a browser. */
+  deviceCode: string;
+  /** Short code shown on both ends so the player can match them up. */
+  userCode: string;
+  /** Epoch ms after which Reflex would reject the code anyway. */
+  expiresAt: number;
+}
+
 export interface ChatMessageRow {
   id: string;
   /** The game room this message belongs to. */
@@ -200,6 +218,13 @@ const SCHEMA = `
     user_id text not null references users(id),
     created_at timestamptz not null default now(),
     primary key (suggestion_id, user_id)
+  );
+  create table if not exists pending_connects (
+    id text primary key,
+    user_id text not null references users(id),
+    device_code text not null,
+    user_code text not null,
+    expires_at timestamptz not null
   );
 `;
 
@@ -559,6 +584,47 @@ export class ArcadeDb {
     await this.pg.query(`update games set plays = plays + 1 where id = $1`, [gameId]);
   }
 
+  // -- pending reflex connects ----------------------------------------------
+
+  async insertPendingConnect(entry: PendingConnectRow): Promise<void> {
+    await this.pg.query(
+      `insert into pending_connects (id, user_id, device_code, user_code, expires_at)
+       values ($1, $2, $3, $4, to_timestamp($5 / 1000.0))`,
+      [entry.id, entry.userId, entry.deviceCode, entry.userCode, entry.expiresAt],
+    );
+  }
+
+  async pendingConnectById(id: string): Promise<PendingConnectRow | null> {
+    const { rows } = await this.pg.query<Row>(`select * from pending_connects where id = $1`, [id]);
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      id: str(row, 'id'),
+      userId: str(row, 'user_id'),
+      deviceCode: str(row, 'device_code'),
+      userCode: str(row, 'user_code'),
+      expiresAt: new Date(timestamp(row, 'expires_at')).getTime(),
+    };
+  }
+
+  async deletePendingConnect(id: string): Promise<void> {
+    await this.pg.query(`delete from pending_connects where id = $1`, [id]);
+  }
+
+  /** Drop every flow Reflex would no longer honour. */
+  async sweepPendingConnects(now: number): Promise<void> {
+    await this.pg.query(
+      `delete from pending_connects where expires_at <= to_timestamp($1 / 1000.0)`,
+      [now],
+    );
+  }
+
+  /** Test seam: how many flows are being tracked. */
+  async countPendingConnects(): Promise<number> {
+    const { rows } = await this.pg.query<Row>(`select count(*)::int as n from pending_connects`);
+    return Number(rows[0]?.['n'] ?? 0);
+  }
+
   // -- games ----------------------------------------------------------------
 
   async createGame(input: {
@@ -702,6 +768,33 @@ export class ArcadeDb {
   /** Clear the dispatch counter, giving a re-approval a fresh start. */
   async resetSuggestionDispatches(id: string): Promise<void> {
     await this.pg.query(`update suggestions set dispatches = 0 where id = $1`, [id]);
+  }
+
+  /**
+   * Claim the next dispatch: `approved -> working`, but only while no other
+   * suggestion for the same game is already `working`. The per-game guard is
+   * what keeps the working slot exclusive ACROSS processes — a deploy's
+   * overlap window runs two arcades, and without it each could claim a
+   * different approved suggestion and send the agent two turns at once. An
+   * in-process lock cannot see the other container; this row guard can.
+   * (Two concurrent claims always target the same top suggestion, so the
+   * row lock serializes them; the loser re-reads and then sees the winner's
+   * working row.) Returns null when the claim lost — rejected meanwhile, or
+   * a dispatch already in flight.
+   */
+  async claimSuggestionForDispatch(id: string): Promise<SuggestionRow | null> {
+    const { rows } = await this.pg.query<Row>(
+      `update suggestions set status = 'working', started_at = now()
+       where id = $1 and status = 'approved'
+         and not exists (
+           select 1 from suggestions other
+           where other.game_id = suggestions.game_id and other.status = 'working'
+         )
+       returning id`,
+      [id],
+    );
+    if (rows.length === 0) return null;
+    return this.suggestionById(id);
   }
 
   /** Toggle a heart; returns whether the user now hearts it. */

@@ -7,6 +7,8 @@ import { ArcadeDb } from '../server/db.ts';
 import { seedArcade } from './seed.ts';
 
 let db: ArcadeDb;
+let ownerId: string;
+let keyId: string;
 let fan1: string;
 let fan2: string;
 let gameId: string;
@@ -27,7 +29,7 @@ async function addApproved(body: string) {
 
 beforeAll(async () => {
   db = await ArcadeDb.open({ kind: 'pglite', dataDir: 'memory://' });
-  ({ fan1, fan2, gameId } = await seedArcade(db));
+  ({ ownerId, keyId, fan1, fan2, gameId } = await seedArcade(db));
 });
 
 afterAll(async () => {
@@ -281,5 +283,80 @@ describe('guarded status transitions (dispatch claims)', () => {
     const done = await db.setSuggestionStatus(suggestion.id, 'done');
     expect(done?.status).toBe('done');
     expect(done?.completedAt).not.toBeNull();
+  });
+});
+
+describe('claimSuggestionForDispatch (per-game working slot)', () => {
+  // A fresh game: the suites above leave suggestions `working` on the seeded
+  // one, and this spec is about the slot being exclusive per game.
+  let g2: string;
+
+  async function approvedOn(game: string, body: string) {
+    const suggestion = await db.createSuggestion({
+      gameId: game,
+      authorId: fan1,
+      body,
+      category: 'improvement',
+      status: 'approved',
+    });
+    await tick();
+    return suggestion;
+  }
+
+  beforeAll(async () => {
+    const game = await db.createGame({
+      ownerId,
+      keyId,
+      title: 'Second game',
+      prompt: 'test',
+      agentId: 'agent_test_2',
+      agentStreamId: 'stream_test_2',
+      agentType: 'claude-code',
+      model: null,
+      isPublic: true,
+      autoApprove: true,
+    });
+    g2 = game.id;
+  });
+
+  it('claims approved -> working while the slot is free', async () => {
+    const first = await approvedOn(g2, 'first dispatch');
+    const claimed = await db.claimSuggestionForDispatch(first.id);
+    expect(claimed?.status).toBe('working');
+    expect(claimed?.startedAt).not.toBeNull();
+  });
+
+  it('refuses a second dispatch while one is in flight for the game', async () => {
+    // The deploy-overlap race: another process idles past the claim above
+    // and tries to dispatch the next approved suggestion. The slot guard
+    // must refuse it, or the agent gets two turns at once.
+    const second = await approvedOn(g2, 'second dispatch');
+    expect(await db.claimSuggestionForDispatch(second.id)).toBeNull();
+    expect((await db.suggestionById(second.id))?.status).toBe('approved');
+  });
+
+  it('scopes the slot to the game', async () => {
+    // The seeded game held working suggestions when the claim above
+    // succeeded, so busy slots elsewhere do not block a game — while the
+    // seeded game's own slot stays held against it.
+    const elsewhere = await approvedOn(gameId, 'other game');
+    expect(await db.claimSuggestionForDispatch(elsewhere.id)).toBeNull();
+  });
+
+  it('frees the slot once the working suggestion settles', async () => {
+    const working = await db.workingSuggestions(g2);
+    for (const suggestion of working) await db.setSuggestionStatus(suggestion.id, 'done');
+    const next = await db.nextApprovedSuggestion(g2);
+    const claimed = await db.claimSuggestionForDispatch(next!.id);
+    expect(claimed?.status).toBe('working');
+  });
+
+  it('never claims a suggestion that is no longer approved', async () => {
+    const working = await db.workingSuggestions(g2);
+    for (const suggestion of working) await db.setSuggestionStatus(suggestion.id, 'done');
+    const rejected = await approvedOn(g2, 'rejected in the meantime');
+    await db.setSuggestionStatus(rejected.id, 'rejected', ['pending', 'approved']);
+    expect(await db.claimSuggestionForDispatch(rejected.id)).toBeNull();
+    expect((await db.suggestionById(rejected.id))?.status).toBe('rejected');
   });
 });

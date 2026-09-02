@@ -34,15 +34,17 @@ const hub = new EventHub();
 const engine = new GameEngine(db, hub, config.reflexBaseUrl);
 
 // Presence: viewer counts fan out on every watch change, and opening a
-// game view counts as a play (which also refreshes the game tiles).
-hub.setWatchListener((prevGameId, nextGameId) => {
+// game view counts as a play (which also refreshes the game tiles). A
+// resumed watch — a reconnect re-announcing presence — is not a play, or
+// every deploy would bump the count for everyone mid-game.
+hub.setWatchListener((prevGameId, nextGameId, resumed) => {
   void (async () => {
     for (const gameId of new Set([prevGameId, nextGameId])) {
       if (!gameId) continue;
       const game = await db.gameById(gameId);
       if (game) hub.broadcastViewers(game);
     }
-    if (nextGameId && nextGameId !== prevGameId) {
+    if (nextGameId && nextGameId !== prevGameId && !resumed) {
       await db.incrementPlays(nextGameId);
       const game = await db.gameById(nextGameId);
       if (game) {
@@ -189,6 +191,12 @@ setInterval(snapshot, BACKUP_INTERVAL_MS).unref();
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
     engine.stopAll();
+    // Deploy handoff: an orderly "going away" close makes browsers reconnect
+    // immediately — onto the replacement container, which is already passing
+    // the healthcheck by the time this one is told to stop — instead of
+    // discovering the drop when the process dies mid-frame.
+    hub.closeAll();
+    relay.closeAll();
     // app.close() waits for open sockets (hub clients, relays) and can hang
     // past the service manager's grace period — which escalates to SIGKILL
     // mid-write and corrupts PGLite. Close the database within a hard

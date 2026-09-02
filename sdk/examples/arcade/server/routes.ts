@@ -64,7 +64,7 @@ function flag(body: unknown, field: string): boolean | undefined {
 export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
   const { db, hub, engine } = deps;
   // Connect flows in flight, waiting on a player to approve them in Reflex.
-  const connections = new ConnectStore();
+  const connections = new ConnectStore(db);
 
   /**
    * Label a connected key by the org it acts in, so a player with several
@@ -366,7 +366,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
       req.log.error({ err }, 'starting the reflex connect flow failed');
       return fail(reply, 502, 'connect_failed', 'Could not reach Reflex to start the connection.');
     }
-    const pending = connections.start({
+    const pending = await connections.start({
       userId: user.id,
       deviceCode: started.deviceCode,
       userCode: started.userCode,
@@ -386,7 +386,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     const user = await requireUser(req, reply);
     if (!user) return;
     const { connectionId } = req.params as { connectionId: string };
-    const pending = connections.get(connectionId, user.id);
+    const pending = await connections.get(connectionId, user.id);
     if (!pending) {
       return fail(reply, 404, 'connect_expired', 'This connection expired. Start it again.');
     }
@@ -401,7 +401,7 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     if (result.status === 'pending') return reply.send({ status: 'pending' });
 
     // Every other answer ends the flow: the code is spent either way.
-    connections.delete(pending.id);
+    await connections.delete(pending.id);
     if (result.status === 'denied') {
       return reply.send({ status: 'denied', message: 'You turned down the connection in Reflex.' });
     }
@@ -431,8 +431,8 @@ export function registerRoutes(app: FastifyInstance, deps: RoutesDeps): void {
     const { connectionId } = req.params as { connectionId: string };
     // Own it or it is already gone; either way the player is left with no
     // flow in flight, which is what they asked for.
-    const pending = connections.get(connectionId, user.id);
-    if (pending) connections.delete(pending.id);
+    const pending = await connections.get(connectionId, user.id);
+    if (pending) await connections.delete(pending.id);
     return reply.send({ ok: true });
   });
 
