@@ -16435,6 +16435,9 @@
           "configured": {
             "type": "boolean"
           },
+          "entitled": {
+            "type": "boolean"
+          },
           "provider": {
             "anyOf": [
               {
@@ -16552,6 +16555,7 @@
         },
         "required": [
           "configured",
+          "entitled",
           "provider",
           "issuer",
           "displayName",
