@@ -2199,6 +2199,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "setBillingEntityAutoJoinOrganization",
+    "method": "PUT",
+    "path": "/enterprise-identity/oidc-connection/auto-join",
+    "summary": "Set the company's one SSO auto-join organization, or require invitations.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "setFeatureFlag",
     "method": "PUT",
     "path": "/flags/{key}",
