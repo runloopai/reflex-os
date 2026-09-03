@@ -44,6 +44,9 @@
       "name": "device"
     },
     {
+      "name": "enterprise-identity"
+    },
+    {
       "name": "flags"
     },
     {
@@ -6227,6 +6230,179 @@
         }
       }
     },
+    "/enterprise-identity/oidc-connection": {
+      "get": {
+        "operationId": "getBillingEntityOidcConnection",
+        "summary": "Get the organization's company-wide OIDC connection.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingEntityOidcConnection"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceBillingEntityOidcConnection",
+        "summary": "Create or replace the company-wide OIDC connection.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "okta",
+                      "entra"
+                    ]
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "jwksUri": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 16384
+                  },
+                  "expectedVersion": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "provider",
+                  "issuer",
+                  "displayName",
+                  "clientId",
+                  "clientSecret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingEntityOidcConnection"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBillingEntityOidcConnection",
+        "summary": "Delete the company-wide OIDC connection.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expectedVersion": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/flags": {
       "get": {
         "operationId": "listFeatureFlags",
@@ -8701,6 +8877,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "companyName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "companySlug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
                   "name": {
                     "type": "string",
                     "minLength": 1,
@@ -10355,6 +10541,15 @@
                             "organizationId": {
                               "type": "string"
                             },
+                            "ssoEnabled": {
+                              "type": "boolean"
+                            },
+                            "jitEnabled": {
+                              "type": "boolean"
+                            },
+                            "requireSso": {
+                              "type": "boolean"
+                            },
                             "displayName": {
                               "anyOf": [
                                 {
@@ -10447,6 +10642,9 @@
                           "required": [
                             "id",
                             "organizationId",
+                            "ssoEnabled",
+                            "jitEnabled",
+                            "requireSso",
                             "displayName",
                             "issuer",
                             "idJagEnabled",
@@ -10512,6 +10710,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "ssoEnabled": {
+                    "type": "boolean"
+                  },
+                  "jitEnabled": {
+                    "type": "boolean"
+                  },
+                  "requireSso": {
+                    "type": "boolean"
+                  },
                   "displayName": {
                     "anyOf": [
                       {
@@ -10618,6 +10825,15 @@
                     "organizationId": {
                       "type": "string"
                     },
+                    "ssoEnabled": {
+                      "type": "boolean"
+                    },
+                    "jitEnabled": {
+                      "type": "boolean"
+                    },
+                    "requireSso": {
+                      "type": "boolean"
+                    },
                     "displayName": {
                       "anyOf": [
                         {
@@ -10710,6 +10926,9 @@
                   "required": [
                     "id",
                     "organizationId",
+                    "ssoEnabled",
+                    "jitEnabled",
+                    "requireSso",
                     "displayName",
                     "issuer",
                     "idJagEnabled",
@@ -16140,6 +16359,105 @@
           "mergedSetupCommands",
           "rebuildPending",
           "architecture"
+        ],
+        "additionalProperties": false
+      },
+      "BillingEntityOidcConnection": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "okta",
+                  "entra"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issuer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "displayName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "jwksUri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "credentialsConfigured": {
+            "type": "boolean"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "configured",
+          "provider",
+          "issuer",
+          "displayName",
+          "jwksUri",
+          "credentialsConfigured",
+          "version",
+          "createdAt",
+          "updatedAt"
         ],
         "additionalProperties": false
       },

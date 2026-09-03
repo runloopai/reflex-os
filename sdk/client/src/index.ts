@@ -68,6 +68,7 @@ export * from './generated/auth.js';
 export * from './generated/blueprints.js';
 export * from './generated/config.js';
 export * from './generated/device.js';
+export * from './generated/enterprise-identity.js';
 export * from './generated/flags.js';
 export * from './generated/invites.js';
 export * from './generated/mcp.js';

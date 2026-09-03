@@ -522,6 +522,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "deleteBillingEntityOidcConnection",
+    "method": "DELETE",
+    "path": "/enterprise-identity/oidc-connection",
+    "summary": "Delete the company-wide OIDC connection.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "deleteBlueprint",
     "method": "DELETE",
     "path": "/blueprints/{id}",
@@ -891,6 +900,15 @@ export const API_OPS: readonly ApiOp[] = [
     "pathParams": [
       "id"
     ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "getBillingEntityOidcConnection",
+    "method": "GET",
+    "path": "/enterprise-identity/oidc-connection",
+    "summary": "Get the organization's company-wide OIDC connection.",
+    "pathParams": [],
     "queryParams": [],
     "hasBody": false
   },
@@ -2013,6 +2031,15 @@ export const API_OPS: readonly ApiOp[] = [
     "pathParams": [
       "id"
     ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "replaceBillingEntityOidcConnection",
+    "method": "PUT",
+    "path": "/enterprise-identity/oidc-connection",
+    "summary": "Create or replace the company-wide OIDC connection.",
+    "pathParams": [],
     "queryParams": [],
     "hasBody": true
   },
