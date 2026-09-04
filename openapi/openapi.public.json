@@ -16292,6 +16292,8 @@
               "turn.completed",
               "turn.cancelled",
               "turn.failed",
+              "turn.resumed",
+              "background.changed",
               "system",
               "user",
               "assistant",
