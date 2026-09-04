@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.14.0...reflex-cli-v0.15.0) (2026-09-04)
+
+
+### Features
+
+* **identity:** add company scoping rules and a Company page ([#4449](https://github.com/runloopai/reflex/issues/4449)) ([0a167b3](https://github.com/runloopai/reflex/commit/0a167b3705c53c8b7096b61c0ff504a38002edf5))
+
 ## [0.14.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.13.0...reflex-cli-v0.14.0) (2026-09-03)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.23.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.22.0...reflex-client-v0.23.0) (2026-09-04)
+
+
+### Features
+
+* **identity:** add company scoping rules and a Company page ([#4449](https://github.com/runloopai/reflex/issues/4449)) ([0a167b3](https://github.com/runloopai/reflex/commit/0a167b3705c53c8b7096b61c0ff504a38002edf5))
+* **models:** enable GPT-6 Astra with consistent model labels ([#4486](https://github.com/runloopai/reflex/issues/4486)) ([8d839af](https://github.com/runloopai/reflex/commit/8d839af11b95d552acc3652667b81e46e77946dd))
+
 ## [0.22.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.21.0...reflex-client-v0.22.0) (2026-09-03)
 
 
