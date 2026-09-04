@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.14.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.13.0...reflex-cli-v0.14.0) (2026-09-03)
+
+
+### Features
+
+* **identity:** add company OIDC & SSO sign-in for companies ([#4351](https://github.com/runloopai/reflex/issues/4351)) ([b3d210e](https://github.com/runloopai/reflex/commit/b3d210ed7e31d18fce7538bcaa98856a9acea535))
+* **identity:** make companies own organizations, billing, and OIDC trust ([#4336](https://github.com/runloopai/reflex/issues/4336)) ([c20f4a7](https://github.com/runloopai/reflex/commit/c20f4a71a69757fb04e772bbf26a8522bea63aa1))
+* sync appearance preferences across devices ([#2933](https://github.com/runloopai/reflex/issues/2933)) ([db67b9e](https://github.com/runloopai/reflex/commit/db67b9eab3c5c0f3b17b25529a8a991ca49d743b))
+
 ## [0.13.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.12.1...reflex-cli-v0.13.0) (2026-08-28)
 
 

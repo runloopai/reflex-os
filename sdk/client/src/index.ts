@@ -66,6 +66,7 @@ export * from './generated/agent-personas.js';
 export * from './generated/agents.js';
 export * from './generated/auth.js';
 export * from './generated/blueprints.js';
+export * from './generated/company.js';
 export * from './generated/config.js';
 export * from './generated/device.js';
 export * from './generated/enterprise-identity.js';

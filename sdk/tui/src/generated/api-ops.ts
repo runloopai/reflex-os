@@ -959,6 +959,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getCompany",
+    "method": "GET",
+    "path": "/company",
+    "summary": "Get the company that owns the active organization.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getConfig",
     "method": "GET",
     "path": "/config",

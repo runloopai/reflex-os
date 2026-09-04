@@ -38,6 +38,9 @@
       "name": "blueprints"
     },
     {
+      "name": "company"
+    },
+    {
       "name": "config"
     },
     {
@@ -5978,6 +5981,39 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Blueprint"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company": {
+      "get": {
+        "operationId": "getCompany",
+        "summary": "Get the company that owns the active organization.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
                 }
               }
             }
@@ -16730,6 +16766,51 @@
           "name",
           "status",
           "createTimeMs"
+        ],
+        "additionalProperties": false
+      },
+      "Company": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "subscriptionTier": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "standard",
+              "enterprise"
+            ]
+          },
+          "organizations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "name",
+          "subscriptionTier",
+          "organizations"
         ],
         "additionalProperties": false
       },
