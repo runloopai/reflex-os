@@ -287,7 +287,7 @@ const SOURCE_AGENT_ID = 'agt_toolcallsource1';
 
 /**
  * Seed the query cache the way the live chat sees it: the agent (with its
- * Connect attachment) and the caller's workstation list. `agentId` on the
+ * Workstation attachment) and the caller's workstation list. `agentId` on the
  * story args makes the view render the source row from that cache.
  */
 function makeSourceDecorator(workstations: Workstation[]) {

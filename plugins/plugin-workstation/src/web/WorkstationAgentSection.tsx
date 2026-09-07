@@ -10,7 +10,7 @@ import { useWorkstations } from './useWorkstations.js';
 const VISIBLE_CALLS = 8;
 
 /**
- * Agent-detail section for the Connect attachment: which machine the agent
+ * Agent-detail section for the Workstation attachment: which machine the agent
  * is bound to, whether it is reachable right now, and the most recent tool
  * calls from the owner-scoped audit trail. Updates live via the
  * `workstation:*` plugin events the hooks subscribe to.

@@ -14,7 +14,7 @@ const workstationsPage = definePage({
   componentPath: '@reflex/plugin-workstation/web/WorkstationsPage',
   description: 'Your machines running the Reflex TUI, ready for agents to work on.',
   details:
-    'Lists every machine you have registered with `reflex-cli connect`, with live online/offline presence, hostname, platform, and the directory tool access is confined to. Agents launched with the Connect attachment get run/read/write/list tools that execute on the chosen machine, with optional per-call approval (`--ask`).',
+    'Lists every machine you have registered with `reflex-cli connect`, with live online/offline presence, hostname, platform, and the directory tool access is confined to. Agents launched with the Workstation attachment get run/read/write/list tools that execute on the chosen machine, with optional per-call approval (`--ask`).',
   features: [
     'Live presence for each machine over the shared socket',
     'Hostname, platform, and confined tool root per machine',
@@ -23,7 +23,7 @@ const workstationsPage = definePage({
 });
 
 /**
- * The plugin's main web surface is the "Connect" launch attachment: pick
+ * The plugin's main web surface is the "Workstation" launch attachment: pick
  * one of your machines running `reflex-cli connect` and the launched agent
  * gets tools on it. Rendered by the host's generic attachment editor in the
  * launch dialog — no host changes needed. The Workstations page under Misc
@@ -34,7 +34,7 @@ export const workstationWeb: PluginWebManifest = {
   attachments: [
     {
       id: WORKSTATION_ATTACHMENT_ID,
-      label: 'Connect',
+      label: 'Workstation',
       icon: 'MonitorSmartphone',
       order: 30,
       pickerComponentPath: '@reflex/plugin-workstation/web/WorkstationAttachmentPicker',

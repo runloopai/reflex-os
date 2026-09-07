@@ -31,7 +31,7 @@ const meta = createPluginMeta(import.meta.url);
  *
  * The `reflex-cli connect` command opens a WebSocket to this plugin's
  * `/api/workstations/connect` endpoint and registers the machine. The
- * launch dialog then offers a "Connect" attachment listing the user's
+ * launch dialog then offers a "Workstation" attachment listing the user's
  * online workstations; agents launched with one attached get `workstation_*`
  * MCP tools via an on-box stdio shim whose calls ride the flex-bridge control
  * socket back to Reflex, which relays them over this plugin's WebSocket to the
@@ -47,7 +47,7 @@ export const workstationPlugin = definePlugin({
   // security-sensitive capability, so it ships behind the alpha channel and
   // is not installed by default: orgs that have not enabled the alpha channel
   // and installed the plugin never see any workstation UI (the Workstations
-  // page, the Connect launch attachment, the mention provider, or the
+  // page, the Workstation launch attachment, the mention provider, or the
   // `workstation_*` tool-call renderers) because the host strips this plugin's
   // entire web manifest per-request for orgs without it installed.
   orgInstall: { installable: true, defaultInstalled: false, releaseStatus: 'alpha' },

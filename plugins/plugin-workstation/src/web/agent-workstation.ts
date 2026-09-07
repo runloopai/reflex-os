@@ -6,7 +6,7 @@ import {
 } from '@runloop/reflex-workstation';
 
 /**
- * Read the workstation ("Connect") attachment off an agent, if any. The
+ * Read the workstation attachment off an agent, if any. The
  * agent ref types attachments loosely, so this parses defensively — an
  * agent without the attachment (or with a malformed one) yields `null` and
  * the workstation surfaces render nothing.

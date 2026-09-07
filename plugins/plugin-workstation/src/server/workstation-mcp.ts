@@ -18,7 +18,7 @@ import type { WorkstationRegistryService } from './workstation-registry.service.
  *
  * Every tool takes an explicit `workstationId`; the launch-time prompt
  * section (see `buildWorkstationPromptSection`) tells the agent which id
- * its Connect attachment bound.
+ * its Workstation attachment bound.
  */
 
 const WorkstationIdSchema = z.object({

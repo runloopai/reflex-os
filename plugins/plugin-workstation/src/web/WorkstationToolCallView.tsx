@@ -107,7 +107,7 @@ function WorkstationToolCallBody({
  * "on <workstation>" attribution under every workstation tool call. The chip
  * carries the same hover popover as the agent-header badge (mode, host, tool
  * root, presence), so the answer to "which machine did this run on?" is one
- * hover away from the output itself. Resolved from the agent's Connect
+ * hover away from the output itself. Resolved from the agent's Workstation
  * attachment; renders nothing while the agent loads or when it has no
  * workstation attached.
  */

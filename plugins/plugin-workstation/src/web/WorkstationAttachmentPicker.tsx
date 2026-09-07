@@ -16,7 +16,7 @@ const MODE_OPTIONS: { mode: WorkstationAccessMode; label: string; hint: string }
 ];
 
 /**
- * Attachment picker for the `workstation` ("Connect") attachment. Lists the
+ * Attachment picker for the `workstation` attachment. Lists the
  * caller's machines running the Reflex TUI; exactly one can be connected to
  * a launch. Offline machines stay visible but unselectable, so the user
  * learns the fix (start the TUI) instead of wondering where the machine

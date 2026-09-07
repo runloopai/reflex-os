@@ -23,7 +23,7 @@ export function WorkstationsPage() {
       <PageHeader
         icon={<MonitorSmartphone className="h-5 w-5" />}
         title="Workstations"
-        description="Your machines running the Reflex TUI. Launch an agent with the Connect attachment and it gets tools that run on one of them."
+        description="Your machines running the Reflex TUI. Launch an agent with the Workstation attachment and it gets tools that run on one of them."
       />
 
       {isLoading ? (
@@ -129,8 +129,8 @@ function ConnectSteps() {
         write yourself, or <Cmd>--read-only</Cmd> to allow inspection only.
       </li>
       <li>
-        Keep the TUI running, then launch an agent with the Connect attachment. It appears here as
-        online while connected.
+        Keep the TUI running, then launch an agent with the Workstation attachment. It appears here
+        as online while connected.
       </li>
     </ol>
   );

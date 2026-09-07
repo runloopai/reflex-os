@@ -3,7 +3,7 @@ import { getAgentWorkstation } from './agent-workstation.js';
 import { WorkstationChip } from './WorkstationChip.js';
 
 /**
- * Header badge for agents launched with a Connect attachment: the
+ * Header badge for agents launched with a Workstation attachment: the
  * workstation's name plus a live presence dot. Amber means the machine
  * dropped offline while the agent may still want it. Hovering opens a
  * detail popover (access mode, host, tool root, presence) rendered in the
