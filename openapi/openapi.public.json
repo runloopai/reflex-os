@@ -6502,6 +6502,77 @@
         }
       }
     },
+    "/enterprise-identity/oidc-connection/test": {
+      "post": {
+        "operationId": "testBillingEntityOidcConnection",
+        "summary": "Probe an OIDC issuer's discovery document without saving it.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "okta",
+                      "entra"
+                    ]
+                  },
+                  "issuer": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "jwksUri": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "provider",
+                  "issuer"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingEntityOidcIssuerCheck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/flags": {
       "get": {
         "operationId": "listFeatureFlags",
@@ -16605,6 +16676,89 @@
           "updatedAt",
           "autoJoinOrganizationId",
           "organizations"
+        ],
+        "additionalProperties": false
+      },
+      "BillingEntityOidcIssuerCheck": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "issuer": {
+            "type": "string"
+          },
+          "oktaHostedDomain": {
+            "type": "boolean"
+          },
+          "authorizationEndpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tokenEndpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "jwksUri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failureCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "invalid_issuer_url",
+                  "unsupported_entra_host",
+                  "ambiguous_entra_tenant",
+                  "jwks_origin_mismatch",
+                  "discovery_failed",
+                  "issuer_mismatch"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "issuer",
+          "oktaHostedDomain",
+          "authorizationEndpoint",
+          "tokenEndpoint",
+          "jwksUri",
+          "failureCode",
+          "detail"
         ],
         "additionalProperties": false
       },

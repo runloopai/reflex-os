@@ -2337,6 +2337,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "testBillingEntityOidcConnection",
+    "method": "POST",
+    "path": "/enterprise-identity/oidc-connection/test",
+    "summary": "Probe an OIDC issuer's discovery document without saving it.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "testPluginSetupStep",
     "method": "POST",
     "path": "/org-setup/plugins/{plugin}/setup-steps/{step}/test",
