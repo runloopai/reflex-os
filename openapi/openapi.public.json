@@ -14835,6 +14835,9 @@
               }
             ]
           },
+          "hasBackgroundWork": {
+            "type": "boolean"
+          },
           "attachments": {
             "anyOf": [
               {
@@ -17393,6 +17396,9 @@
                 "type": "null"
               }
             ]
+          },
+          "hasBackgroundWork": {
+            "type": "boolean"
           },
           "attachments": {
             "anyOf": [
