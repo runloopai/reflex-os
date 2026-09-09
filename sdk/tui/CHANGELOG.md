@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/runloopai/reflex/compare/reflex-cli-v0.15.0...reflex-cli-v0.15.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **identity:** verify Okta issuers by discovery instead of a hostname allowlist ([#4528](https://github.com/runloopai/reflex/issues/4528)) ([e005b7f](https://github.com/runloopai/reflex/commit/e005b7f9eed4ccf9670009c5cb109d0b15c775e5))
+
 ## [0.15.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.14.0...reflex-cli-v0.15.0) (2026-09-04)
 
 
