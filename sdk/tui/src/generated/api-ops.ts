@@ -327,6 +327,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "createCompanyOrganization",
+    "method": "POST",
+    "path": "/company/organizations",
+    "summary": "Add an organization to the company that owns the active organization.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "createMyModelProviderSecret",
     "method": "POST",
     "path": "/me/model-provider-secrets",
