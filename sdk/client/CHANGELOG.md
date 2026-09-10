@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.24.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.23.1...reflex-client-v0.24.0) (2026-09-10)
+
+
+### Features
+
+* **agents:** show a run as still working while broker background tasks run ([#4491](https://github.com/runloopai/reflex/issues/4491)) ([62ef53b](https://github.com/runloopai/reflex/commit/62ef53b679a7d0780224b5973c227538b0e4ed4b))
+* **company:** add an organization to your company from Configure ([#4534](https://github.com/runloopai/reflex/issues/4534)) ([de31e27](https://github.com/runloopai/reflex/commit/de31e2750d2d3c0b634140a5ecf4783b8d6ac0a5))
+
+
+### Bug Fixes
+
+* **idp:** improve UI when editing SSO, IDP & SCIM config ([#4539](https://github.com/runloopai/reflex/issues/4539)) ([ed4343e](https://github.com/runloopai/reflex/commit/ed4343e6c1420510cc3e410cd2db62841ce6cbbd))
+* jitter web and SDK socket reconnects ([#4540](https://github.com/runloopai/reflex/issues/4540)) ([ce6565d](https://github.com/runloopai/reflex/commit/ce6565d1ca4bf7a8a59e4075c0b64ee2bc14ba6f))
+
 ## [0.23.1](https://github.com/runloopai/reflex/compare/reflex-client-v0.23.0...reflex-client-v0.23.1) (2026-09-09)
 
 
