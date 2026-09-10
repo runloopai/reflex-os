@@ -94,6 +94,46 @@ unsubscribe();
 socket.close();
 ```
 
+### Reconnect timing
+
+Unexpected closes use full jitter, including the first retry: each attempt waits
+`floor(random * envelope)` milliseconds. The default envelope starts at 1,000 ms,
+doubles after each scheduled attempt, and stops growing at 30,000 ms. Opening a
+socket resets it. Each client samples independently; timer dispatch can occur
+later than the sampled delay.
+
+Initial connects and stale-heartbeat recovery remain immediate. Explicit
+`connect()` supersedes any pending retry, while `close()` cancels it. Adding a
+subscription during backoff does not start an early connection. Subscriptions
+remain registered across reconnects and intentional closes.
+
+`onStateChange` observes transitions synchronously, without emitting the current
+state on registration; read `socket.state` for that snapshot. Same-state updates
+do not notify again. Closing from a `closed` observer still lets remaining
+observers receive that transition. If an observer causes a newer transition,
+notification of the older transition stops, even if the state later returns to
+the same value. This is not a lossless history of intermediate transitions.
+
+`ReflexSocket` accepts these optional timing controls:
+
+- `initialReconnectDelayMs`: initial envelope, default `1000`. Finite values from
+  `0` through `2147483647` are accepted. Negative, non-finite and overflowing
+  delays now throw `RangeError` at construction rather than relying on runtime
+  timer coercion. For compatibility, a custom first envelope may exceed 30 seconds;
+  subsequent envelopes are capped at 30 seconds.
+- `reconnectJitter`: `'full'` (default) or `'none'`. Use `'none'` for exact,
+  deterministic envelope delays in tests or compatibility-sensitive consumers.
+- `reconnectRandom`: trusted test injection, default `Math.random`. It must not
+  throw and must return a finite number in `[0, 1)`. It may advance its own RNG
+  state, but must not invoke socket lifecycle or backoff-policy methods. No global
+  random seed is shared.
+
+The same timer-free policy is exported as `createReconnectBackoff` and
+`ReconnectOptions` from `@runloop/reflex-client/reconnect` for host integrations.
+Create a separate policy per client; sockets and cancellation remain the host's
+responsibility. Full jitter reduces synchronization, not total load: its mean
+wait at the default cap is about 15 seconds, versus 30 seconds without jitter.
+
 On Node versions without a global `WebSocket`, inject an implementation:
 
 ```ts

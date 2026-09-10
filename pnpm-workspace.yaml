@@ -10,6 +10,7 @@ catalog:
   '@tanstack/react-query': ^5.101.4
   '@types/node': ^24.10.1
   '@types/react': ^19.2.18
+  '@types/ws': ^8.18.1
   react: ^19.2.8
   react-markdown: ^10.1.0
   remark-gfm: ^4.0.1
@@ -17,6 +18,7 @@ catalog:
   typescript: ~5.9.3
   vite: ^7.3.1
   vitest: ^4.1.10
+  ws: ^8.21.1
   zod: ^4.4.3
 
 # sdk/tui bundles itself with esbuild, which needs its postinstall to fetch

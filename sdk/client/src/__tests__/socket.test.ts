@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureReflex, resetReflexConfig } from '../http.js';
 import { ReflexSocket } from '../socket.js';
-import type { ReflexSocketState, ReflexStreamEvent, WebSocketLike } from '../socket.js';
+import type {
+  ReflexSocketOptions,
+  ReflexSocketState,
+  ReflexStreamEvent,
+  WebSocketLike,
+} from '../socket.js';
 
 /** Minimal scriptable WebSocket standing in for the real one. */
 class FakeWebSocket implements WebSocketLike {
@@ -63,6 +68,8 @@ function makeEvent(overrides: Partial<ReflexStreamEvent> = {}): ReflexStreamEven
   };
 }
 
+const sockets: ReflexSocket[] = [];
+
 beforeEach(() => {
   vi.useFakeTimers();
   FakeWebSocket.instances = [];
@@ -74,14 +81,19 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  for (const socket of sockets.splice(0)) socket.close();
   vi.useRealTimers();
   resetReflexConfig();
 });
 
-function makeSocket(): ReflexSocket {
-  return new ReflexSocket({
+function makeSocket(options: ReflexSocketOptions = {}): ReflexSocket {
+  const socket = new ReflexSocket({
+    reconnectJitter: 'none',
+    ...options,
     webSocket: FakeWebSocket as unknown as new (url: string) => WebSocketLike,
   });
+  sockets.push(socket);
+  return socket;
 }
 
 describe('ReflexSocket', () => {
@@ -215,5 +227,94 @@ describe('ReflexSocket', () => {
         (globalThis as { WebSocket?: unknown }).WebSocket = original;
       }
     }
+  });
+  it('samples default retries once and does not let lazy subscriptions bypass the wait', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValueOnce(0.25).mockReturnValueOnce(0.75);
+    try {
+      const a = makeSocket({ reconnectJitter: undefined });
+      const b = makeSocket({ reconnectJitter: undefined });
+      a.connect();
+      const first = FakeWebSocket.latest;
+      b.connect();
+      const second = FakeWebSocket.latest;
+      first.open();
+      second.open();
+      first.drop();
+      second.drop();
+      first.drop(); // A stale duplicate cannot consume a second sample.
+      const unsubscribe = a.subscribe('removed', () => {});
+      unsubscribe();
+      a.subscribe('new-stream', () => {});
+      expect(random).toHaveBeenCalledTimes(2);
+      expect(FakeWebSocket.instances).toHaveLength(2);
+      vi.advanceTimersByTime(249);
+      expect(FakeWebSocket.instances).toHaveLength(2);
+      vi.advanceTimersByTime(1);
+      expect(FakeWebSocket.instances).toHaveLength(3);
+      FakeWebSocket.latest.open();
+      expect(FakeWebSocket.latest.sentMessages()).toEqual([
+        { type: 'subscribe', streamId: 'new-stream' },
+      ]);
+      vi.advanceTimersByTime(500);
+      expect(FakeWebSocket.instances).toHaveLength(4);
+    } finally {
+      random.mockRestore();
+    }
+  });
+
+  it('replaces an old retry when an explicit attempt fails, using current credentials', () => {
+    const socket = makeSocket();
+    socket.connect();
+    FakeWebSocket.latest.drop();
+    vi.advanceTimersByTime(400);
+    configureReflex({
+      baseUrl: 'https://new.example.com',
+      apiKey: 'new-token',
+      organizationId: 'org_2',
+    });
+    socket.connect();
+    expect(FakeWebSocket.latest.url).toBe(
+      'wss://new.example.com/api/ws?token=new-token&organizationId=org_2',
+    );
+    FakeWebSocket.latest.drop();
+    vi.advanceTimersByTime(1999);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    vi.advanceTimersByTime(1);
+    expect(FakeWebSocket.instances).toHaveLength(3);
+  });
+
+  it('cancels a zero-delay retry and does not restart heartbeat after an open observer closes', () => {
+    const socket = makeSocket({ reconnectJitter: 'full', reconnectRandom: () => 0 });
+    socket.connect();
+    FakeWebSocket.latest.drop();
+    socket.close();
+    vi.advanceTimersByTime(1);
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    socket.onStateChange((state) => {
+      if (state === 'open') socket.close();
+    });
+    socket.connect();
+    FakeWebSocket.latest.open();
+    expect(socket.state).toBe('closed');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('allows explicit recovery when the WebSocket constructor throws', () => {
+    let fail = true;
+    class RecoverableWebSocket extends FakeWebSocket {
+      constructor(url: string) {
+        if (fail) {
+          fail = false;
+          throw new Error('constructor failed');
+        }
+        super(url);
+      }
+    }
+    const socket = new ReflexSocket({ webSocket: RecoverableWebSocket });
+    sockets.push(socket);
+    expect(() => socket.connect()).toThrow('constructor failed');
+    expect(socket.state).toBe('closed');
+    socket.connect();
+    FakeWebSocket.latest.open();
+    expect(socket.state).toBe('open');
   });
 });

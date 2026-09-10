@@ -18,9 +18,10 @@
  *
  * Dependency-free: uses the global `WebSocket` (browsers, Node >= 22) and
  * accepts an injectable constructor for other runtimes. Reconnects with
- * exponential backoff and replays every active subscription.
+ * full-jitter exponential backoff and replays every active subscription.
  */
 
+import { createReconnectBackoff, type ReconnectOptions } from './reconnect.js';
 import { getReflexConfig, resolveReflexOrganizationId, resolveReflexToken } from './http.js';
 
 /**
@@ -77,9 +78,6 @@ const WS_OPEN = 1;
 /** readyState value for a connecting WebSocket (WebSocket.CONNECTING). */
 const WS_CONNECTING = 0;
 
-const INITIAL_RECONNECT_DELAY_MS = 1_000;
-const MAX_RECONNECT_DELAY_MS = 30_000;
-
 /**
  * Cadence of app-level `{ type: 'ping' }` probes. Each ping earns a
  * `{ type: 'pong' }`, so a healthy connection always has app-visible traffic
@@ -100,7 +98,11 @@ export interface ReflexSocketOptions {
   /** Override the heartbeat cadence (mostly for tests). */
   heartbeatIntervalMs?: number;
   /** Override the initial reconnect backoff (mostly for tests). */
-  initialReconnectDelayMs?: number;
+  initialReconnectDelayMs?: ReconnectOptions['initialReconnectDelayMs'];
+  /** Full jitter by default; `none` is a deterministic compatibility override. */
+  reconnectJitter?: ReconnectOptions['reconnectJitter'];
+  /** Trusted RNG injection for tests. See ReconnectOptions. */
+  reconnectRandom?: ReconnectOptions['reconnectRandom'];
 }
 
 /**
@@ -113,18 +115,21 @@ export class ReflexSocket {
   private ws: WebSocketLike | null = null;
   private readonly WebSocketImpl: WebSocketConstructor;
   private readonly heartbeatIntervalMs: number;
-  private readonly initialReconnectDelayMs: number;
+  private readonly reconnectBackoff: ReturnType<typeof createReconnectBackoff>;
 
   private readonly streamHandlers = new Map<string, Set<ReflexEventHandler>>();
   private readonly stateHandlers = new Set<ReflexStateHandler>();
   private readonly messageHandlers = new Set<ReflexMessageHandler>();
 
-  private reconnectDelay: number;
+  // Invalidates work across reentrant state observers, even before a socket exists.
+  private connectionGeneration = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private intentionallyClosed = false;
   private lastServerActivity = 0;
   private _state: ReflexSocketState = 'closed';
+  // State transitions, unlike connection disposal, supersede observer notifications.
+  private stateRevision = 0;
 
   constructor(options: ReflexSocketOptions = {}) {
     const impl =
@@ -137,8 +142,7 @@ export class ReflexSocket {
     }
     this.WebSocketImpl = impl;
     this.heartbeatIntervalMs = options.heartbeatIntervalMs ?? HEARTBEAT_INTERVAL_MS;
-    this.initialReconnectDelayMs = options.initialReconnectDelayMs ?? INITIAL_RECONNECT_DELAY_MS;
-    this.reconnectDelay = this.initialReconnectDelayMs;
+    this.reconnectBackoff = createReconnectBackoff(options);
   }
 
   get state(): ReflexSocketState {
@@ -151,6 +155,7 @@ export class ReflexSocket {
    * every attempt, so reconnects pick up config changes.
    */
   connect(): void {
+    if (!this.ws && this._state === 'connecting') return;
     if (this.ws && (this.ws.readyState === WS_OPEN || this.ws.readyState === WS_CONNECTING)) {
       return;
     }
@@ -164,20 +169,32 @@ export class ReflexSocket {
     if (organizationId) params.set('organizationId', organizationId);
     const url = `${wsBase}/api/ws?${params.toString()}`;
 
+    this.clearReconnectTimer();
+    const generation = ++this.connectionGeneration;
     this.intentionallyClosed = false;
     this.setState('connecting');
+    if (this.connectionGeneration !== generation) return;
 
     // Every handler is guarded by a `this.ws === socket` identity check so a
     // superseded socket (manual close/reconnect) cannot mutate manager state
     // while its close event is still in flight.
-    const socket = new this.WebSocketImpl(url);
+    let socket: WebSocketLike;
+    try {
+      socket = new this.WebSocketImpl(url);
+    } catch (error) {
+      // A malformed URL or injected constructor can fail before onclose exists.
+      // Leave explicit connect retryable rather than stuck in the setup guard.
+      if (this.connectionGeneration === generation) this.setState('closed');
+      throw error;
+    }
     this.ws = socket;
 
     socket.onopen = () => {
       if (this.ws !== socket) return;
-      this.reconnectDelay = this.initialReconnectDelayMs;
+      this.reconnectBackoff.reset();
       this.lastServerActivity = Date.now();
       this.setState('open');
+      if (this.connectionGeneration !== generation || this.ws !== socket) return;
       this.startHeartbeat();
       for (const streamId of this.streamHandlers.keys()) {
         this.send({ type: 'subscribe', streamId });
@@ -201,7 +218,9 @@ export class ReflexSocket {
       this.ws = null;
       this.stopHeartbeat();
       this.setState('closed');
-      if (!this.intentionallyClosed) this.scheduleReconnect();
+      if (this.connectionGeneration === generation && !this.intentionallyClosed) {
+        this.scheduleReconnect();
+      }
     };
 
     socket.onerror = () => {
@@ -211,14 +230,13 @@ export class ReflexSocket {
 
   /** Close the connection and stop reconnecting. Subscriptions are kept and replayed on the next `connect()`. */
   close(): void {
+    ++this.connectionGeneration;
     this.intentionallyClosed = true;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
+    this.clearReconnectTimer();
     this.stopHeartbeat();
-    this.ws?.close();
+    const socket = this.ws;
     this.ws = null;
+    socket?.close();
     this.setState('closed');
   }
 
@@ -237,7 +255,7 @@ export class ReflexSocket {
     }
     handlers.add(onEvent);
 
-    if (!this.ws && !this.intentionallyClosed) this.connect();
+    if (!this.ws && !this.intentionallyClosed && this.reconnectTimer === null) this.connect();
     if (isNewStream) this.send({ type: 'subscribe', streamId });
 
     return () => {
@@ -251,7 +269,11 @@ export class ReflexSocket {
     };
   }
 
-  /** Observe connection state changes. Returns an unregister function. */
+  /**
+   * Observe state transitions synchronously; registration does not emit the current state.
+   * Same-state updates are ignored. A nested transition supersedes remaining
+   * notifications for the older transition. Returns an unregister function.
+   */
   onStateChange(handler: ReflexStateHandler): () => void {
     this.stateHandlers.add(handler);
     return () => this.stateHandlers.delete(handler);
@@ -319,30 +341,40 @@ export class ReflexSocket {
 
   /** Tear down the current socket and reconnect immediately (stale connection). */
   private rebuild(): void {
-    if (this.ws) {
-      this.intentionallyClosed = true;
-      this.stopHeartbeat();
-      this.ws.close();
-      this.ws = null;
-    }
-    this.reconnectDelay = this.initialReconnectDelayMs;
+    const generation = ++this.connectionGeneration;
+    this.clearReconnectTimer();
+    this.stopHeartbeat();
+    const socket = this.ws;
+    this.ws = null;
+    socket?.close();
+    this.reconnectBackoff.reset();
     this.setState('closed');
-    this.connect();
+    if (this.connectionGeneration === generation) this.connect();
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer !== null) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   private scheduleReconnect(): void {
-    if (this.reconnectTimer) return;
+    if (this.reconnectTimer !== null || this.intentionallyClosed || this.ws) return;
+    const generation = this.connectionGeneration;
     this.reconnectTimer = setTimeout(() => {
+      if (this.connectionGeneration !== generation || this.intentionallyClosed) return;
       this.reconnectTimer = null;
       this.connect();
-    }, this.reconnectDelay);
-    this.reconnectDelay = Math.min(this.reconnectDelay * 2, MAX_RECONNECT_DELAY_MS);
+    }, this.reconnectBackoff.nextDelayMs());
   }
 
   private setState(state: ReflexSocketState): void {
     if (this._state === state) return;
     this._state = state;
+    const revision = ++this.stateRevision;
     for (const handler of this.stateHandlers) {
+      if (this.stateRevision !== revision) break;
       try {
         handler(state);
       } catch {

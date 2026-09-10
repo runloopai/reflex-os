@@ -71,7 +71,7 @@ export function buildConnectUrl(baseUrl: string, apiKey: string, organizationId?
 /**
  * Registers this machine as a Reflex workstation and serves the tool calls
  * agents relay through the server. Reconnects with exponential backoff
- * (1s → 30s) until `stop()` — the same posture as the web/SDK sockets.
+ * (1s → 30s, without jitter) until `stop()`.
  *
  * While a call is in flight (either awaiting the owner's approval or still
  * executing) the connection emits `tool.progress` heartbeats so the server
