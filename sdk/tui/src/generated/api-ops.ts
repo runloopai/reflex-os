@@ -1233,6 +1233,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "getSsoEnrollmentStatus",
+    "method": "GET",
+    "path": "/enterprise-identity/sso-enrollment",
+    "summary": "Get the active organization's company SSO migration progress.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "getStatus",
     "method": "GET",
     "path": "/status",
@@ -2212,6 +2221,15 @@ export const API_OPS: readonly ApiOp[] = [
     "method": "PUT",
     "path": "/enterprise-identity/oidc-connection/auto-join",
     "summary": "Set the company's one SSO auto-join organization, or require invitations.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "setCompanySsoPolicy",
+    "method": "PUT",
+    "path": "/enterprise-identity/sso-policy",
+    "summary": "Set company-wide SSO policy.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": true
