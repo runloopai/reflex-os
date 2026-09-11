@@ -597,6 +597,14 @@
                       "repoBranch": {
                         "type": "string"
                       },
+                      "orgShare": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "view",
+                          "edit"
+                        ]
+                      },
                       "selectedProviderId": {
                         "anyOf": [
                           {
@@ -2264,6 +2272,14 @@
                   },
                   "repoBranch": {
                     "type": "string"
+                  },
+                  "orgShare": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "view",
+                      "edit"
+                    ]
                   }
                 },
                 "required": [
@@ -9524,6 +9540,9 @@
                     "additionalProperties": {
                       "type": "boolean"
                     }
+                  },
+                  "defaultSessionShare": {
+                    "$ref": "#/components/schemas/DefaultSessionShare"
                   }
                 }
               }
@@ -12682,6 +12701,14 @@
                 "true",
                 "false"
               ]
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ResourceGrantSource"
             }
           },
           {
@@ -17993,6 +18020,14 @@
         ],
         "additionalProperties": false
       },
+      "DefaultSessionShare": {
+        "type": "string",
+        "enum": [
+          "private",
+          "view",
+          "edit"
+        ]
+      },
       "ErrorEnvelope": {
         "type": "object",
         "properties": {
@@ -18717,6 +18752,9 @@
             "additionalProperties": {
               "type": "boolean"
             }
+          },
+          "defaultSessionShare": {
+            "$ref": "#/components/schemas/DefaultSessionShare"
           }
         },
         "required": [
@@ -19034,6 +19072,9 @@
           },
           "canManage": {
             "type": "boolean"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ResourceGrantSource"
           }
         },
         "required": [
@@ -19102,6 +19143,14 @@
           "grant"
         ],
         "additionalProperties": false
+      },
+      "ResourceGrantSource": {
+        "type": "string",
+        "enum": [
+          "member",
+          "org-default",
+          "user-default"
+        ]
       },
       "ResourceGrantSubjectType": {
         "type": "string",
