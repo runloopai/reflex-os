@@ -6447,7 +6447,12 @@
                     "type": "string",
                     "enum": [
                       "okta",
-                      "entra"
+                      "entra",
+                      "google_workspace",
+                      "auth0",
+                      "keycloak",
+                      "zitadel",
+                      "other"
                     ]
                   },
                   "issuer": {
@@ -6651,7 +6656,12 @@
                     "type": "string",
                     "enum": [
                       "okta",
-                      "entra"
+                      "entra",
+                      "google_workspace",
+                      "auth0",
+                      "keycloak",
+                      "zitadel",
+                      "other"
                     ]
                   },
                   "issuer": {
@@ -16770,7 +16780,12 @@
                 "type": "string",
                 "enum": [
                   "okta",
-                  "entra"
+                  "entra",
+                  "google_workspace",
+                  "auth0",
+                  "keycloak",
+                  "zitadel",
+                  "other"
                 ]
               },
               {
