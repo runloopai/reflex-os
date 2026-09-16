@@ -1,5 +1,10 @@
 import { Monitor } from 'lucide-react';
 import type { PluginAttachmentPickerProps } from '@reflex/plugin-api';
+import {
+  AttachmentPill,
+  AttachmentPillRow,
+  attachmentOptionPillClassName,
+} from '@reflex/ui/components/shared/AttachmentPickerCore';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@reflex/ui/components/ui/tooltip';
 import { cn } from '@reflex/ui/lib/utils';
 import {
@@ -56,7 +61,7 @@ export function WorkstationAttachmentPicker({ value, onChange }: PluginAttachmen
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-1">
+      <AttachmentPillRow>
         {workstations.map((workstation) => (
           <WorkstationPill
             key={workstation.id}
@@ -65,7 +70,7 @@ export function WorkstationAttachmentPicker({ value, onChange }: PluginAttachmen
             onToggle={() => toggle(workstation)}
           />
         ))}
-      </div>
+      </AttachmentPillRow>
       {config?.workstationId ? (
         <div
           className="flex items-center gap-1"
@@ -84,12 +89,7 @@ export function WorkstationAttachmentPicker({ value, onChange }: PluginAttachmen
                     aria-checked={active}
                     onClick={() => setMode(mode)}
                     data-testid={`workstation-mode-${mode}`}
-                    className={cn(
-                      'rounded-md border px-2 py-0.5 text-[11px] transition-colors',
-                      active
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border text-muted-foreground hover:text-foreground',
-                    )}
+                    className={attachmentOptionPillClassName(active)}
                   >
                     {label}
                   </button>
@@ -113,19 +113,13 @@ interface WorkstationPillProps {
 function WorkstationPill({ workstation, selected, onToggle }: WorkstationPillProps) {
   const online = workstation.status === 'online';
   const pill = (
-    <button
-      type="button"
+    <AttachmentPill
+      selected={selected}
       onClick={onToggle}
       disabled={!online}
       aria-disabled={!online || undefined}
       data-testid={`workstation-pill-${workstation.id}`}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] transition-colors',
-        selected
-          ? 'border-primary bg-primary/10 text-primary'
-          : 'border-border text-muted-foreground hover:text-foreground',
-        !online && 'border-dashed opacity-60 hover:text-muted-foreground',
-      )}
+      className={cn('gap-1.5', !online && 'border-dashed opacity-60 hover:text-muted-foreground')}
     >
       <Monitor className="h-3 w-3" />
       <span className="truncate">{workstation.name}</span>
@@ -136,7 +130,7 @@ function WorkstationPill({ workstation, selected, onToggle }: WorkstationPillPro
           online ? 'bg-emerald-500' : 'bg-muted-foreground/40',
         )}
       />
-    </button>
+    </AttachmentPill>
   );
 
   if (online) return pill;
