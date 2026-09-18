@@ -148,7 +148,7 @@ describe('versioned', () => {
 describe('the built web app', () => {
   const headerFor = (path: string) => {
     let value = '';
-    staticCacheHeaders({ setHeader: (_k, v) => (value = v) }, path);
+    staticCacheHeaders({ header: (_k, v) => (value = v) }, path);
     return value;
   };
 

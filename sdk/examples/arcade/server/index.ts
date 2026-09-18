@@ -65,7 +65,11 @@ hub.setWatchListener((prevGameId, nextGameId, countPlay) => {
 const app = Fastify({
   logger: { level: 'info' },
   bodyLimit: MAX_API_BODY_BYTES,
-  trustProxy: config.trustProxy,
+  // fastify 5.12.x narrowed `trustProxy`'s type to drop `number` (a hop count),
+  // but the runtime still accepts one via proxy-addr. Arcade passes a hop count
+  // in production (see resolveTrustProxy), so cast to the typed shape until the
+  // fastify types regression is fixed upstream.
+  trustProxy: config.trustProxy as boolean | string | string[],
 });
 
 // First hook registered, so a request that is refused for being too big or

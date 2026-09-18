@@ -86,10 +86,10 @@ function appendVary(
  * storing it anywhere serves an old app or another page's card.
  */
 export function staticCacheHeaders(
-  res: { setHeader(k: string, v: string): void },
+  reply: { header(name: string, value: string): void },
   path: string,
 ): void {
-  res.setHeader(
+  reply.header(
     'cache-control',
     /\/assets\/.+-[A-Za-z0-9_-]{8,}\.\w+$/.test(path) ? CACHE.immutable : CACHE.private,
   );

@@ -1,6 +1,3 @@
-import path from 'node:path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createPluginMeta } from '@reflex/plugin-api/meta';
 import {
   definePlugin,
@@ -59,7 +56,7 @@ export const workstationPlugin = definePlugin({
       startup: dbTablesStartup(['workstations']),
     },
     schema: { ...schema },
-    migrationsFolder: path.resolve(dirname(fileURLToPath(import.meta.url)), 'server/migrations'),
+    migrationsFolder: meta.migrationsFolder,
     mcp: workstationMcp,
     provides(ctx) {
       return { workstationRegistry: new WorkstationRegistryService(ctx) };
