@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.25.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.24.0...reflex-client-v0.25.0) (2026-09-21)
+
+
+### Features
+
+* **idp:** offer more identity providers via UI ([#4543](https://github.com/runloopai/reflex/issues/4543)) ([3f14d02](https://github.com/runloopai/reflex/commit/3f14d02129cf44abe3e4fe65d3eea6c6c7e8d350))
+* **sharing:** add org-level default sharing for new sessions ([#4521](https://github.com/runloopai/reflex/issues/4521)) ([bd585d4](https://github.com/runloopai/reflex/commit/bd585d4e475647ec2816a3ec80e0b30a8091b37a))
+
 ## [0.24.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.23.1...reflex-client-v0.24.0) (2026-09-10)
 
 

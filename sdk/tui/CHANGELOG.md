@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.16.0...reflex-cli-v0.17.0) (2026-09-21)
+
+
+### Features
+
+* **sharing:** add org-level default sharing for new sessions ([#4521](https://github.com/runloopai/reflex/issues/4521)) ([bd585d4](https://github.com/runloopai/reflex/commit/bd585d4e475647ec2816a3ec80e0b30a8091b37a))
+
 ## [0.16.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.15.1...reflex-cli-v0.16.0) (2026-09-10)
 
 
