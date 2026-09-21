@@ -2,7 +2,7 @@ import type { PluginRouteRegistrar } from '@reflex/plugin-api';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { FastifyContextConfig } from 'fastify/types/context.js';
 import '@fastify/websocket';
-import { requireUserId, RouteScope, toErrorMessage, type PluginLogger } from '@reflex/plugin-api';
+import { requireUserId, RouteScope, type PluginLogger } from '@reflex/plugin-api';
 import {
   WORKSTATION_PROTOCOL_VERSION,
   WorkstationClientMessageSchema,
@@ -202,10 +202,7 @@ export function registerWorkstationRoutes(
             });
           })
           .catch((err: unknown) => {
-            log.error(
-              { err: toErrorMessage(err), organizationId, userId },
-              'workstation registration failed',
-            );
+            log.error({ err, organizationId, userId }, 'workstation registration failed');
             sendFrame(socket, {
               v: WORKSTATION_PROTOCOL_VERSION,
               type: 'error',
@@ -219,7 +216,7 @@ export function registerWorkstationRoutes(
         if (workstationId) void registry.disconnect(workstationId, socket);
       });
       socket.on('error', (err: Error) => {
-        log.warn({ err: err.message, workstationId }, 'workstation socket error');
+        log.warn({ err, workstationId, organizationId, userId }, 'workstation socket error');
       });
     },
   );

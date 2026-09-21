@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PluginContext } from '@reflex/plugin-api';
 import {
   WORKSTATION_PROTOCOL_VERSION,
+  WORKSTATION_HEARTBEAT_INTERVAL_MS,
   WorkstationServerMessageSchema,
 } from '@runloop/reflex-workstation';
 import { workstationToolCalls } from '../server/schema.js';
@@ -90,7 +91,15 @@ function makeDb(): FakeDb & Record<string, unknown> {
   };
 }
 
-function makeCtx(db: ReturnType<typeof makeDb>): PluginContext {
+type FakeLog = {
+  info: ReturnType<typeof vi.fn>;
+  warn: ReturnType<typeof vi.fn>;
+  error: ReturnType<typeof vi.fn>;
+  debug: ReturnType<typeof vi.fn>;
+  child: ReturnType<typeof vi.fn>;
+};
+
+function makeLog(): FakeLog {
   const log = {
     info: vi.fn(),
     warn: vi.fn(),
@@ -98,7 +107,13 @@ function makeCtx(db: ReturnType<typeof makeDb>): PluginContext {
     debug: vi.fn(),
     child: vi.fn(),
   };
+  // The registry's constructor calls `ctx.log.child(...)` and keeps the
+  // return value, so make `child` return the same mock so assertions reach it.
   log.child.mockReturnValue(log);
+  return log;
+}
+
+function makeCtxWith(db: ReturnType<typeof makeDb>, log: FakeLog): PluginContext {
   return {
     db: db as unknown as PluginContext['db'],
     instanceId: 'test-host#boot',
@@ -106,6 +121,10 @@ function makeCtx(db: ReturnType<typeof makeDb>): PluginContext {
     secrets: { get: () => undefined },
     config: { get: () => undefined, set: () => undefined, delete: () => undefined },
   } as unknown as PluginContext;
+}
+
+function makeCtx(db: ReturnType<typeof makeDb>): PluginContext {
+  return makeCtxWith(db, makeLog());
 }
 
 class FakeSocket implements WorkstationSocketLike {
@@ -402,5 +421,102 @@ describe('WorkstationRegistryService', () => {
     await expect(registry.delete(workstation.id, 'org_1', 'usr_1')).rejects.toSatisfy(
       (err: unknown) => WorkstationServiceError.is(err) && err.status === 409,
     );
+  });
+
+  it('logs the real Error with org/workstation ids when the audit-row insert fails', async () => {
+    const log = makeLog();
+    const auditRegistry = new WorkstationRegistryService(makeCtxWith(db, log));
+
+    // Reject only the audit-row insert; keep the workstations insert working
+    // so registration succeeds. The original insert handles every other table.
+    const insert = db.insert as unknown as ReturnType<typeof vi.fn>;
+    const originalInsert = insert.getMockImplementation() as
+      | ((table: unknown) => unknown)
+      | undefined;
+    insert.mockImplementation((table: unknown) => {
+      if (table === workstationToolCalls) {
+        return { values: () => Promise.reject(new Error('audit db down')) } as never;
+      }
+      return originalInsert!(table) as never;
+    });
+
+    const socket = new FakeSocket();
+    const workstation = await auditRegistry.register({ ...REGISTER_INPUT, socket });
+    const call = auditRegistry.callTool({
+      workstationId: workstation.id,
+      organizationId: 'org_1',
+      userId: 'usr_1',
+      agentId: 'agt_1',
+      tool: 'run_command',
+      params: { command: 'echo hi' },
+    });
+    const frame = WorkstationServerMessageSchema.parse(socket.lastFrame());
+    if (frame.type !== 'tool.call') throw new Error('unreachable');
+
+    auditRegistry.handleMessage(workstation.id, {
+      v: WORKSTATION_PROTOCOL_VERSION,
+      type: 'tool.result',
+      id: frame.id,
+      ok: true,
+      result: {
+        stdout: 'hi\n',
+        stderr: '',
+        exitCode: 0,
+        durationMs: 5,
+        truncated: false,
+        timedOut: false,
+      },
+    });
+
+    // The call still resolves — the audit failure is fire-and-forget.
+    await expect(call).resolves.toMatchObject({ stdout: 'hi\n', exitCode: 0 });
+    await flushAudit();
+
+    expect(log.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        callId: frame.id,
+        err: expect.any(Error),
+        organizationId: 'org_1',
+        workstationId: workstation.id,
+      }),
+      'failed to record workstation tool call',
+    );
+    // The real Error is preserved (not stringified) — verify the instance + message.
+    const warnArg = log.warn.mock.calls.at(-1)![0] as { err: unknown };
+    expect(warnArg.err).toBeInstanceOf(Error);
+    expect((warnArg.err as Error).message).toBe('audit db down');
+  });
+
+  it('logs the real Error when the heartbeat presence sync fails', async () => {
+    vi.useFakeTimers();
+    const log = makeLog();
+    const beatRegistry = new WorkstationRegistryService(makeCtxWith(db, log));
+    try {
+      // No connections registered → the tick's connection loop is empty and
+      // syncPresenceRows only runs the stale-sweep update. Make that update
+      // reject so the syncPresenceRows catch fires.
+      (db.update as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        () =>
+          ({
+            set: () => ({
+              where: () => ({ returning: () => Promise.reject(new Error('presence db down')) }),
+            }),
+          }) as never,
+      );
+
+      beatRegistry.startHeartbeat();
+      await vi.advanceTimersByTimeAsync(WORKSTATION_HEARTBEAT_INTERVAL_MS);
+
+      expect(log.warn).toHaveBeenCalledWith(
+        expect.objectContaining({ err: expect.any(Error) }),
+        'failed to sync workstation presence rows',
+      );
+      const warnArg = log.warn.mock.calls.at(-1)![0] as { err: unknown };
+      expect(warnArg.err).toBeInstanceOf(Error);
+      expect((warnArg.err as Error).message).toBe('presence db down');
+    } finally {
+      beatRegistry.stopHeartbeat();
+      vi.useRealTimers();
+    }
   });
 });
