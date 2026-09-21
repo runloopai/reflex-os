@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, isNull, lt, notInArray, or } from 'drizzle-orm';
-import type { PluginContext, PluginLogger } from '@reflex/plugin-api';
+import { toErrorMessage, type PluginContext, type PluginLogger } from '@reflex/plugin-api';
 import type { WsBroadcastServiceContract } from '@reflex/plugin-api/services';
 import {
   CALL_RELAY_GRACE_MS,
@@ -526,10 +526,7 @@ export class WorkstationRegistryService {
         }
       }
       void this.syncPresenceRows().catch((err: unknown) => {
-        this.log.warn(
-          { err: err instanceof Error ? err.message : String(err) },
-          'failed to sync workstation presence rows',
-        );
+        this.log.warn({ err: toErrorMessage(err) }, 'failed to sync workstation presence rows');
       });
     }, WORKSTATION_HEARTBEAT_INTERVAL_MS);
     this.heartbeatTimer.unref?.();
@@ -663,7 +660,7 @@ export class WorkstationRegistryService {
       })
       .catch((err: unknown) => {
         this.log.warn(
-          { callId, err: err instanceof Error ? err.message : String(err) },
+          { callId, organizationId: meta.organizationId, err: toErrorMessage(err) },
           'failed to record workstation tool call',
         );
       });

@@ -2,6 +2,7 @@ import { createPluginMeta } from '@reflex/plugin-api/meta';
 import {
   definePlugin,
   requireServices,
+  toErrorMessage,
   type PluginContext,
   type PluginRegisterResult,
 } from '@reflex/plugin-api';
@@ -69,16 +70,10 @@ export const workstationPlugin = definePlugin({
       const workstationRegistry = rawWorkstationRegistry as WorkstationRegistryService;
       workstationRegistry.attachBroadcast(ctx.services?.broadcastService);
       void workstationRegistry.resetPresence().catch((err: unknown) => {
-        ctx.log.warn(
-          { err: err instanceof Error ? err.message : String(err) },
-          'failed to reset workstation presence at boot',
-        );
+        ctx.log.warn({ err: toErrorMessage(err) }, 'failed to reset workstation presence at boot');
       });
       void workstationRegistry.pruneAuditLog().catch((err: unknown) => {
-        ctx.log.warn(
-          { err: err instanceof Error ? err.message : String(err) },
-          'failed to prune workstation audit log at boot',
-        );
+        ctx.log.warn({ err: toErrorMessage(err) }, 'failed to prune workstation audit log at boot');
       });
       workstationRegistry.startHeartbeat();
       registerWorkstationRoutes(app, workstationRegistry, ctx.log);
