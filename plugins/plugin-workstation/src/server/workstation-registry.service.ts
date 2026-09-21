@@ -272,7 +272,10 @@ export class WorkstationRegistryService {
     if (msg.type === 'tool.result') {
       const call = this.pending.get(msg.id);
       if (!call || call.meta.workstationId !== workstationId) {
-        this.log.warn({ workstationId, callId: msg.id }, 'tool.result with no pending call');
+        this.log.warn(
+          { workstationId, callId: msg.id, organizationId: conn?.organizationId },
+          'tool.result with no pending call',
+        );
         return msg;
       }
       if (msg.ok) {
@@ -510,7 +513,10 @@ export class WorkstationRegistryService {
       };
       for (const conn of [...this.connections.values()]) {
         if (now - conn.lastSeenAt > WORKSTATION_STALE_THRESHOLD_MS) {
-          this.log.warn({ workstationId: conn.workstationId }, 'workstation stale; closing');
+          this.log.warn(
+            { workstationId: conn.workstationId, organizationId: conn.organizationId },
+            'workstation stale; closing',
+          );
           try {
             conn.socket.close(1001, 'heartbeat timeout');
           } catch {

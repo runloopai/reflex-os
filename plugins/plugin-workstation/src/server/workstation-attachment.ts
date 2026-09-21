@@ -133,14 +133,22 @@ export function createWorkstationAttachmentResolver(): AttachmentResolver<Resolv
       const workstation = await registry.getById(parsed.data.workstationId, agent.organizationId);
       if (!workstation) {
         ctx.log.warn(
-          { workstationId: parsed.data.workstationId, agentId: agent.id },
+          {
+            workstationId: parsed.data.workstationId,
+            agentId: agent.id,
+            organizationId: agent.organizationId,
+          },
           'workstation attachment points at an unknown workstation; skipping',
         );
         return undefined;
       }
       if (workstation.userId !== agent.userId) {
         ctx.log.warn(
-          { workstationId: workstation.id, agentId: agent.id },
+          {
+            workstationId: workstation.id,
+            agentId: agent.id,
+            organizationId: agent.organizationId,
+          },
           'workstation attachment rejected: agent creator does not own the workstation',
         );
         return undefined;
