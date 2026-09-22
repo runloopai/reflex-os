@@ -7127,18 +7127,7 @@
         "tags": [
           "flags"
         ],
-        "x-route-scope": "active-org",
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "x-route-scope": "platform-admin",
         "responses": {
           "200": {
             "description": "Response",
@@ -7163,21 +7152,12 @@
         "tags": [
           "flags"
         ],
-        "x-route-scope": "active-org",
+        "x-route-scope": "platform-admin",
         "parameters": [
           {
             "name": "key",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
             "schema": {
               "type": "string"
             }
@@ -7225,21 +7205,12 @@
         "tags": [
           "flags"
         ],
-        "x-route-scope": "active-org",
+        "x-route-scope": "platform-admin",
         "parameters": [
           {
             "name": "key",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
             "schema": {
               "type": "string"
             }
@@ -7269,7 +7240,7 @@
         "tags": [
           "flags"
         ],
-        "x-route-scope": "active-org",
+        "x-route-scope": "platform-admin",
         "parameters": [
           {
             "name": "key",
@@ -7283,15 +7254,6 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
             "schema": {
               "type": "string"
             }
@@ -7337,7 +7299,7 @@
         "tags": [
           "flags"
         ],
-        "x-route-scope": "active-org",
+        "x-route-scope": "platform-admin",
         "parameters": [
           {
             "name": "key",
@@ -7351,15 +7313,6 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
             "schema": {
               "type": "string"
             }
