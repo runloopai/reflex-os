@@ -6064,6 +6064,314 @@
         }
       }
     },
+    "/company/email-domains": {
+      "get": {
+        "operationId": "listCompanyEmailDomains",
+        "summary": "List the active organization's company-owned email domains.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domains": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^bed_[A-Za-z0-9]{22}$"
+                          },
+                          "domain": {},
+                          "autoJoinOrganizationId": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^org_[A-Za-z0-9]{22}$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "domain",
+                          "autoJoinOrganizationId",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "domains"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "addCompanyEmailDomain",
+        "summary": "Claim an email domain for the active organization's company.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253,
+                    "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
+                  },
+                  "autoJoinOrganizationId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^org_[A-Za-z0-9]{22}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "domain"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^bed_[A-Za-z0-9]{22}$"
+                    },
+                    "domain": {},
+                    "autoJoinOrganizationId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^org_[A-Za-z0-9]{22}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "domain",
+                    "autoJoinOrganizationId",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company/email-domains/{domain}": {
+      "delete": {
+        "operationId": "removeCompanyEmailDomain",
+        "summary": "Remove an email-domain claim from the active organization's company.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253,
+              "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company/email-domains/{domain}/auto-join": {
+      "put": {
+        "operationId": "setCompanyEmailDomainAutoJoin",
+        "summary": "Set a company domain's ordinary-provider auto-join destination.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 253,
+              "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "organizationId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^org_[A-Za-z0-9]{22}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "organizationId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^bed_[A-Za-z0-9]{22}$"
+                    },
+                    "domain": {},
+                    "autoJoinOrganizationId": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^org_[A-Za-z0-9]{22}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "domain",
+                    "autoJoinOrganizationId",
+                    "createdAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/company/organizations": {
       "post": {
         "operationId": "createCompanyOrganization",
@@ -9695,7 +10003,7 @@
     "/organizations/{id}/email-domains": {
       "get": {
         "operationId": "listOrgEmailDomains",
-        "summary": "List the email domains claimed by the organization.",
+        "summary": "List company-owned email domains associated with the organization.",
         "tags": [
           "organizations"
         ],
@@ -9718,8 +10026,8 @@
       },
       "post": {
         "operationId": "addOrgEmailDomain",
-        "summary": "Claim an email domain for the organization.",
-        "description": "Restricted to platform admins: claims are not DNS-verified.",
+        "summary": "Associate a company-owned email domain with an organization.",
+        "description": "Restricted to platform admins: domains are not DNS-verified.",
         "tags": [
           "organizations"
         ],
@@ -9765,8 +10073,8 @@
     "/organizations/{id}/email-domains/{domain}": {
       "delete": {
         "operationId": "removeOrgEmailDomain",
-        "summary": "Remove an email domain claim from the organization.",
-        "description": "Restricted to platform admins: claims are not DNS-verified.",
+        "summary": "Remove an organization association with a company-owned email domain.",
+        "description": "Restricted to platform admins: domains are not DNS-verified.",
         "tags": [
           "organizations"
         ],

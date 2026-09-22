@@ -66,10 +66,19 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "addCompanyEmailDomain",
+    "method": "POST",
+    "path": "/company/email-domains",
+    "summary": "Claim an email domain for the active organization's company.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "addOrgEmailDomain",
     "method": "POST",
     "path": "/organizations/{id}/email-domains",
-    "summary": "Claim an email domain for the organization.",
+    "summary": "Associate a company-owned email domain with an organization.",
     "pathParams": [
       "id"
     ],
@@ -1525,6 +1534,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "listCompanyEmailDomains",
+    "method": "GET",
+    "path": "/company/email-domains",
+    "summary": "List the active organization's company-owned email domains.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "listFeatureFlags",
     "method": "GET",
     "path": "/flags",
@@ -1593,7 +1611,7 @@ export const API_OPS: readonly ApiOp[] = [
     "id": "listOrgEmailDomains",
     "method": "GET",
     "path": "/organizations/{id}/email-domains",
-    "summary": "List the email domains claimed by the organization.",
+    "summary": "List company-owned email domains associated with the organization.",
     "pathParams": [
       "id"
     ],
@@ -2007,10 +2025,21 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "removeCompanyEmailDomain",
+    "method": "DELETE",
+    "path": "/company/email-domains/{domain}",
+    "summary": "Remove an email-domain claim from the active organization's company.",
+    "pathParams": [
+      "domain"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "removeOrgEmailDomain",
     "method": "DELETE",
     "path": "/organizations/{id}/email-domains/{domain}",
-    "summary": "Remove an email domain claim from the organization.",
+    "summary": "Remove an organization association with a company-owned email domain.",
     "pathParams": [
       "id",
       "domain"
@@ -2235,6 +2264,17 @@ export const API_OPS: readonly ApiOp[] = [
     "path": "/enterprise-identity/oidc-connection/auto-join",
     "summary": "Set the company's one SSO auto-join organization, or require invitations.",
     "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "setCompanyEmailDomainAutoJoin",
+    "method": "PUT",
+    "path": "/company/email-domains/{domain}/auto-join",
+    "summary": "Set a company domain's ordinary-provider auto-join destination.",
+    "pathParams": [
+      "domain"
+    ],
     "queryParams": [],
     "hasBody": true
   },
