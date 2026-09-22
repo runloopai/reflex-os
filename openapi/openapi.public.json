@@ -9719,6 +9719,7 @@
       "post": {
         "operationId": "addOrgEmailDomain",
         "summary": "Claim an email domain for the organization.",
+        "description": "Restricted to platform admins: claims are not DNS-verified.",
         "tags": [
           "organizations"
         ],
@@ -9765,6 +9766,7 @@
       "delete": {
         "operationId": "removeOrgEmailDomain",
         "summary": "Remove an email domain claim from the organization.",
+        "description": "Restricted to platform admins: claims are not DNS-verified.",
         "tags": [
           "organizations"
         ],
