@@ -1,11 +1,10 @@
 import { Monitor } from 'lucide-react';
 import type { LaunchMentionProviderProps } from '@reflex/plugin-api';
-import { CommandGroup, CommandItem } from '@reflex/ui/components/ui/command';
 import {
-  MentionRow,
-  MentionDetail,
-  MentionLoadingRow,
-} from '@reflex/ui/components/shared/MentionRow';
+  MentionCommandItem,
+  MentionCommandList,
+} from '@reflex/ui/components/shared/MentionCommandList';
+import { MentionDetail, MentionLoadingRow } from '@reflex/ui/components/shared/MentionRow';
 import {
   WORKSTATION_ATTACHMENT_ID,
   WORKSTATION_DEFAULT_ACCESS_MODE,
@@ -53,11 +52,11 @@ export function WorkstationMentionProvider({
   const items = online.map((workstation) => {
     const isApplied = applied?.workstationId === workstation.id;
     return (
-      <CommandItem
+      <MentionCommandItem
         key={workstation.id}
         value={`workstation:${workstation.id}`}
         keywords={[workstation.name, workstation.hostname]}
-        data-testid={`workstation-mention-${workstation.id}`}
+        testId={`workstation-mention-${workstation.id}`}
         onSelect={() =>
           onApply({
             kind: 'set-attachment',
@@ -70,36 +69,29 @@ export function WorkstationMentionProvider({
             } satisfies WorkstationAttachmentConfig,
           })
         }
-      >
-        <MentionRow
-          icon={<Monitor />}
-          name={
-            <span className="flex min-w-0 items-center gap-1.5">
-              <span className="truncate">{workstation.name}</span>
-              {isApplied ? (
-                <span className="shrink-0 text-[10px] font-medium text-primary">added</span>
-              ) : null}
-            </span>
-          }
-          details={
-            <MentionDetail
-              name={workstation.name}
-              kind="Workstation"
-              description="The agent gets read & write access to this machine by default — it can read and list files, write files, and run commands. Switch it to read-only from the attachment if you only want inspection, or run the TUI with --ask to approve each call yourself."
-              facts={[
-                { label: 'Host', value: workstation.hostname },
-                { label: 'Platform', value: workstation.platform },
-              ]}
-            />
-          }
-        />
-      </CommandItem>
+        icon={<Monitor />}
+        name={
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate">{workstation.name}</span>
+            {isApplied ? (
+              <span className="shrink-0 text-[10px] font-medium text-primary">added</span>
+            ) : null}
+          </span>
+        }
+        details={
+          <MentionDetail
+            name={workstation.name}
+            kind="Workstation"
+            description="The agent gets read & write access to this machine by default — it can read and list files, write files, and run commands. Switch it to read-only from the attachment if you only want inspection, or run the TUI with --ask to approve each call yourself."
+            facts={[
+              { label: 'Host', value: workstation.hostname },
+              { label: 'Platform', value: workstation.platform },
+            ]}
+          />
+        }
+      />
     );
   });
 
-  if (groupHeading) {
-    return <CommandGroup heading={groupHeading}>{items}</CommandGroup>;
-  }
-
-  return <>{items}</>;
+  return <MentionCommandList groupHeading={groupHeading}>{items}</MentionCommandList>;
 }
