@@ -15638,6 +15638,9 @@
           "listenersEnabled": {
             "type": "boolean"
           },
+          "suspendAtTurnEnd": {
+            "type": "boolean"
+          },
           "attachments": {
             "anyOf": [
               {
@@ -18752,6 +18755,9 @@
             ]
           },
           "listenersEnabled": {
+            "type": "boolean"
+          },
+          "suspendAtTurnEnd": {
             "type": "boolean"
           },
           "attachments": {
