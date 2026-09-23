@@ -497,6 +497,18 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "decideAgentCapabilityRequest",
+    "method": "POST",
+    "path": "/agents/{id}/capability-requests/{requestId}/decision",
+    "summary": "Answer an agent's capability request (allow once, for this agent, always, deny, never).",
+    "pathParams": [
+      "id",
+      "requestId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "declineInvite",
     "method": "POST",
     "path": "/invites/{inviteId}/decline",

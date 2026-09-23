@@ -567,6 +567,9 @@
                           "review"
                         ]
                       },
+                      "listenersEnabled": {
+                        "type": "boolean"
+                      },
                       "labelIds": {
                         "maxItems": 10,
                         "type": "array",
@@ -2243,6 +2246,9 @@
                       "review"
                     ]
                   },
+                  "listenersEnabled": {
+                    "type": "boolean"
+                  },
                   "labelIds": {
                     "maxItems": 10,
                     "type": "array",
@@ -2384,6 +2390,9 @@
                   },
                   "pinned": {
                     "type": "boolean"
+                  },
+                  "listenersEnabled": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -2478,6 +2487,65 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/capability-requests/{requestId}/decision": {
+      "post": {
+        "operationId": "decideAgentCapabilityRequest",
+        "summary": "Answer an agent's capability request (allow once, for this agent, always, deny, never).",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentCapabilityDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListenerResponse"
                 }
               }
             }
@@ -15730,6 +15798,24 @@
         ],
         "additionalProperties": false
       },
+      "AgentCapabilityDecisionRequest": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "enum": [
+              "allow_once",
+              "allow_agent",
+              "allow_always",
+              "deny",
+              "never"
+            ]
+          }
+        },
+        "required": [
+          "answer"
+        ]
+      },
       "AgentCommandFailureResponse": {
         "type": "object",
         "properties": {
@@ -16807,6 +16893,9 @@
               }
             ]
           },
+          "listenersEnabled": {
+            "type": "boolean"
+          },
           "labelIds": {
             "anyOf": [
               {
@@ -17319,6 +17408,8 @@
               "agent.dev_server",
               "agent.performance_warning",
               "agent.daemon_started",
+              "agent.capability_requested",
+              "agent.capability_resolved",
               "agent.work_assessment",
               "agent.credentials_refreshed",
               "agent.credentials_refresh_failed",
