@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.26.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.25.0...reflex-client-v0.26.0) (2026-09-23)
+
+
+### Features
+
+* **auth:** make email-domain routing company-owned ([#4551](https://github.com/runloopai/reflex/issues/4551)) ([09119a5](https://github.com/runloopai/reflex/commit/09119a5e1c224c94afcbbc2e9ba9278130239990))
+
+
+### Bug Fixes
+
+* **security:** restrict global feature-flag writes and user overrides to platform admins ([#4809](https://github.com/runloopai/reflex/issues/4809)) ([80ef71d](https://github.com/runloopai/reflex/commit/80ef71d9a064fccfc480347a15752759f164f64f))
+* **server:** restrict email-domain claims to platform admins ([#4825](https://github.com/runloopai/reflex/issues/4825)) ([f01fd4a](https://github.com/runloopai/reflex/commit/f01fd4aa6ba85b8523fe484a802b3dfc7ad290c6))
+
 ## [0.25.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.24.0...reflex-client-v0.25.0) (2026-09-21)
 
 

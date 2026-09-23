@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.17.0...reflex-cli-v0.18.0) (2026-09-23)
+
+
+### Features
+
+* **auth:** make email-domain routing company-owned ([#4551](https://github.com/runloopai/reflex/issues/4551)) ([09119a5](https://github.com/runloopai/reflex/commit/09119a5e1c224c94afcbbc2e9ba9278130239990))
+
 ## [0.17.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.16.0...reflex-cli-v0.17.0) (2026-09-21)
 
 
