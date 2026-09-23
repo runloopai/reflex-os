@@ -15351,6 +15351,9 @@
           "hasBackgroundWork": {
             "type": "boolean"
           },
+          "listenersEnabled": {
+            "type": "boolean"
+          },
           "attachments": {
             "anyOf": [
               {
@@ -15502,7 +15505,8 @@
               "creator",
               "reviewer",
               "assignee",
-              "member"
+              "member",
+              "mentioned"
             ]
           },
           "externalId": {
@@ -17988,6 +17992,9 @@
             ]
           },
           "hasBackgroundWork": {
+            "type": "boolean"
+          },
+          "listenersEnabled": {
             "type": "boolean"
           },
           "attachments": {
