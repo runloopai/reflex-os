@@ -2545,7 +2545,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AgentListenerResponse"
+                  "$ref": "#/components/schemas/AgentCapabilityDecisionResponse"
                 }
               }
             }
@@ -15745,6 +15745,114 @@
         ],
         "additionalProperties": false
       },
+      "AgentActionRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "refAssociationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_approval",
+              "executed",
+              "denied",
+              "failed",
+              "expired"
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "resolvedAt": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "agentId",
+          "organizationId",
+          "refAssociationId",
+          "provider",
+          "operation",
+          "params",
+          "status",
+          "requestId",
+          "result",
+          "error",
+          "createdAt",
+          "resolvedAt"
+        ],
+        "additionalProperties": false
+      },
       "AgentAssociation": {
         "type": "object",
         "properties": {
@@ -15814,6 +15922,34 @@
         },
         "required": [
           "answer"
+        ]
+      },
+      "AgentCapabilityDecisionResponse": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "listener": {
+                "$ref": "#/components/schemas/AgentListener"
+              }
+            },
+            "required": [
+              "listener"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "actionRequest": {
+                "$ref": "#/components/schemas/AgentActionRequest"
+              }
+            },
+            "required": [
+              "actionRequest"
+            ],
+            "additionalProperties": false
+          }
         ]
       },
       "AgentCommandFailureResponse": {
