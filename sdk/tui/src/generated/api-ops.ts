@@ -1439,6 +1439,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "listAgentRefs",
+    "method": "GET",
+    "path": "/agents/{id}/refs",
+    "summary": "List the refs (pull requests, issues) an agent holds, with each kind's signals and actions.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "listAgents",
     "method": "GET",
     "path": "/agents",

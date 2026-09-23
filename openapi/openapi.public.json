@@ -3878,6 +3878,47 @@
         }
       }
     },
+    "/agents/{id}/refs": {
+      "get": {
+        "operationId": "listAgentRefs",
+        "summary": "List the refs (pull requests, issues) an agent holds, with each kind's signals and actions.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListAgentRefsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/resume": {
       "post": {
         "operationId": "resumeAgent",
@@ -16469,6 +16510,26 @@
         ],
         "additionalProperties": false
       },
+      "AgentRef": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "association": {
+            "$ref": "#/components/schemas/AgentAssociation"
+          }
+        },
+        "required": [
+          "kind",
+          "handle",
+          "association"
+        ],
+        "additionalProperties": false
+      },
       "AgentServiceStatus": {
         "type": "object",
         "properties": {
@@ -18434,6 +18495,28 @@
         ],
         "additionalProperties": false
       },
+      "ListAgentRefsResponse": {
+        "type": "object",
+        "properties": {
+          "refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentRef"
+            }
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RefKindDescriptor"
+            }
+          }
+        },
+        "required": [
+          "refs",
+          "kinds"
+        ],
+        "additionalProperties": false
+      },
       "ListOrganizationsResponse": {
         "type": "object",
         "properties": {
@@ -19283,6 +19366,139 @@
           "platformUrl",
           "githubWebBaseUrl",
           "maintenance"
+        ],
+        "additionalProperties": false
+      },
+      "RefKindDescriptor": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "associationKind": {
+            "type": "string"
+          },
+          "signals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "event": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string"
+                    },
+                    "event": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source",
+                    "event"
+                  ],
+                  "additionalProperties": false
+                },
+                "probeable": {
+                  "type": "boolean"
+                },
+                "usuallyFinal": {
+                  "type": "boolean"
+                },
+                "default": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "description",
+                "event",
+                "probeable",
+                "usuallyFinal",
+                "default"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "operation": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "operation"
+                  ],
+                  "additionalProperties": false
+                },
+                "effect": {
+                  "type": "string",
+                  "enum": [
+                    "read",
+                    "mutate",
+                    "destructive"
+                  ]
+                },
+                "paramsJsonSchema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "description",
+                "operation",
+                "effect",
+                "paramsJsonSchema"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "associationKind",
+          "signals",
+          "actions"
         ],
         "additionalProperties": false
       },
