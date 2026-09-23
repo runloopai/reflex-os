@@ -15609,6 +15609,32 @@
           "hasBackgroundWork": {
             "type": "boolean"
           },
+          "backgroundTasks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "listenersEnabled": {
             "type": "boolean"
           },
@@ -18698,6 +18724,32 @@
           },
           "hasBackgroundWork": {
             "type": "boolean"
+          },
+          "backgroundTasks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "listenersEnabled": {
             "type": "boolean"
