@@ -2777,6 +2777,155 @@
         }
       }
     },
+    "/agents/{id}/listeners": {
+      "get": {
+        "operationId": "listAgentListeners",
+        "summary": "List the listeners (timers, ref signals, watches) an agent has armed.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListAgentListenersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/listeners/{listenerId}/cancel": {
+      "post": {
+        "operationId": "cancelAgentListener",
+        "summary": "Cancel an armed or pending listener.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListenerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agents/{id}/listeners/{listenerId}/renew": {
+      "post": {
+        "operationId": "renewAgentListener",
+        "summary": "Extend an armed listener's lease.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "listenerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenewAgentListenerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentListenerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/mark": {
       "post": {
         "operationId": "setAgentMark",
@@ -15763,6 +15912,274 @@
         ],
         "additionalProperties": false
       },
+      "AgentListener": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "agentId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "requestedByUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "timer",
+              "signal",
+              "watch"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_approval",
+              "armed",
+              "fired",
+              "cancelled",
+              "denied",
+              "expired"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "fireAt": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "refAssociationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "signal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "event": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "filter": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "breadth": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object",
+                  "scope",
+                  "org"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "breadthScope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "inject",
+              "interrupt"
+            ]
+          },
+          "maxFires": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "fireCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notifyOnExpiry": {
+            "type": "boolean"
+          },
+          "expiryReportedAt": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastPayload": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastFiredAt": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "updatedAt": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "agentId",
+          "organizationId",
+          "requestedByUserId",
+          "kind",
+          "status",
+          "reason",
+          "fireAt",
+          "refAssociationId",
+          "signal",
+          "source",
+          "event",
+          "action",
+          "filter",
+          "breadth",
+          "breadthScope",
+          "delivery",
+          "maxFires",
+          "fireCount",
+          "expiresAt",
+          "notifyOnExpiry",
+          "expiryReportedAt",
+          "requestId",
+          "lastPayload",
+          "lastFiredAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "AgentListenerResponse": {
+        "type": "object",
+        "properties": {
+          "listener": {
+            "$ref": "#/components/schemas/AgentListener"
+          }
+        },
+        "required": [
+          "listener"
+        ],
+        "additionalProperties": false
+      },
       "AgentModelSupportResponse": {
         "type": "object",
         "properties": {
@@ -18495,6 +18912,21 @@
         ],
         "additionalProperties": false
       },
+      "ListAgentListenersResponse": {
+        "type": "object",
+        "properties": {
+          "listeners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentListener"
+            }
+          }
+        },
+        "required": [
+          "listeners"
+        ],
+        "additionalProperties": false
+      },
       "ListAgentRefsResponse": {
         "type": "object",
         "properties": {
@@ -19501,6 +19933,16 @@
           "actions"
         ],
         "additionalProperties": false
+      },
+      "RenewAgentListenerRequest": {
+        "type": "object",
+        "properties": {
+          "forMs": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 2592000000
+          }
+        }
       },
       "ResourceGrant": {
         "type": "object",

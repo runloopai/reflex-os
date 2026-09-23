@@ -13,7 +13,9 @@ describe('resolveApiOp', () => {
   });
 
   it('suggests near matches on a miss', () => {
-    expect(() => resolveApiOp('agentList')).toThrow(/api --list/);
+    // `agentList` gained a substring match once `listAgentListeners` existed;
+    // a miss needs a name no operation contains.
+    expect(() => resolveApiOp('frobnicate')).toThrow(/api --list/);
     expect(() => resolveApiOp('Agent')).toThrow(/Did you mean: .*getAgent/);
   });
 

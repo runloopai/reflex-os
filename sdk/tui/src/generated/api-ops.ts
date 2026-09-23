@@ -237,6 +237,18 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "cancelAgentListener",
+    "method": "POST",
+    "path": "/agents/{id}/listeners/{listenerId}/cancel",
+    "summary": "Cancel an armed or pending listener.",
+    "pathParams": [
+      "id",
+      "listenerId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "clearAccountFeatureFlag",
     "method": "DELETE",
     "path": "/flags/account/{key}",
@@ -1430,6 +1442,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
+    "id": "listAgentListeners",
+    "method": "GET",
+    "path": "/agents/{id}/listeners",
+    "summary": "List the listeners (timers, ref signals, watches) an agent has armed.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
     "id": "listAgentPersonas",
     "method": "GET",
     "path": "/agent-personas",
@@ -2093,6 +2116,18 @@ export const API_OPS: readonly ApiOp[] = [
     ],
     "queryParams": [],
     "hasBody": false
+  },
+  {
+    "id": "renewAgentListener",
+    "method": "POST",
+    "path": "/agents/{id}/listeners/{listenerId}/renew",
+    "summary": "Extend an armed listener's lease.",
+    "pathParams": [
+      "id",
+      "listenerId"
+    ],
+    "queryParams": [],
+    "hasBody": true
   },
   {
     "id": "reorderAgentQueue",
