@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { coerceResourceSize, isBaseBlueprint } from './resource-size.js';
+import { coerceResourceSize, isBaseBlueprint, isBuiltinResourceSize } from './resource-size.js';
 
 describe('isBaseBlueprint', () => {
   it('returns true when metadata.type is "base"', () => {
@@ -39,5 +39,26 @@ describe('coerceResourceSize', () => {
     expect(coerceResourceSize('')).toBeNull();
     expect(coerceResourceSize(null)).toBeNull();
     expect(coerceResourceSize(undefined)).toBeNull();
+  });
+});
+
+describe('isBuiltinResourceSize', () => {
+  it('accepts every size in our enum', () => {
+    for (const size of ['SMALL', 'MEDIUM', 'LARGE', 'X_LARGE', 'XX_LARGE'] as const) {
+      expect(isBuiltinResourceSize(size)).toBe(true);
+    }
+  });
+
+  it('rejects Runloop sizes outside our enum', () => {
+    expect(isBuiltinResourceSize('X_SMALL')).toBe(false);
+    expect(isBuiltinResourceSize('CUSTOM_SIZE')).toBe(false);
+  });
+
+  it('rejects unknown, empty, null, undefined, and lowercase values', () => {
+    expect(isBuiltinResourceSize('gigantic')).toBe(false);
+    expect(isBuiltinResourceSize('')).toBe(false);
+    expect(isBuiltinResourceSize(null)).toBe(false);
+    expect(isBuiltinResourceSize(undefined)).toBe(false);
+    expect(isBuiltinResourceSize('small')).toBe(false);
   });
 });

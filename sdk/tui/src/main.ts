@@ -1,5 +1,7 @@
 // Executable entrypoint — kept separate from cli.ts so tests can import
 // the CLI's pure pieces without triggering a render.
+// Must evaluate before any module constructs a Zod schema, or the compiled fast path never installs.
+import 'zod/compile';
 import { main } from './cli.js';
 
 // `reflex-cli --help | head` closes stdout early; treat the broken pipe as

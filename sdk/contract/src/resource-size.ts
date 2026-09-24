@@ -5,6 +5,11 @@ export const ResourceSizeSchema = z.enum(['SMALL', 'MEDIUM', 'LARGE', 'X_LARGE',
 
 export type ResourceSize = z.infer<typeof ResourceSizeSchema>;
 
+/** Fast type guard for built-in resource-size checks that do not need parsed data or validation errors. */
+export function isBuiltinResourceSize(value: unknown): value is ResourceSize {
+  return z.validate(ResourceSizeSchema, value);
+}
+
 /**
  * Coerce a raw devbox resource-size string (e.g. Runloop's
  * `launch_parameters.resource_size_request`) into our {@link ResourceSize}
