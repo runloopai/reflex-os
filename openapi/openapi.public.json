@@ -15947,6 +15947,9 @@
               "deny",
               "never"
             ]
+          },
+          "widen": {
+            "type": "boolean"
           }
         },
         "required": [
