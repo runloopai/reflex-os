@@ -1,7 +1,10 @@
 import { Clock, FolderOpen, HardDrive, Monitor, TerminalSquare } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@reflex/ui/components/ui/hover-card';
 import { Badge } from '@reflex/ui/components/ui/badge';
-import { ResourcePreviewCard } from '@reflex/ui/components/resource-preview/ResourcePreviewCard';
+import {
+  RESOURCE_PREVIEW_HOVER_CONTENT_CLASS,
+  ResourcePreviewCard,
+} from '@reflex/ui/components/resource-preview/ResourcePreviewCard';
 import { formatRelativeTime } from '@reflex/ui/lib/format';
 import { cn } from '@reflex/ui/lib/utils';
 import {
@@ -52,7 +55,11 @@ export function WorkstationChip({
           ) : null}
         </span>
       </HoverCardTrigger>
-      <HoverCardContent align="start" className="w-80 p-3" aria-label={`Workstation ${name}`}>
+      <HoverCardContent
+        align="start"
+        className={RESOURCE_PREVIEW_HOVER_CONTENT_CLASS}
+        aria-label={`Workstation ${name}`}
+      >
         <WorkstationPreview config={config} live={live} name={name} />
       </HoverCardContent>
     </HoverCard>
