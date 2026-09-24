@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.18.0...reflex-cli-v0.19.0) (2026-09-24)
+
+
+### Features
+
+* **server:** agent listeners fired through injection, with wake (phase 3) ([#4879](https://github.com/runloopai/reflex/issues/4879)) ([1037d1c](https://github.com/runloopai/reflex/commit/1037d1c429ef9e810186d98546e66f9979bcd4d8))
+* **server:** capability requests with breadth-first cards (phase 4) ([#4880](https://github.com/runloopai/reflex/issues/4880)) ([7f43cfe](https://github.com/runloopai/reflex/commit/7f43cfed8a69c6d963de350b12cb2aea3a181f73))
+* **server:** ref kinds for GitHub and Linear with boot-validated filters (phase 2) ([#4876](https://github.com/runloopai/reflex/issues/4876)) ([21742f5](https://github.com/runloopai/reflex/commit/21742f589649272e444cd6c2b565754788f9d131))
+
 ## [0.18.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.17.0...reflex-cli-v0.18.0) (2026-09-23)
 
 

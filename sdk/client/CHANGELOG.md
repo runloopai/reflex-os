@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.27.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.26.0...reflex-client-v0.27.0) (2026-09-24)
+
+
+### Features
+
+* **chat:** capability request card with all five answers and a widen toggle ([#4916](https://github.com/runloopai/reflex/issues/4916)) ([faaffa8](https://github.com/runloopai/reflex/commit/faaffa86c01f9013c4ecaf475c5fd63fd584c643))
+* **sandbox:** honour agent-requested suspend at the turn boundary ([#4855](https://github.com/runloopai/reflex/issues/4855)) ([e9a2091](https://github.com/runloopai/reflex/commit/e9a2091a7a719535f961beef92bb440d700083b9))
+* **server:** agent listener schema, capability grants, and rollout flag (phase 1) ([#4871](https://github.com/runloopai/reflex/issues/4871)) ([e4d1598](https://github.com/runloopai/reflex/commit/e4d1598bad21e35bfc1f877007723900a8266b9d))
+* **server:** agent listeners fired through injection, with wake (phase 3) ([#4879](https://github.com/runloopai/reflex/issues/4879)) ([1037d1c](https://github.com/runloopai/reflex/commit/1037d1c429ef9e810186d98546e66f9979bcd4d8))
+* **server:** capability requests with breadth-first cards (phase 4) ([#4880](https://github.com/runloopai/reflex/issues/4880)) ([7f43cfe](https://github.com/runloopai/reflex/commit/7f43cfed8a69c6d963de350b12cb2aea3a181f73))
+* **server:** on-box ref, listen, and act subcommands with gated skills (phase 5) ([#4882](https://github.com/runloopai/reflex/issues/4882)) ([5fc839b](https://github.com/runloopai/reflex/commit/5fc839be4bde7de48833dcea59c9079a0bf1160f))
+* **server:** ref kinds for GitHub and Linear with boot-validated filters (phase 2) ([#4876](https://github.com/runloopai/reflex/issues/4876)) ([21742f5](https://github.com/runloopai/reflex/commit/21742f589649272e444cd6c2b565754788f9d131))
+* **web:** Listeners section in the activity dock with inline approval (phase 6) ([#4883](https://github.com/runloopai/reflex/issues/4883)) ([ee50b3b](https://github.com/runloopai/reflex/commit/ee50b3b4228567f2ed81936f6c49b3c7c0c956e8))
+
+
+### Bug Fixes
+
+* show and cancel Codex background tasks ([#4846](https://github.com/runloopai/reflex/issues/4846)) ([6452e74](https://github.com/runloopai/reflex/commit/6452e74baa53137028f0c2c28417837841a535b4))
+
 ## [0.26.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.25.0...reflex-client-v0.26.0) (2026-09-23)
 
 
