@@ -7317,6 +7317,106 @@
         }
       }
     },
+    "/enterprise-identity/sso-link-grants": {
+      "post": {
+        "operationId": "createSsoLinkGrants",
+        "summary": "Authorize the company identity provider to attach to existing member accounts on their next SSO sign-in.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userIds": {
+                    "minItems": 1,
+                    "maxItems": 500,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^usr_[A-Za-z0-9]{22}$"
+                    }
+                  }
+                },
+                "required": [
+                  "userIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSsoLinkGrantsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enterprise-identity/sso-link-grants/{userId}": {
+      "delete": {
+        "operationId": "revokeSsoLinkGrant",
+        "summary": "Withdraw a member's pending SSO link authorization.",
+        "tags": [
+          "enterprise-identity"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^usr_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/enterprise-identity/sso-policy": {
       "put": {
         "operationId": "setCompanySsoPolicy",
@@ -19033,6 +19133,57 @@
           "resourceId"
         ]
       },
+      "CreateSsoLinkGrantsResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "pattern": "^usr_[A-Za-z0-9]{22}$"
+                },
+                "linkGrant": {
+                  "type": "string",
+                  "enum": [
+                    "connected",
+                    "eligible",
+                    "granted",
+                    "ineligible"
+                  ]
+                },
+                "ineligibleReason": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "external_membership",
+                        "unclaimed_domain",
+                        "platform_admin"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "userId",
+                "linkGrant",
+                "ineligibleReason"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "additionalProperties": false
+      },
       "CustomSandboxSizeLimits": {
         "type": "object",
         "properties": {
@@ -20685,13 +20836,39 @@
                 },
                 "connected": {
                   "type": "boolean"
+                },
+                "linkGrant": {
+                  "type": "string",
+                  "enum": [
+                    "connected",
+                    "eligible",
+                    "granted",
+                    "ineligible"
+                  ]
+                },
+                "ineligibleReason": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "external_membership",
+                        "unclaimed_domain",
+                        "platform_admin"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "required": [
                 "userId",
                 "name",
                 "email",
-                "connected"
+                "connected",
+                "linkGrant",
+                "ineligibleReason"
               ],
               "additionalProperties": false
             }

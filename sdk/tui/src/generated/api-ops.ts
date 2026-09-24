@@ -464,6 +464,15 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "createSsoLinkGrants",
+    "method": "POST",
+    "path": "/enterprise-identity/sso-link-grants",
+    "summary": "Authorize the company identity provider to attach to existing member accounts on their next SSO sign-in.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "createTeamModelProviderSecret",
     "method": "POST",
     "path": "/organizations/{organizationId}/teams/{teamId}/model-provider-secrets",
@@ -2237,6 +2246,17 @@ export const API_OPS: readonly ApiOp[] = [
     "pathParams": [
       "id",
       "keyId"
+    ],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "revokeSsoLinkGrant",
+    "method": "DELETE",
+    "path": "/enterprise-identity/sso-link-grants/{userId}",
+    "summary": "Withdraw a member's pending SSO link authorization.",
+    "pathParams": [
+      "userId"
     ],
     "queryParams": [],
     "hasBody": false
