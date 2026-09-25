@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.28.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.27.0...reflex-client-v0.28.0) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **auth:** removes the public `/company/email-domains` endpoints and their generated client hooks (`useListCompanyEmailDomains`, `useAddCompanyEmailDomain`, `useRemoveCompanyEmailDomain`, `useSetCompanyEmailDomainAutoJoin`); use `/company/domains`.
+
+### Features
+
+* **auth:** verify domain ownership by DNS, on one company-owned table ([#4965](https://github.com/runloopai/reflex/issues/4965)) ([0660cc7](https://github.com/runloopai/reflex/commit/0660cc7703ee61fc6b78a4dabde044d5b6880c56))
+* **server:** let Company Managers authorize SSO links for existing accounts ([#4914](https://github.com/runloopai/reflex/issues/4914)) ([877fd1c](https://github.com/runloopai/reflex/commit/877fd1c92531e7903249425b2d2c006358d8c5e7))
+* **ui:** unify agent session model picker ([#4562](https://github.com/runloopai/reflex/issues/4562)) ([78a4996](https://github.com/runloopai/reflex/commit/78a49961638c5f43f4b8dfd0be01f577f7d655a5))
+
+
+### Bug Fixes
+
+* point the Opus (latest) alias at Claude Opus 5.5 ([#4968](https://github.com/runloopai/reflex/issues/4968)) ([dcee538](https://github.com/runloopai/reflex/commit/dcee53884eaefd12c4ab7a8be259d3bb565693e7))
+
+
+### Performance Improvements
+
+* compile Zod schemas with Zod 4.6 ([#4339](https://github.com/runloopai/reflex/issues/4339)) ([e4b15c4](https://github.com/runloopai/reflex/commit/e4b15c4fe813c3519ac13a5c58ae73b446ee5ddc))
+
 ## [0.27.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.26.0...reflex-client-v0.27.0) (2026-09-24)
 
 

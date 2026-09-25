@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/runloopai/reflex/compare/reflex-contract-v0.2.2...reflex-contract-v0.2.3) (2026-09-25)
+
+
+### Performance Improvements
+
+* compile Zod schemas with Zod 4.6 ([#4339](https://github.com/runloopai/reflex/issues/4339)) ([e4b15c4](https://github.com/runloopai/reflex/commit/e4b15c4fe813c3519ac13a5c58ae73b446ee5ddc))
+
 ## [0.2.2](https://github.com/runloopai/reflex/compare/reflex-contract-v0.2.1...reflex-contract-v0.2.2) (2026-08-28)
 
 

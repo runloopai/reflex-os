@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.20.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.19.0...reflex-cli-v0.20.0) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **auth:** removes the public `/company/email-domains` endpoints and their generated client hooks (`useListCompanyEmailDomains`, `useAddCompanyEmailDomain`, `useRemoveCompanyEmailDomain`, `useSetCompanyEmailDomainAutoJoin`); use `/company/domains`.
+
+### Features
+
+* **auth:** verify domain ownership by DNS, on one company-owned table ([#4965](https://github.com/runloopai/reflex/issues/4965)) ([0660cc7](https://github.com/runloopai/reflex/commit/0660cc7703ee61fc6b78a4dabde044d5b6880c56))
+* **server:** let Company Managers authorize SSO links for existing accounts ([#4914](https://github.com/runloopai/reflex/issues/4914)) ([877fd1c](https://github.com/runloopai/reflex/commit/877fd1c92531e7903249425b2d2c006358d8c5e7))
+
+
+### Performance Improvements
+
+* compile Zod schemas with Zod 4.6 ([#4339](https://github.com/runloopai/reflex/issues/4339)) ([e4b15c4](https://github.com/runloopai/reflex/commit/e4b15c4fe813c3519ac13a5c58ae73b446ee5ddc))
+
 ## [0.19.0](https://github.com/runloopai/reflex/compare/reflex-cli-v0.18.0...reflex-cli-v0.19.0) (2026-09-24)
 
 
