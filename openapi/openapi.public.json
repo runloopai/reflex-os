@@ -6322,10 +6322,10 @@
         }
       }
     },
-    "/company/email-domains": {
+    "/company/domains": {
       "get": {
-        "operationId": "listCompanyEmailDomains",
-        "summary": "List the active organization's company-owned email domains.",
+        "operationId": "listCompanyDomainClaims",
+        "summary": "List the active organization's company-owned email-domain claims.",
         "tags": [
           "company"
         ],
@@ -6349,43 +6349,39 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "domains": {
+                    "claims": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BillingEntityDomainClaim"
+                      }
+                    },
+                    "organizations": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string",
-                            "pattern": "^bed_[A-Za-z0-9]{22}$"
+                            "type": "string"
                           },
-                          "domain": {},
-                          "autoJoinOrganizationId": {
-                            "anyOf": [
-                              {
-                                "type": "string",
-                                "pattern": "^org_[A-Za-z0-9]{22}$"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                          "slug": {
+                            "type": "string"
                           },
-                          "createdAt": {
-                            "type": "number"
+                          "name": {
+                            "type": "string"
                           }
                         },
                         "required": [
                           "id",
-                          "domain",
-                          "autoJoinOrganizationId",
-                          "createdAt"
+                          "slug",
+                          "name"
                         ],
                         "additionalProperties": false
                       }
                     }
                   },
                   "required": [
-                    "domains"
+                    "claims",
+                    "organizations"
                   ],
                   "additionalProperties": false
                 }
@@ -6395,8 +6391,8 @@
         }
       },
       "post": {
-        "operationId": "addCompanyEmailDomain",
-        "summary": "Claim an email domain for the active organization's company.",
+        "operationId": "createCompanyDomainClaim",
+        "summary": "Claim an email domain and get its DNS TXT challenge.",
         "tags": [
           "company"
         ],
@@ -6422,64 +6418,23 @@
                   "domain": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 253,
-                    "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
-                  },
-                  "autoJoinOrganizationId": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "pattern": "^org_[A-Za-z0-9]{22}$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
+                    "maxLength": 253
                   }
                 },
                 "required": [
                   "domain"
-                ],
-                "additionalProperties": false
+                ]
               }
             }
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "pattern": "^bed_[A-Za-z0-9]{22}$"
-                    },
-                    "domain": {},
-                    "autoJoinOrganizationId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "pattern": "^org_[A-Za-z0-9]{22}$"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "createdAt": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "domain",
-                    "autoJoinOrganizationId",
-                    "createdAt"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/components/schemas/BillingEntityDomainClaim"
                 }
               }
             }
@@ -6487,68 +6442,22 @@
         }
       }
     },
-    "/company/email-domains/{domain}": {
-      "delete": {
-        "operationId": "removeCompanyEmailDomain",
-        "summary": "Remove an email-domain claim from the active organization's company.",
+    "/company/domains/{claimId}": {
+      "patch": {
+        "operationId": "updateCompanyDomainClaimPolicy",
+        "summary": "Choose how verified proof is consumed (SSO discovery, auto-join destination).",
         "tags": [
           "company"
         ],
         "x-route-scope": "active-org",
         "parameters": [
           {
-            "name": "domain",
+            "name": "claimId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 253,
-              "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": true,
-            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/company/email-domains/{domain}/auto-join": {
-      "put": {
-        "operationId": "setCompanyEmailDomainAutoJoin",
-        "summary": "Set a company domain's ordinary-provider auto-join destination.",
-        "tags": [
-          "company"
-        ],
-        "x-route-scope": "active-org",
-        "parameters": [
-          {
-            "name": "domain",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 253,
-              "pattern": "^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
+              "pattern": "^dmc_[A-Za-z0-9]{22}$"
             }
           },
           {
@@ -6568,7 +6477,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "organizationId": {
+                  "ssoDiscoveryEnabled": {
+                    "type": "boolean"
+                  },
+                  "autoJoinOrganizationId": {
                     "anyOf": [
                       {
                         "type": "string",
@@ -6579,11 +6491,7 @@
                       }
                     ]
                   }
-                },
-                "required": [
-                  "organizationId"
-                ],
-                "additionalProperties": false
+                }
               }
             }
           }
@@ -6594,33 +6502,159 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "$ref": "#/components/schemas/BillingEntityDomainClaim"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeCompanyDomainClaim",
+        "summary": "Remove an email-domain claim.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^dmc_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "string",
-                      "pattern": "^bed_[A-Za-z0-9]{22}$"
-                    },
-                    "domain": {},
-                    "autoJoinOrganizationId": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "pattern": "^org_[A-Za-z0-9]{22}$"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "createdAt": {
-                      "type": "number"
+                    "removed": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "id",
-                    "domain",
-                    "autoJoinOrganizationId",
-                    "createdAt"
+                    "removed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company/domains/{claimId}/verify": {
+      "post": {
+        "operationId": "verifyCompanyDomainClaim",
+        "summary": "Check DNS for the TXT challenge now.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^dmc_[A-Za-z0-9]{22}$"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "claim": {
+                      "$ref": "#/components/schemas/BillingEntityDomainClaim"
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "verified",
+                        "not-found",
+                        "error"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "claim",
+                    "outcome"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/company/enterprise-identity/audit": {
+      "get": {
+        "operationId": "listEnterpriseIdentityAuditEvents",
+        "summary": "List the company's enterprise identity audit events.",
+        "tags": [
+          "company"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EnterpriseIdentityAuditEvent"
+                      }
+                    }
+                  },
+                  "required": [
+                    "events"
                   ],
                   "additionalProperties": false
                 }
@@ -10338,7 +10372,7 @@
       "post": {
         "operationId": "addOrgEmailDomain",
         "summary": "Associate a company-owned email domain with an organization.",
-        "description": "Restricted to platform admins: domains are not DNS-verified.",
+        "description": "Restricted to platform admins: the association lands the claim platform-approved, without DNS proof.",
         "tags": [
           "organizations"
         ],
@@ -10385,7 +10419,7 @@
       "delete": {
         "operationId": "removeOrgEmailDomain",
         "summary": "Remove an organization association with a company-owned email domain.",
-        "description": "Restricted to platform admins: domains are not DNS-verified.",
+        "description": "Restricted to platform admins, like the association it removes.",
         "tags": [
           "organizations"
         ],
@@ -17897,6 +17931,115 @@
         ],
         "additionalProperties": false
       },
+      "BillingEntityDomainClaim": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "billingEntityId": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "verified",
+              "lost"
+            ]
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "dns-txt",
+              "platform-approved"
+            ]
+          },
+          "grandfathered": {
+            "type": "boolean"
+          },
+          "recordName": {
+            "type": "string"
+          },
+          "challengeToken": {
+            "type": "string"
+          },
+          "ssoDiscoveryEnabled": {
+            "type": "boolean"
+          },
+          "autoJoinOrganizationId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verifiedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastCheckedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextCheckAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failedChecks": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "billingEntityId",
+          "domain",
+          "status",
+          "method",
+          "grandfathered",
+          "recordName",
+          "challengeToken",
+          "ssoDiscoveryEnabled",
+          "autoJoinOrganizationId",
+          "verifiedAt",
+          "lastCheckedAt",
+          "nextCheckAt",
+          "failedChecks",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
       "BillingEntityOidcConnection": {
         "type": "object",
         "properties": {
@@ -19215,6 +19358,62 @@
           "view",
           "edit"
         ]
+      },
+      "EnterpriseIdentityAuditEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "billingEntityId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "domain-claim.created",
+              "domain-claim.verified",
+              "domain-claim.verification-lost",
+              "domain-claim.policy-changed",
+              "domain-claim.removed",
+              "domain-claim.platform-approved",
+              "domain-claim.reassigned"
+            ]
+          },
+          "subjectId": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "billingEntityId",
+          "action",
+          "subjectId",
+          "actorUserId",
+          "detail",
+          "createdAt"
+        ],
+        "additionalProperties": false
       },
       "ErrorEnvelope": {
         "type": "object",

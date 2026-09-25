@@ -66,15 +66,6 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
-    "id": "addCompanyEmailDomain",
-    "method": "POST",
-    "path": "/company/email-domains",
-    "summary": "Claim an email domain for the active organization's company.",
-    "pathParams": [],
-    "queryParams": [],
-    "hasBody": true
-  },
-  {
     "id": "addOrgEmailDomain",
     "method": "POST",
     "path": "/organizations/{id}/email-domains",
@@ -343,6 +334,15 @@ export const API_OPS: readonly ApiOp[] = [
     "method": "POST",
     "path": "/blueprints",
     "summary": "Create a blueprint and start its build.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
+    "id": "createCompanyDomainClaim",
+    "method": "POST",
+    "path": "/company/domains",
+    "summary": "Claim an email domain and get its DNS TXT challenge.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": true
@@ -1589,10 +1589,19 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": false
   },
   {
-    "id": "listCompanyEmailDomains",
+    "id": "listCompanyDomainClaims",
     "method": "GET",
-    "path": "/company/email-domains",
-    "summary": "List the active organization's company-owned email domains.",
+    "path": "/company/domains",
+    "summary": "List the active organization's company-owned email-domain claims.",
+    "pathParams": [],
+    "queryParams": [],
+    "hasBody": false
+  },
+  {
+    "id": "listEnterpriseIdentityAuditEvents",
+    "method": "GET",
+    "path": "/company/enterprise-identity/audit",
+    "summary": "List the company's enterprise identity audit events.",
     "pathParams": [],
     "queryParams": [],
     "hasBody": false
@@ -2080,12 +2089,12 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
-    "id": "removeCompanyEmailDomain",
+    "id": "removeCompanyDomainClaim",
     "method": "DELETE",
-    "path": "/company/email-domains/{domain}",
-    "summary": "Remove an email-domain claim from the active organization's company.",
+    "path": "/company/domains/{claimId}",
+    "summary": "Remove an email-domain claim.",
     "pathParams": [
-      "domain"
+      "claimId"
     ],
     "queryParams": [],
     "hasBody": false
@@ -2346,17 +2355,6 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
-    "id": "setCompanyEmailDomainAutoJoin",
-    "method": "PUT",
-    "path": "/company/email-domains/{domain}/auto-join",
-    "summary": "Set a company domain's ordinary-provider auto-join destination.",
-    "pathParams": [
-      "domain"
-    ],
-    "queryParams": [],
-    "hasBody": true
-  },
-  {
     "id": "setCompanySsoPolicy",
     "method": "PUT",
     "path": "/enterprise-identity/sso-policy",
@@ -2594,6 +2592,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "updateCompanyDomainClaimPolicy",
+    "method": "PATCH",
+    "path": "/company/domains/{claimId}",
+    "summary": "Choose how verified proof is consumed (SSO discovery, auto-join destination).",
+    "pathParams": [
+      "claimId"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "updateMyModelProviderSecret",
     "method": "PUT",
     "path": "/me/model-provider-secrets/{id}",
@@ -2750,5 +2759,16 @@ export const API_OPS: readonly ApiOp[] = [
     "pathParams": [],
     "queryParams": [],
     "hasBody": true
+  },
+  {
+    "id": "verifyCompanyDomainClaim",
+    "method": "POST",
+    "path": "/company/domains/{claimId}/verify",
+    "summary": "Check DNS for the TXT challenge now.",
+    "pathParams": [
+      "claimId"
+    ],
+    "queryParams": [],
+    "hasBody": false
   }
 ];
