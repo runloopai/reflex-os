@@ -51,6 +51,19 @@ export const workstationPlugin = definePlugin({
   dependencies: ['mcp'],
   idPrefixes: workstationIds.prefixes,
   server: {
+    userErasure: {
+      tables: [
+        { table: 'workstation_tool_calls', userColumn: 'user_id' },
+        { table: 'workstations', userColumn: 'user_id' },
+      ],
+      blockers: [
+        {
+          table: 'workstations',
+          userColumn: 'user_id',
+          condition: { column: 'status', equals: 'online' },
+        },
+      ],
+    },
     routePrefix: '/workstations',
     healthChecks: {
       startup: dbTablesStartup(['workstations']),
