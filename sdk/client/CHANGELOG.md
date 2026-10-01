@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.29.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.28.0...reflex-client-v0.29.0) (2026-10-01)
+
+
+### Features
+
+* **models:** offer GPT-6.1 Sol in Codex ([#5125](https://github.com/runloopai/reflex/issues/5125)) ([c83e977](https://github.com/runloopai/reflex/commit/c83e9773be301b1a40a2a4a7fb12271e0dbd197a))
+
 ## [0.28.0](https://github.com/runloopai/reflex/compare/reflex-client-v0.27.0...reflex-client-v0.28.0) (2026-09-25)
 
 
