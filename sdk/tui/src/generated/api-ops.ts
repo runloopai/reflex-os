@@ -2583,6 +2583,17 @@ export const API_OPS: readonly ApiOp[] = [
     "hasBody": true
   },
   {
+    "id": "updateAgentRuntimeSettings",
+    "method": "POST",
+    "path": "/agents/{id}/runtime-settings",
+    "summary": "Retarget a running agent's sticky runtime settings.",
+    "pathParams": [
+      "id"
+    ],
+    "queryParams": [],
+    "hasBody": true
+  },
+  {
     "id": "updateAuthSettings",
     "method": "PUT",
     "path": "/auth/settings",

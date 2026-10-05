@@ -4170,6 +4170,64 @@
         }
       }
     },
+    "/agents/{id}/runtime-settings": {
+      "post": {
+        "operationId": "updateAgentRuntimeSettings",
+        "summary": "Retarget a running agent's sticky runtime settings.",
+        "description": "Switches the model a running agent uses from its next response on, the only runtime setting today. The new model is validated exactly as a launch with it would be (present in the agent type's catalog, enabled by admin policy, and reachable with the credentials the requesting user can see, on the run's own route). The switch is posted to the agent's box as the harness's own instruction, which the box keeps across suspends (a sleeping box wakes to take it), and then recorded on the agent, so it is what cost attribution records from here on. Returns the updated agent record. 409 `agent_not_switchable` for a run that is still starting or can no longer take a turn (stopping/stopped/error/terminated), 400 `model_switch_unsupported` for a harness that takes its model only at startup, 400 `agent_type_has_no_model_catalog` for a single-model agent type, 400 `model_not_in_catalog` for a model outside the catalog, 400 `model_not_reachable_for_run` for a model on the other route than the run's (direct or AI Gateway), 403 `model_not_allowed` when admin policy disables the model or its provider, and 503 `model_switch_not_delivered` when the instruction could not be posted, in which case nothing changed.",
+        "tags": [
+          "agents"
+        ],
+        "x-route-scope": "active-org",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": true,
+            "description": "Active organization id (or slug). Required for org-scoped operations; the generated client enforces it at compile time.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Agent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/agents/{id}/services/{serviceId}/logs": {
       "get": {
         "operationId": "getAgentServiceLogs",
@@ -17729,6 +17787,7 @@
               "agent.subagent",
               "agent.compact",
               "agent.status_change",
+              "agent.runtime_settings_changed",
               "codex.command.result",
               "agent.log",
               "flow.started",
@@ -17794,7 +17853,8 @@
               "initialize",
               "session/new",
               "session/prompt",
-              "session/cancel"
+              "session/cancel",
+              "thread/settings/update"
             ]
           },
           "payload": {},

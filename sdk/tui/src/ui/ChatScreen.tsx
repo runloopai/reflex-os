@@ -31,6 +31,7 @@ import {
   buildPermissionDenyResponse,
 } from '../chat/control.js';
 import { agentOpenLinks } from '../chat/links.js';
+import { isModelSwitchCommand } from '../chat/model-command.js';
 import { agentStatusRows, chatHelpRows, type InfoRow } from '../chat/status.js';
 import type { PickOption } from '../launch/options.js';
 import {
@@ -511,6 +512,23 @@ export function ChatScreen({ agent, socket, connect = null, drafts, onBack }: Ch
 
     const attachments = staged;
     setStaged([]);
+
+    // A `/model <id>` switch goes out at once, even mid-turn, and gets no
+    // prompt echo, so it takes no queue slot and no pending entry.
+    if (isModelSwitchCommand(text)) {
+      try {
+        const res = await sendAgentMessage(
+          agent.id,
+          attachments.length > 0
+            ? { content: buildContentBlocks(text, attachments) }
+            : { message: text },
+        );
+        engine.handleEvent(res.data as unknown as ReflexStreamEvent);
+      } catch (err) {
+        setNotice(err instanceof Error ? err.message : String(err));
+      }
+      return;
+    }
 
     // Mid-turn sends go to the server-owned queue (drained one per turn),
     // exactly like the web composer.
